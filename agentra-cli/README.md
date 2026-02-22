@@ -37,6 +37,10 @@ cargo run --bin agentra -- toggle codebase off
 - `agentra doctor` checks MCP wiring and binary health across detected clients.
 - `agentra doctor --fix` repairs stale/missing MCP entries (non-destructive merge/backup behavior).
 - Runtime artifact resync: when full control is on, `.acb` / `.amem` / `.avis` artifacts auto-enable matching sisters.
+- In server runtime (`AGENTRA_RUNTIME_MODE=server` or `AGENTRA_PROFILE=server`), takeover requires auth (`AGENTIC_TOKEN` or `AGENTIC_TOKEN_FILE`).
+- Server runtime can scan extra artifact locations via `AGENTRA_ARTIFACT_DIRS=/path/a:/path/b`.
+- Generate server token with `openssl rand -hex 32`.
+- Cloud runtimes cannot read laptop artifacts directly; sync first (for example with `/Users/omoshola/Documents/agentralabs-tech/sync_artifacts.sh`).
 - `agentra control off` disables auto-takeover/resync; `agentra control on` enables it.
 - Reports status per tool:
   - `OK`

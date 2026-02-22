@@ -69,7 +69,30 @@ cargo build --release -p agentra-cli
 cargo package -p agentra-cli
 ```
 
-## 7. Screenshot Evidence (Sisters Running)
+## 7. Server Runtime (Auth + Local Artifacts)
+
+For server takeover with local artifacts, set:
+
+```bash
+export AGENTRA_RUNTIME_MODE=server
+export AGENTIC_TOKEN="$(openssl rand -hex 32)"
+export AGENTRA_ARTIFACT_DIRS="/srv/agentra:/data/brains"
+cargo run --bin agentra -- status --session
+```
+
+If you prefer token file:
+
+```bash
+export AGENTIC_TOKEN_FILE="/etc/agentra/token"
+```
+
+Cloud/server runtimes cannot read files from your laptop directly. Sync first:
+
+```bash
+./sync_artifacts.sh --target=<server-path-or-rsync-target>
+```
+
+## 8. Screenshot Evidence (Sisters Running)
 
 Generated runtime screenshots are stored under:
 

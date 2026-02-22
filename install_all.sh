@@ -7,7 +7,7 @@ TEST_MODE=0
 
 usage() {
   cat <<'EOF'
-Usage: ./install_all.sh [--test-mode] [--help]
+Usage: ./install_all.sh [--test-mode] [--profile=desktop|terminal|server] [--help]
 
 Installs all sister tools from local paths:
   - agentic-codebase
@@ -16,6 +16,7 @@ Installs all sister tools from local paths:
 
 Options:
   --test-mode   Print planned install commands without executing.
+  --profile     Install profile (desktop, terminal, server). Default: desktop.
   --help        Show this help.
 EOF
 }
@@ -24,6 +25,10 @@ while (($#)); do
   case "$1" in
     --test-mode)
       TEST_MODE=1
+      shift
+      ;;
+    --profile=*)
+      PROFILE="${1#*=}"
       shift
       ;;
     --help|-h)
@@ -37,6 +42,16 @@ while (($#)); do
       ;;
   esac
 done
+
+PROFILE="${PROFILE:-desktop}"
+case "$PROFILE" in
+  desktop|terminal|server) ;;
+  *)
+    echo "Unknown profile: $PROFILE" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
 
 SISTERS=(
   "agentic-codebase"
@@ -81,6 +96,7 @@ completed=0
 
 echo "Installing all sisters from: $ROOT_DIR"
 [[ "$TEST_MODE" -eq 1 ]] && echo "Running in test mode (no installs will be executed)."
+echo "Profile: $PROFILE"
 
 for sister in "${SISTERS[@]}"; do
   completed=$((completed + 1))
@@ -90,3 +106,14 @@ done
 
 echo
 echo "Install flow completed."
+if [[ "$PROFILE" == "server" ]]; then
+  echo "Server auth gate:"
+  echo "  - Generate token: openssl rand -hex 32"
+  echo "  - Set AGENTIC_TOKEN or AGENTIC_TOKEN_FILE before runtime takeover."
+  echo "  - MCP clients must use Authorization: Bearer <same-token>."
+  echo "Artifact sync for server takeover:"
+  echo "  - Cloud/server cannot read laptop artifacts directly."
+  echo "  - Sync artifacts first: ./sync_artifacts.sh --target=<server-path-or-rsync-target>"
+  echo "  - Set AGENTRA_ARTIFACT_DIRS to scan local artifact paths."
+  echo "    Example: export AGENTRA_ARTIFACT_DIRS=\"/srv/agentra:/data/brains\""
+fi

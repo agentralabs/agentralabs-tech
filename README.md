@@ -43,6 +43,7 @@ flowchart TD
 - `agentic-memory/` — persistent graph memory tooling
 - `agentic-vision/` — visual memory tooling
 - `install_all.sh` — install sisters from local paths
+- `sync_artifacts.sh` — sync `.acb/.amem/.avis` artifacts to server paths
 - `local_ai_test.sh` — simple local Ollama integration smoke script
 
 ## Quick Start
@@ -67,6 +68,14 @@ UI controls:
 - `OK`
 - `DISABLED`
 - `MISSING`
+
+Server takeover notes:
+
+- Set `AGENTRA_RUNTIME_MODE=server` for server runtime.
+- Server takeover requires `AGENTIC_TOKEN` or `AGENTIC_TOKEN_FILE`.
+- To scan local artifact paths from server runtime, set `AGENTRA_ARTIFACT_DIRS=/path/a:/path/b`.
+- Generate a token with `openssl rand -hex 32`.
+- Cloud runtimes cannot read laptop files directly; sync artifacts first with `./sync_artifacts.sh`.
 
 ## UI Screenshot
 

@@ -1,5 +1,5 @@
-use std::env;
 use std::collections::{BTreeMap, BTreeSet};
+use std::env;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -458,6 +458,119 @@ fn bool_label(value: bool) -> &'static str {
     }
 }
 
+fn parse_artifact_dirs_value(value: &str) -> Vec<PathBuf> {
+    value
+        .split(':')
+        .map(str::trim)
+        .filter(|entry| !entry.is_empty())
+        .map(PathBuf::from)
+        .collect()
+}
+
+fn extra_artifact_dirs() -> Vec<PathBuf> {
+    env::var("AGENTRA_ARTIFACT_DIRS")
+        .ok()
+        .map(|v| parse_artifact_dirs_value(&v))
+        .unwrap_or_default()
+}
+
+fn env_truthy(name: &str) -> bool {
+    matches!(
+        env::var(name)
+            .ok()
+            .as_deref()
+            .map(|v| v.trim().to_ascii_lowercase()),
+        Some(v) if v == "1" || v == "true" || v == "yes" || v == "on"
+    )
+}
+
+fn is_server_runtime() -> bool {
+    if env_truthy("AGENTRA_SERVER") || env_truthy("AGENTRA_SERVER_MODE") {
+        return true;
+    }
+
+    if let Ok(mode) = env::var("AGENTRA_RUNTIME_MODE") {
+        if mode.trim().eq_ignore_ascii_case("server") {
+            return true;
+        }
+    }
+
+    if let Ok(profile) = env::var("AGENTRA_PROFILE") {
+        if profile.trim().eq_ignore_ascii_case("server") {
+            return true;
+        }
+    }
+
+    if let Ok(profile) = env::var("AGENTRA_INSTALL_PROFILE") {
+        if profile.trim().eq_ignore_ascii_case("server") {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn server_auth_configured() -> bool {
+    if env::var("AGENTIC_TOKEN")
+        .ok()
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+    {
+        return true;
+    }
+
+    for key in ["AGENTIC_TOKEN_FILE", "AGENTRA_AUTH_TOKEN_FILE"] {
+        if let Ok(path) = env::var(key) {
+            let token_path = PathBuf::from(path.trim());
+            if token_path.is_file() {
+                if let Ok(content) = fs::read_to_string(&token_path) {
+                    if !content.trim().is_empty() {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    false
+}
+
+fn runtime_mode_label() -> &'static str {
+    if is_server_runtime() {
+        "server"
+    } else {
+        "desktop/terminal"
+    }
+}
+
+fn artifact_roots_for_scan() -> Vec<PathBuf> {
+    let mut roots = BTreeSet::new();
+    roots.insert(workspace_root());
+    for dir in extra_artifact_dirs() {
+        roots.insert(dir);
+    }
+    roots.into_iter().collect()
+}
+
+fn artifact_roots_display() -> String {
+    let roots = artifact_roots_for_scan();
+    roots
+        .iter()
+        .map(|p| p.display().to_string())
+        .collect::<Vec<String>>()
+        .join(" | ")
+}
+
+fn server_takeover_block_reason() -> Option<String> {
+    if is_server_runtime() && !server_auth_configured() {
+        return Some(
+            "Skipped takeover: server auth missing (set AGENTIC_TOKEN or AGENTIC_TOKEN_FILE)"
+                .to_string(),
+        );
+    }
+    None
+}
+
 fn home_dir() -> Option<PathBuf> {
     env::var_os("HOME").map(PathBuf::from)
 }
@@ -685,12 +798,7 @@ fn collect_mcp_targets() -> Vec<McpTarget> {
     discovered.dedup();
     for path in discovered {
         if path.exists() {
-            push_json_target(
-                &mut targets,
-                &mut seen_paths,
-                "Generic MCP JSON",
-                path,
-            );
+            push_json_target(&mut targets, &mut seen_paths, "Generic MCP JSON", path);
         }
     }
 
@@ -874,9 +982,7 @@ fn inspect_json_target(
         }
         if let Err(err) = fs::write(
             &target.path,
-            serde_json::to_string_pretty(&config)
-                .unwrap_or_else(|_| "{}".to_string())
-                + "\n",
+            serde_json::to_string_pretty(&config).unwrap_or_else(|_| "{}".to_string()) + "\n",
         ) {
             return DoctorRow {
                 target: format!("{} ({})", target.name, target.path.display()),
@@ -1091,8 +1197,10 @@ fn scan_artifacts_recursive(root: &Path, depth: usize, presence: &mut ArtifactPr
 
 fn detect_artifact_presence() -> ArtifactPresence {
     let mut presence = ArtifactPresence::default();
-    let root = workspace_root();
-    scan_artifacts_recursive(&root, 6, &mut presence);
+    for root in artifact_roots_for_scan() {
+        scan_artifacts_recursive(&root, 6, &mut presence);
+    }
+
     if let Some(home) = home_dir() {
         if presence.memory == 0 {
             let default_brain = home.join(".brain.amem");
@@ -1108,6 +1216,9 @@ fn auto_resync_from_artifacts() -> io::Result<Vec<String>> {
     let mut config = load_config();
     if !config.agentra_full_control {
         return Ok(Vec::new());
+    }
+    if let Some(reason) = server_takeover_block_reason() {
+        return Ok(vec![reason]);
     }
 
     let presence = detect_artifact_presence();
@@ -1172,10 +1283,7 @@ fn run_doctor(fix: bool) -> io::Result<()> {
             DoctorRow {
                 target: format!("Binary {}", spec.binary),
                 status: DoctorStatus::Fail,
-                detail: format!(
-                    "Missing. Install this sister to expose '{}'.",
-                    spec.key
-                ),
+                detail: format!("Missing. Install this sister to expose '{}'.", spec.key),
             }
         };
         rows.push(row);
@@ -1267,8 +1375,8 @@ impl App {
             hhmm_string(),
             health_summary(ok, disabled, total)
         );
-        self.message = "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit."
-            .to_string();
+        self.message =
+            "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit.".to_string();
     }
 
     fn open_hints(&mut self) {
@@ -1291,8 +1399,8 @@ impl App {
 
     fn close_hints(&mut self) {
         self.show_help_popup = false;
-        self.message = "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit."
-            .to_string();
+        self.message =
+            "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit.".to_string();
     }
 }
 
@@ -1355,12 +1463,12 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
     frame.render_widget(table, chunks[1]);
 
     let log_widget = Paragraph::new(app.last_action_log.clone())
-    .block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title("Last Action Log"),
-    )
-    .wrap(Wrap { trim: true });
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Last Action Log"),
+        )
+        .wrap(Wrap { trim: true });
     frame.render_widget(log_widget, chunks[2]);
 
     let footer = Paragraph::new(app.message.clone())
@@ -1488,11 +1596,29 @@ fn run_status() {
     let resync_notes = auto_resync_from_artifacts().unwrap_or_default();
     let config = load_config();
     let tools = detect_tools(&config);
+    let runtime_mode = runtime_mode_label();
 
     println!("Agentra sister status");
     println!("=====================");
     println!("Config file: {}", config_path().display());
     println!("Config: {}", config.summary());
+    println!("Runtime mode: {runtime_mode}");
+    println!("Artifact scan roots: {}", artifact_roots_display());
+    if is_server_runtime() {
+        println!(
+            "Server auth: {}",
+            if server_auth_configured() {
+                "configured"
+            } else {
+                "missing (set AGENTIC_TOKEN or AGENTIC_TOKEN_FILE)"
+            }
+        );
+        if extra_artifact_dirs().is_empty() {
+            println!(
+                "Server note: cloud runtimes cannot read laptop files directly. Sync artifacts first, then set AGENTRA_ARTIFACT_DIRS."
+            );
+        }
+    }
     println!();
 
     if !resync_notes.is_empty() {
@@ -1517,7 +1643,7 @@ fn run_status() {
 }
 
 fn run_status_session() {
-    let _ = auto_resync_from_artifacts();
+    let resync_notes = auto_resync_from_artifacts().unwrap_or_default();
     let config = load_config();
     let tools = detect_tools(&config);
 
@@ -1569,6 +1695,24 @@ fn run_status_session() {
     println!(
         "Full Control: {full_control} ({active_count}/3 active, {enabled_count}/3 enabled) | Toggle with `agentra ui` or command"
     );
+    println!("Runtime mode: {}", runtime_mode_label());
+    println!("Artifact roots: {}", artifact_roots_display());
+    if is_server_runtime() {
+        println!(
+            "Server auth: {}",
+            if server_auth_configured() {
+                "configured"
+            } else {
+                "missing (set AGENTIC_TOKEN or AGENTIC_TOKEN_FILE)"
+            }
+        );
+        if extra_artifact_dirs().is_empty() {
+            println!("Server note: set AGENTRA_ARTIFACT_DIRS to synced artifact paths.");
+        }
+    }
+    for note in &resync_notes {
+        println!("Runtime resync: {note}");
+    }
     println!("Config file: {}", config_path().display());
 }
 
@@ -1739,8 +1883,11 @@ mod tests {
             "mcpServers": servers,
             "meta": {"kept": true}
         });
-        fs::write(&cfg_path, serde_json::to_string_pretty(&config).unwrap() + "\n")
-            .expect("write config");
+        fs::write(
+            &cfg_path,
+            serde_json::to_string_pretty(&config).unwrap() + "\n",
+        )
+        .expect("write config");
 
         let target = McpTarget {
             name: "healthy".to_string(),
@@ -1784,5 +1931,18 @@ mod tests {
         for spec in MCP_SISTERS {
             assert!(servers.contains_key(spec.key));
         }
+    }
+
+    #[test]
+    fn artifact_dirs_parser_handles_blanks() {
+        let parsed = parse_artifact_dirs_value(" /a:/b::/c ");
+        assert_eq!(
+            parsed,
+            vec![
+                PathBuf::from("/a"),
+                PathBuf::from("/b"),
+                PathBuf::from("/c")
+            ]
+        );
     }
 }
