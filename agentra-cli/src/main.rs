@@ -1,9 +1,10 @@
 use std::env;
+use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
@@ -14,6 +15,7 @@ use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Cell, Paragraph, Row, Table, Wrap};
 use ratatui::Terminal;
+use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
 #[command(name = "agentra")]
@@ -29,6 +31,98 @@ enum Commands {
     Ui,
     /// Print non-interactive status of sister tools.
     Status,
+    /// Toggle sister usage in persistent config.
+    Toggle {
+        #[arg(value_enum)]
+        sister: Sister,
+        #[arg(value_enum)]
+        state: ToggleState,
+    },
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, ValueEnum, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+enum Sister {
+    Codebase,
+    Memory,
+    Vision,
+}
+
+impl Sister {
+    fn as_label(self) -> &'static str {
+        match self {
+            Sister::Codebase => "codebase",
+            Sister::Memory => "memory",
+            Sister::Vision => "vision",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum ToggleState {
+    On,
+    Off,
+}
+
+impl ToggleState {
+    fn is_enabled(self) -> bool {
+        matches!(self, ToggleState::On)
+    }
+
+    fn as_label(self) -> &'static str {
+        if self.is_enabled() {
+            "on"
+        } else {
+            "off"
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AgentraConfig {
+    use_codebase: bool,
+    use_memory: bool,
+    use_vision: bool,
+    agentra_full_control: bool,
+}
+
+impl Default for AgentraConfig {
+    fn default() -> Self {
+        Self {
+            use_codebase: true,
+            use_memory: true,
+            use_vision: true,
+            agentra_full_control: true,
+        }
+    }
+}
+
+impl AgentraConfig {
+    fn is_enabled(&self, sister: Sister) -> bool {
+        match sister {
+            Sister::Codebase => self.use_codebase,
+            Sister::Memory => self.use_memory,
+            Sister::Vision => self.use_vision,
+        }
+    }
+
+    fn set_enabled(&mut self, sister: Sister, enabled: bool) {
+        match sister {
+            Sister::Codebase => self.use_codebase = enabled,
+            Sister::Memory => self.use_memory = enabled,
+            Sister::Vision => self.use_vision = enabled,
+        }
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "codebase={} memory={} vision={} full_control={}",
+            bool_label(self.use_codebase),
+            bool_label(self.use_memory),
+            bool_label(self.use_vision),
+            bool_label(self.agentra_full_control)
+        )
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -37,18 +131,37 @@ struct ToolSpec {
     command: &'static str,
     local_rel: &'static str,
     start_hint: &'static str,
+    sister: Option<Sister>,
+}
+
+#[derive(Clone, Copy)]
+enum ToolStatus {
+    Ok,
+    Missing,
+    Disabled,
+}
+
+impl ToolStatus {
+    fn as_label(self) -> &'static str {
+        match self {
+            ToolStatus::Ok => "OK",
+            ToolStatus::Missing => "MISSING",
+            ToolStatus::Disabled => "DISABLED",
+        }
+    }
 }
 
 #[derive(Clone)]
 struct ToolState {
     label: &'static str,
-    installed: bool,
+    status: ToolStatus,
     source: String,
     start_hint: &'static str,
 }
 
 struct App {
     tools: Vec<ToolState>,
+    config: AgentraConfig,
     last_refresh: String,
     message: String,
 }
@@ -59,36 +172,42 @@ const TOOL_SPECS: [ToolSpec; 6] = [
         command: "acb",
         local_rel: "agentic-codebase/target/release/acb",
         start_hint: "acb --help",
+        sister: Some(Sister::Codebase),
     },
     ToolSpec {
         label: "Codebase MCP",
         command: "acb-mcp",
         local_rel: "agentic-codebase/target/release/acb-mcp",
         start_hint: "acb-mcp --help",
+        sister: Some(Sister::Codebase),
     },
     ToolSpec {
         label: "Memory CLI",
         command: "amem",
         local_rel: "agentic-memory/target/release/amem",
         start_hint: "amem --help",
+        sister: Some(Sister::Memory),
     },
     ToolSpec {
         label: "Memory MCP",
         command: "agentic-memory-mcp",
         local_rel: "agentic-memory/target/release/agentic-memory-mcp",
         start_hint: "agentic-memory-mcp --help",
+        sister: Some(Sister::Memory),
     },
     ToolSpec {
         label: "Vision MCP",
         command: "agentic-vision-mcp",
         local_rel: "agentic-vision/target/release/agentic-vision-mcp",
         start_hint: "agentic-vision-mcp --help",
+        sister: Some(Sister::Vision),
     },
     ToolSpec {
         label: "Ollama",
         command: "ollama",
         local_rel: "",
         start_hint: "ollama serve",
+        sister: None,
     },
 ];
 
@@ -97,6 +216,27 @@ fn workspace_root() -> PathBuf {
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."))
+}
+
+fn config_path() -> PathBuf {
+    workspace_root().join("agentra-config.json")
+}
+
+fn load_config() -> AgentraConfig {
+    let path = config_path();
+    let content = match fs::read_to_string(path) {
+        Ok(v) => v,
+        Err(_) => return AgentraConfig::default(),
+    };
+
+    serde_json::from_str(&content).unwrap_or_else(|_| AgentraConfig::default())
+}
+
+fn save_config(config: &AgentraConfig) -> io::Result<()> {
+    let path = config_path();
+    let json = serde_json::to_string_pretty(config)
+        .map_err(|e| io::Error::other(format!("failed to serialize config: {e}")))?;
+    fs::write(path, format!("{json}\n"))
 }
 
 fn find_on_path(cmd: &str) -> Option<PathBuf> {
@@ -110,16 +250,31 @@ fn find_on_path(cmd: &str) -> Option<PathBuf> {
     None
 }
 
-fn detect_tools() -> Vec<ToolState> {
+fn detect_tools(config: &AgentraConfig) -> Vec<ToolState> {
     let root = workspace_root();
 
     TOOL_SPECS
         .iter()
         .map(|spec| {
+            if let Some(sister) = spec.sister {
+                if !config.is_enabled(sister) {
+                    return ToolState {
+                        label: spec.label,
+                        status: ToolStatus::Disabled,
+                        source: format!(
+                            "disabled in {} (agentra toggle {} on)",
+                            config_path().display(),
+                            sister.as_label()
+                        ),
+                        start_hint: spec.start_hint,
+                    };
+                }
+            }
+
             if let Some(path_hit) = find_on_path(spec.command) {
                 return ToolState {
                     label: spec.label,
-                    installed: true,
+                    status: ToolStatus::Ok,
                     source: format!("PATH: {}", path_hit.display()),
                     start_hint: spec.start_hint,
                 };
@@ -130,7 +285,7 @@ fn detect_tools() -> Vec<ToolState> {
                 if local.is_file() {
                     return ToolState {
                         label: spec.label,
-                        installed: true,
+                        status: ToolStatus::Ok,
                         source: format!("local build: {}", local.display()),
                         start_hint: spec.start_hint,
                     };
@@ -139,7 +294,7 @@ fn detect_tools() -> Vec<ToolState> {
 
             ToolState {
                 label: spec.label,
-                installed: false,
+                status: ToolStatus::Missing,
                 source: "not found".to_string(),
                 start_hint: spec.start_hint,
             }
@@ -151,17 +306,29 @@ fn now_string() -> String {
     format!("{:?}", SystemTime::now())
 }
 
+fn bool_label(value: bool) -> &'static str {
+    if value {
+        "on"
+    } else {
+        "off"
+    }
+}
+
 impl App {
     fn new() -> Self {
+        let config = load_config();
+
         Self {
-            tools: detect_tools(),
+            tools: detect_tools(&config),
+            config,
             last_refresh: now_string(),
             message: "Press r to refresh, h for start hints, q to quit.".to_string(),
         }
     }
 
     fn refresh(&mut self) {
-        self.tools = detect_tools();
+        self.config = load_config();
+        self.tools = detect_tools(&self.config);
         self.last_refresh = now_string();
         self.message = "Status refreshed.".to_string();
     }
@@ -170,13 +337,14 @@ impl App {
         let hints: Vec<&str> = self
             .tools
             .iter()
-            .filter(|t| t.installed)
+            .filter(|t| matches!(t.status, ToolStatus::Ok))
             .map(|t| t.start_hint)
             .collect();
 
         if hints.is_empty() {
-            self.message = "No tools detected. Install sisters individually; this UI will pick them up automatically."
-                .to_string();
+            self.message =
+                "No active tools detected. Enable sisters with agentra toggle <sister> on."
+                    .to_string();
         } else {
             self.message = format!("Start hints: {}", hints.join(" | "));
         }
@@ -194,22 +362,23 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
         ])
         .split(frame.area());
 
-    let header = Paragraph::new("Agentra Dashboard: Sisters remain independently installable; this UI is only an orchestrator.")
-        .block(Block::default().borders(Borders::ALL).title("Agentra"))
-        .wrap(Wrap { trim: true });
+    let header = Paragraph::new(
+        "Agentra Dashboard: sisters remain independently installable; this UI orchestrates state and visibility.",
+    )
+    .block(Block::default().borders(Borders::ALL).title("Agentra"))
+    .wrap(Wrap { trim: true });
     frame.render_widget(header, chunks[0]);
 
     let rows = app.tools.iter().map(|t| {
-        let status = if t.installed { "OK" } else { "MISSING" };
-        let style = if t.installed {
-            Style::default().fg(Color::Green)
-        } else {
-            Style::default().fg(Color::Red)
+        let style = match t.status {
+            ToolStatus::Ok => Style::default().fg(Color::Green),
+            ToolStatus::Missing => Style::default().fg(Color::Red),
+            ToolStatus::Disabled => Style::default().fg(Color::Yellow),
         };
 
         Row::new(vec![
             Cell::from(t.label),
-            Cell::from(status).style(style.add_modifier(Modifier::BOLD)),
+            Cell::from(t.status.as_label()).style(style.add_modifier(Modifier::BOLD)),
             Cell::from(t.source.clone()),
         ])
     });
@@ -237,11 +406,23 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
 
     frame.render_widget(table, chunks[1]);
 
+    let ok_count = app
+        .tools
+        .iter()
+        .filter(|t| matches!(t.status, ToolStatus::Ok))
+        .count();
+    let disabled_count = app
+        .tools
+        .iter()
+        .filter(|t| matches!(t.status, ToolStatus::Disabled))
+        .count();
     let summary = format!(
-        "Installed: {} / {} | Last refresh: {}",
-        app.tools.iter().filter(|t| t.installed).count(),
+        "OK: {} | Disabled: {} | Total: {} | Last refresh: {}\nConfig: {}",
+        ok_count,
+        disabled_count,
         app.tools.len(),
-        app.last_refresh
+        app.last_refresh,
+        app.config.summary()
     );
 
     let summary_widget = Paragraph::new(summary)
@@ -293,14 +474,18 @@ fn run_ui() -> io::Result<()> {
 }
 
 fn run_status() {
-    let tools = detect_tools();
+    let config = load_config();
+    let tools = detect_tools(&config);
+
     println!("Agentra sister status");
     println!("=====================");
+    println!("Config file: {}", config_path().display());
+    println!("Config: {}", config.summary());
+    println!();
 
     for t in tools {
-        let status = if t.installed { "OK" } else { "MISSING" };
-        println!("{:<16} {:<8} {}", t.label, status, t.source);
-        if !t.installed {
+        println!("{:<16} {:<8} {}", t.label, t.status.as_label(), t.source);
+        if matches!(t.status, ToolStatus::Missing) {
             println!("  hint: {}", t.start_hint);
         }
     }
@@ -309,6 +494,17 @@ fn run_status() {
     println!(
         "Note: Sisters can be installed and used independently; agentra only orchestrates UX."
     );
+}
+
+fn run_toggle(sister: Sister, state: ToggleState) -> io::Result<()> {
+    let mut config = load_config();
+    config.set_enabled(sister, state.is_enabled());
+    save_config(&config)?;
+
+    println!("Updated '{}' => {}", sister.as_label(), state.as_label());
+    println!("Config file: {}", config_path().display());
+    println!("Config: {}", config.summary());
+    Ok(())
 }
 
 fn main() -> io::Result<()> {
@@ -320,5 +516,6 @@ fn main() -> io::Result<()> {
             run_status();
             Ok(())
         }
+        Commands::Toggle { sister, state } => run_toggle(sister, state),
     }
 }

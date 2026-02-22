@@ -52,6 +52,7 @@ From this directory:
 ```bash
 cargo run --bin agentra status
 cargo run --bin agentra ui
+cargo run --bin agentra -- toggle codebase off
 ```
 
 UI controls:
@@ -60,10 +61,39 @@ UI controls:
 - `h` show start hints
 - `q` quit
 
+`agentra status` reports each tool as:
+
+- `OK`
+- `DISABLED`
+- `MISSING`
+
 ## UI Screenshot
 
 <p align="center">
   <img src="docs/assets/agentra-ui-screenshot.svg" alt="Agentra UI screenshot placeholder" width="980">
+</p>
+
+## Sisters Runtime Screenshots
+
+Real runtime captures generated from live commands:
+
+<p align="center">
+  <img src="docs/assets/web-screenshots/codebase-query.png" alt="Agentic Codebase runtime output" width="980">
+</p>
+<p align="center">
+  <img src="docs/assets/web-screenshots/memory-add-search.png" alt="Agentic Memory runtime output" width="980">
+</p>
+<p align="center">
+  <img src="docs/assets/web-screenshots/vision-runtime.png" alt="Agentic Vision runtime output" width="980">
+</p>
+<p align="center">
+  <img src="docs/assets/web-screenshots/agentra-status.png" alt="Agentra status runtime output" width="980">
+</p>
+<p align="center">
+  <img src="docs/assets/web-screenshots/install-progress.png" alt="Install progress runtime output" width="980">
+</p>
+<p align="center">
+  <img src="docs/assets/web-screenshots/integrated-workflow.png" alt="Integrated workflow runtime output" width="980">
 </p>
 
 See [How-To Guide](docs/how-to.md) for step-by-step usage.
