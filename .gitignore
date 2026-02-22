@@ -2,6 +2,7 @@
 .claude/
 export
 output.txt
+target/
 
 # Nested repos managed independently
 .github-org-profile/

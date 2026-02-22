@@ -1,0 +1,15 @@
+[package]
+name = "agentra-cli"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Orchestrator CLI for Agentra sister projects"
+
+[[bin]]
+name = "agentra"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+crossterm = "0.28"
+ratatui = "0.28"
