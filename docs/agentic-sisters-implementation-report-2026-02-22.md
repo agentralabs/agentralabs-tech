@@ -16,9 +16,11 @@ This report summarizes the cross-sister implementation completed in this cycle.
    - Vision: MCP `vision_health`
 2. Better runtime continuity:
    - Memory: `amem runtime-sync` scans `.amem/.acb/.avis` and can persist sync episodes.
-3. Better retrieval signal:
+3. Long-horizon memory budget controls:
+   - Memory: `amem budget` plus runtime `AMEM_STORAGE_BUDGET_*` policy with `auto-rollup` mode.
+4. Better retrieval signal:
    - Vision quality scores are now persisted and queryable.
-4. Safer metadata persistence:
+5. Safer metadata persistence:
    - Vision capture metadata now redacts likely secrets/emails/local paths.
 
 ## Verification summary
@@ -28,7 +30,7 @@ This report summarizes the cross-sister implementation completed in this cycle.
   - `agentic-memory-mcp info` includes `memory_quality`.
   - `agentic-vision-mcp info` includes `vision_health`.
 - Verified new CLI surfaces:
-  - `amem --help` includes `quality` and `runtime-sync`.
+  - `amem --help` includes `quality`, `runtime-sync`, and `budget`.
   - `acb query --help` includes `test-gap`, `hotspots`, `dead-code`.
 
 ## Per-sister implementation pages
@@ -36,4 +38,3 @@ This report summarizes the cross-sister implementation completed in this cycle.
 - `agentic-codebase/docs/public/implementation-2026-02-22.md`
 - `agentic-memory/docs/public/implementation-2026-02-22.md`
 - `agentic-vision/docs/public/implementation-2026-02-22.md`
-

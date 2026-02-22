@@ -3,6 +3,7 @@
 export
 output.txt
 target/
+agentra-config.json
 
 # Nested repos managed independently
 .github-org-profile/

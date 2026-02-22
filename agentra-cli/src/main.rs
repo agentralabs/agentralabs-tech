@@ -324,6 +324,7 @@ const TOOL_SPECS: [ToolSpec; 6] = [
 struct SisterMcpSpec {
     key: &'static str,
     binary: &'static str,
+    launcher: &'static str,
     local_rel: &'static str,
     args: &'static [&'static str],
 }
@@ -332,18 +333,21 @@ const MCP_SISTERS: [SisterMcpSpec; 3] = [
     SisterMcpSpec {
         key: "agentic-codebase",
         binary: "acb-mcp",
+        launcher: "acb-mcp-agentra",
         local_rel: "agentic-codebase/target/release/acb-mcp",
         args: &[],
     },
     SisterMcpSpec {
         key: "agentic-memory",
         binary: "agentic-memory-mcp",
+        launcher: "agentic-memory-mcp-agentra",
         local_rel: "agentic-memory/target/release/agentic-memory-mcp",
         args: &["serve"],
     },
     SisterMcpSpec {
         key: "agentic-vision",
         binary: "agentic-vision-mcp",
+        launcher: "agentic-vision-mcp-agentra",
         local_rel: "agentic-vision/target/release/agentic-vision-mcp",
         args: &["serve"],
     },
@@ -964,6 +968,9 @@ fn home_dir() -> Option<PathBuf> {
 }
 
 fn resolve_sister_binary(spec: SisterMcpSpec) -> Option<PathBuf> {
+    if let Some(path_hit) = find_on_path(spec.launcher) {
+        return Some(path_hit);
+    }
     if let Some(path_hit) = find_on_path(spec.binary) {
         return Some(path_hit);
     }
@@ -1663,13 +1670,13 @@ fn run_doctor(fix: bool) -> io::Result<()> {
     for spec in MCP_SISTERS {
         let row = if let Some(path) = installed.get(spec.key) {
             DoctorRow {
-                target: format!("Binary {}", spec.binary),
+                target: format!("MCP command {}", spec.key),
                 status: DoctorStatus::Pass,
                 detail: format!("Detected at {}", path.display()),
             }
         } else {
             DoctorRow {
-                target: format!("Binary {}", spec.binary),
+                target: format!("MCP command {}", spec.key),
                 status: DoctorStatus::Fail,
                 detail: format!("Missing. Install this sister to expose '{}'.", spec.key),
             }
@@ -1834,7 +1841,7 @@ fn run_server_preflight(strict: bool, artifact_dirs: Vec<PathBuf>) -> io::Result
     }
 
     for spec in MCP_SISTERS {
-        let label = format!("MCP binary {}", spec.binary);
+        let label = format!("MCP command {}", spec.key);
         if let Some(path) = resolve_sister_binary(spec) {
             emit("PASS", &label, format!("resolved at {}", path.display()));
         } else {
