@@ -2,7 +2,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fs;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::io::Read;
+use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -19,6 +20,7 @@ use ratatui::widgets::{Block, Borders, Cell, Clear, Paragraph, Row, Table, Wrap}
 use ratatui::Terminal;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 
 #[derive(Parser)]
 #[command(name = "agentra")]
@@ -28,7 +30,7 @@ struct Cli {
     command: Option<Commands>,
 }
 
-#[derive(Subcommand, Clone, Copy)]
+#[derive(Subcommand, Clone)]
 enum Commands {
     /// Launch interactive terminal dashboard.
     Ui,
@@ -55,6 +57,91 @@ enum Commands {
         /// Apply automatic fixes for detected issues.
         #[arg(long)]
         fix: bool,
+    },
+    /// Backup and restore Agentra operational state.
+    Backup {
+        #[command(subcommand)]
+        command: BackupCommands,
+    },
+    /// Server runtime authentication and artifact sync checks.
+    Server {
+        #[command(subcommand)]
+        command: ServerCommands,
+    },
+}
+
+#[derive(Subcommand, Clone)]
+enum BackupCommands {
+    /// Create a timestamped backup snapshot.
+    Run {
+        /// Workspace root to scan for runtime artifacts.
+        #[arg(long)]
+        workspace: Option<PathBuf>,
+        /// Backup root directory (defaults to ~/.agentra-backups).
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// List known backup snapshots.
+    List {
+        /// Backup root directory (defaults to ~/.agentra-backups).
+        #[arg(long)]
+        output: Option<PathBuf>,
+        /// Max snapshots to display.
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+    },
+    /// Verify checksums in a backup snapshot.
+    Verify {
+        /// Snapshot directory name under backup root, or absolute path.
+        snapshot: Option<String>,
+        /// Backup root directory (defaults to ~/.agentra-backups).
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Restore files from a backup snapshot.
+    Restore {
+        /// Snapshot directory name under backup root, or absolute path.
+        snapshot: String,
+        /// Backup root directory (defaults to ~/.agentra-backups).
+        #[arg(long)]
+        output: Option<PathBuf>,
+        /// Restore memory files only.
+        #[arg(long)]
+        memory: bool,
+        /// Restore MCP config files only.
+        #[arg(long)]
+        mcp: bool,
+        /// Restore artifact files only.
+        #[arg(long)]
+        artifacts: bool,
+        /// Overwrite files without creating timestamped .agentra.bak backups.
+        #[arg(long)]
+        force: bool,
+    },
+    /// Delete older snapshots and keep only the newest N.
+    Prune {
+        /// Backup root directory (defaults to ~/.agentra-backups).
+        #[arg(long)]
+        output: Option<PathBuf>,
+        /// Number of newest snapshots to keep.
+        #[arg(long, default_value_t = 20)]
+        keep: usize,
+        /// Show what would be deleted without deleting it.
+        #[arg(long)]
+        dry_run: bool,
+    },
+}
+
+#[derive(Subcommand, Clone)]
+enum ServerCommands {
+    /// Validate server runtime auth, artifact dirs, and MCP binaries.
+    Preflight {
+        /// Fail the command if any required check fails.
+        #[arg(long)]
+        strict: bool,
+        /// Optional artifact directory override (repeatable).
+        #[arg(long = "artifact-dir")]
+        artifact_dirs: Vec<PathBuf>,
     },
 }
 
@@ -307,6 +394,256 @@ struct ArtifactPresence {
     vision: usize,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct BackupManifest {
+    version: u32,
+    created_unix: u64,
+    workspace_root: String,
+    entries: Vec<BackupEntry>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct BackupEntry {
+    category: String,
+    relative_path: String,
+    restore_path: String,
+    size: u64,
+    sha256: String,
+}
+
+const BACKUP_MANIFEST_VERSION: u32 = 1;
+const BACKUP_CATEGORY_MEMORY: &str = "memory";
+const BACKUP_CATEGORY_MCP: &str = "mcp";
+const BACKUP_CATEGORY_ARTIFACTS: &str = "artifacts";
+const BACKUP_CATEGORY_HEALTH: &str = "health";
+
+fn backup_root_default() -> PathBuf {
+    home_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(".agentra-backups")
+}
+
+fn resolve_backup_root(output: Option<PathBuf>) -> PathBuf {
+    output.unwrap_or_else(backup_root_default)
+}
+
+fn snapshot_dir_name() -> String {
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    format!("snapshot-{ts}")
+}
+
+fn backup_manifest_path(snapshot_dir: &Path) -> PathBuf {
+    snapshot_dir.join("meta").join("manifest.json")
+}
+
+fn sha256_file(path: &Path) -> io::Result<String> {
+    let mut file = fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0u8; 16 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn write_checksum_ledger(snapshot_dir: &Path, entries: &[BackupEntry]) -> io::Result<()> {
+    let mut lines = entries
+        .iter()
+        .map(|entry| format!("{}  {}", entry.sha256, entry.relative_path))
+        .collect::<Vec<String>>();
+    lines.sort();
+    let content = if lines.is_empty() {
+        String::new()
+    } else {
+        format!("{}\n", lines.join("\n"))
+    };
+    fs::write(snapshot_dir.join("meta").join("SHA256SUMS.txt"), content)
+}
+
+fn load_backup_manifest(snapshot_dir: &Path) -> io::Result<BackupManifest> {
+    let manifest_path = backup_manifest_path(snapshot_dir);
+    let raw = fs::read_to_string(&manifest_path).map_err(|err| {
+        io::Error::other(format!(
+            "failed to read manifest at {}: {err}",
+            manifest_path.display()
+        ))
+    })?;
+    serde_json::from_str::<BackupManifest>(&raw).map_err(|err| {
+        io::Error::other(format!(
+            "failed to parse manifest at {}: {err}",
+            manifest_path.display()
+        ))
+    })
+}
+
+fn collect_snapshot_dirs(root: &Path) -> io::Result<Vec<PathBuf>> {
+    if !root.is_dir() {
+        return Ok(Vec::new());
+    }
+    let mut snapshots = Vec::new();
+    for entry in fs::read_dir(root)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            snapshots.push(path);
+        }
+    }
+    snapshots.sort_by(|a, b| b.file_name().cmp(&a.file_name()));
+    Ok(snapshots)
+}
+
+fn is_managed_snapshot_dir(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|v| v.to_str())
+        .map(|name| name.starts_with("snapshot-"))
+        .unwrap_or(false)
+}
+
+fn plan_backup_prune(snapshots: &[PathBuf], keep: usize) -> (Vec<PathBuf>, Vec<PathBuf>) {
+    let mut kept = Vec::new();
+    let mut removed = Vec::new();
+    for (index, path) in snapshots.iter().enumerate() {
+        if index < keep {
+            kept.push(path.clone());
+        } else {
+            removed.push(path.clone());
+        }
+    }
+    (kept, removed)
+}
+
+fn resolve_snapshot_dir(backup_root: &Path, input: Option<&str>) -> io::Result<PathBuf> {
+    if let Some(raw) = input {
+        let is_path_like = raw.starts_with('.')
+            || raw.contains('/')
+            || raw.contains('\\')
+            || Path::new(raw).is_absolute();
+        let snapshot = if is_path_like {
+            PathBuf::from(raw)
+        } else {
+            backup_root.join(raw)
+        };
+        if snapshot.is_dir() {
+            return Ok(snapshot);
+        }
+        return Err(io::Error::other(format!(
+            "snapshot not found: {}",
+            snapshot.display()
+        )));
+    }
+
+    let snapshots = collect_snapshot_dirs(backup_root)?;
+    snapshots
+        .into_iter()
+        .next()
+        .ok_or_else(|| io::Error::other("no snapshots found"))
+}
+
+fn collect_files_recursive(root: &Path, depth: usize, out: &mut Vec<PathBuf>) {
+    if depth == 0 || !root.is_dir() {
+        return;
+    }
+    let Ok(entries) = fs::read_dir(root) else {
+        return;
+    };
+    for entry in entries {
+        let Ok(entry) = entry else {
+            continue;
+        };
+        let path = entry.path();
+        if path.is_dir() {
+            collect_files_recursive(&path, depth - 1, out);
+            continue;
+        }
+        if path.is_file() {
+            out.push(path);
+        }
+    }
+}
+
+fn is_runtime_artifact(path: &Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|v| v.to_str())
+            .map(|v| v.to_ascii_lowercase()),
+        Some(ext) if ext == "acb" || ext == "amem" || ext == "avis"
+    )
+}
+
+fn collect_workspace_artifacts(workspace: &Path, depth: usize) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    collect_files_recursive(workspace, depth, &mut files);
+    files
+        .into_iter()
+        .filter(|p| is_runtime_artifact(p))
+        .collect()
+}
+
+fn resolve_health_ledger_dir() -> Option<PathBuf> {
+    for key in ["ACB_HEALTH_LEDGER_DIR", "AGENTRA_HEALTH_LEDGER_DIR"] {
+        if let Ok(value) = env::var(key) {
+            let trimmed = value.trim();
+            if !trimmed.is_empty() {
+                return Some(PathBuf::from(trimmed));
+            }
+        }
+    }
+    home_dir().map(|home| home.join(".agentra").join("health-ledger"))
+}
+
+fn path_under_home_or_abs(path: &Path) -> PathBuf {
+    if let Some(home) = home_dir() {
+        if let Ok(rel) = path.strip_prefix(&home) {
+            return PathBuf::from("home").join(rel);
+        }
+    }
+
+    let mut out = PathBuf::from("abs");
+    for component in path.components() {
+        match component {
+            Component::Normal(part) => out.push(part),
+            Component::Prefix(prefix) => out.push(prefix.as_os_str()),
+            Component::RootDir | Component::CurDir | Component::ParentDir => {}
+        }
+    }
+    out
+}
+
+fn copy_and_record_backup(
+    snapshot_dir: &Path,
+    source: &Path,
+    relative_path: &Path,
+    restore_path: &Path,
+    category: &str,
+    entries: &mut Vec<BackupEntry>,
+) -> io::Result<bool> {
+    if !source.is_file() {
+        return Ok(false);
+    }
+    let dest = snapshot_dir.join(relative_path);
+    if let Some(parent) = dest.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::copy(source, &dest)?;
+    let digest = sha256_file(&dest)?;
+    let size = fs::metadata(&dest)?.len();
+    entries.push(BackupEntry {
+        category: category.to_string(),
+        relative_path: relative_path.to_string_lossy().to_string(),
+        restore_path: restore_path.to_string_lossy().to_string(),
+        size,
+        sha256: digest,
+    });
+    Ok(true)
+}
+
 fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -535,6 +872,35 @@ fn server_auth_configured() -> bool {
     false
 }
 
+fn server_auth_source() -> Option<String> {
+    if env::var("AGENTIC_TOKEN")
+        .ok()
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+    {
+        return Some("AGENTIC_TOKEN env".to_string());
+    }
+
+    for key in ["AGENTIC_TOKEN_FILE", "AGENTRA_AUTH_TOKEN_FILE"] {
+        if let Ok(path) = env::var(key) {
+            let trimmed = path.trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+            let token_path = PathBuf::from(trimmed);
+            if token_path.is_file() {
+                if let Ok(content) = fs::read_to_string(&token_path) {
+                    if !content.trim().is_empty() {
+                        return Some(format!("{key}={}", token_path.display()));
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
 fn runtime_mode_label() -> &'static str {
     if is_server_runtime() {
         "server"
@@ -559,6 +925,28 @@ fn artifact_roots_display() -> String {
         .map(|p| p.display().to_string())
         .collect::<Vec<String>>()
         .join(" | ")
+}
+
+fn artifact_roots_for_server_preflight(overrides: &[PathBuf]) -> Vec<PathBuf> {
+    let mut roots = BTreeSet::new();
+    if !overrides.is_empty() {
+        for dir in overrides {
+            roots.insert(dir.clone());
+        }
+        return roots.into_iter().collect();
+    }
+    for dir in extra_artifact_dirs() {
+        roots.insert(dir);
+    }
+    roots.into_iter().collect()
+}
+
+fn detect_artifact_presence_in_roots(roots: &[PathBuf]) -> ArtifactPresence {
+    let mut presence = ArtifactPresence::default();
+    for root in roots {
+        scan_artifacts_recursive(root, 8, &mut presence);
+    }
+    presence
 }
 
 fn server_takeover_block_reason() -> Option<String> {
@@ -1344,6 +1732,516 @@ fn run_doctor(fix: bool) -> io::Result<()> {
     Ok(())
 }
 
+fn run_server_preflight(strict: bool, artifact_dirs: Vec<PathBuf>) -> io::Result<()> {
+    println!("Agentra Server Preflight");
+    println!("========================");
+    println!("Mode: {}", if strict { "strict" } else { "advisory" });
+    println!();
+
+    let mut pass_count = 0usize;
+    let mut warn_count = 0usize;
+    let mut fail_count = 0usize;
+
+    let mut emit = |status: &str, label: &str, detail: String| {
+        match status {
+            "PASS" => pass_count += 1,
+            "WARN" => warn_count += 1,
+            "FAIL" => fail_count += 1,
+            _ => {}
+        }
+        println!("[{status}] {:<32} {detail}", label);
+    };
+
+    if is_server_runtime() {
+        emit("PASS", "Runtime mode", "server runtime enabled".to_string());
+    } else {
+        emit(
+            "FAIL",
+            "Runtime mode",
+            "not in server mode (set AGENTRA_RUNTIME_MODE=server)".to_string(),
+        );
+    }
+
+    if let Some(source) = server_auth_source() {
+        emit("PASS", "Server auth", format!("configured via {source}"));
+    } else {
+        emit(
+            "FAIL",
+            "Server auth",
+            "missing token (set AGENTIC_TOKEN or AGENTIC_TOKEN_FILE)".to_string(),
+        );
+    }
+
+    let roots = artifact_roots_for_server_preflight(&artifact_dirs);
+    if roots.is_empty() {
+        emit(
+            "FAIL",
+            "Artifact dirs",
+            "none configured (set AGENTRA_ARTIFACT_DIRS or pass --artifact-dir)".to_string(),
+        );
+    } else {
+        emit(
+            "PASS",
+            "Artifact dirs",
+            roots
+                .iter()
+                .map(|p| p.display().to_string())
+                .collect::<Vec<String>>()
+                .join(" | "),
+        );
+        let mut existing_roots = Vec::new();
+        for root in &roots {
+            if root.is_dir() {
+                emit(
+                    "PASS",
+                    "Artifact root",
+                    format!("exists: {}", root.display()),
+                );
+                existing_roots.push(root.clone());
+            } else {
+                emit(
+                    "FAIL",
+                    "Artifact root",
+                    format!(
+                        "missing: {} (sync artifacts to this path first)",
+                        root.display()
+                    ),
+                );
+            }
+        }
+
+        if !existing_roots.is_empty() {
+            let presence = detect_artifact_presence_in_roots(&existing_roots);
+            let total = presence.codebase + presence.memory + presence.vision;
+            if total > 0 {
+                emit(
+                    "PASS",
+                    "Artifacts discovered",
+                    format!(
+                        ".acb={} .amem={} .avis={}",
+                        presence.codebase, presence.memory, presence.vision
+                    ),
+                );
+            } else {
+                emit(
+                    "WARN",
+                    "Artifacts discovered",
+                    "none found in artifact dirs (run ./sync_artifacts.sh --target=<server-path>)"
+                        .to_string(),
+                );
+            }
+        }
+    }
+
+    for spec in MCP_SISTERS {
+        let label = format!("MCP binary {}", spec.binary);
+        if let Some(path) = resolve_sister_binary(spec) {
+            emit("PASS", &label, format!("resolved at {}", path.display()));
+        } else {
+            emit("FAIL", &label, "not found on server host".to_string());
+        }
+    }
+
+    let sync_script = workspace_root().join("sync_artifacts.sh");
+    if sync_script.is_file() {
+        emit(
+            "PASS",
+            "Sync helper",
+            format!("available at {}", sync_script.display()),
+        );
+    } else {
+        emit(
+            "WARN",
+            "Sync helper",
+            "sync_artifacts.sh not found in workspace root".to_string(),
+        );
+    }
+
+    println!();
+    println!(
+        "Summary: pass={} warn={} fail={}",
+        pass_count, warn_count, fail_count
+    );
+    if fail_count > 0 {
+        println!("Recommended exports:");
+        println!("  export AGENTRA_RUNTIME_MODE=server");
+        println!("  export AGENTIC_TOKEN=\"$(openssl rand -hex 32)\"");
+        println!("  export AGENTRA_ARTIFACT_DIRS=\"/srv/agentra:/data/brains\"");
+    }
+    if strict && fail_count > 0 {
+        return Err(io::Error::other("server preflight failed in strict mode"));
+    }
+    Ok(())
+}
+
+fn run_backup_run(workspace: Option<PathBuf>, output: Option<PathBuf>) -> io::Result<()> {
+    let workspace_root = workspace.unwrap_or(env::current_dir()?);
+    let backup_root = resolve_backup_root(output);
+    fs::create_dir_all(&backup_root)?;
+
+    let snapshot_dir = backup_root.join(snapshot_dir_name());
+    fs::create_dir_all(snapshot_dir.join("meta"))?;
+
+    let mut entries = Vec::new();
+    let mut category_counts: BTreeMap<&'static str, usize> = BTreeMap::new();
+
+    if let Some(home) = home_dir() {
+        let brain = home.join(".brain.amem");
+        if copy_and_record_backup(
+            &snapshot_dir,
+            &brain,
+            Path::new("memory").join("brain.amem").as_path(),
+            &brain,
+            BACKUP_CATEGORY_MEMORY,
+            &mut entries,
+        )? {
+            *category_counts.entry(BACKUP_CATEGORY_MEMORY).or_insert(0) += 1;
+        }
+    }
+
+    let mut mcp_paths = BTreeSet::new();
+    for target in collect_mcp_targets() {
+        if target.path.is_file() {
+            mcp_paths.insert(target.path);
+        }
+    }
+    for mcp_path in mcp_paths {
+        let relative = Path::new("mcp").join(path_under_home_or_abs(&mcp_path));
+        if copy_and_record_backup(
+            &snapshot_dir,
+            &mcp_path,
+            &relative,
+            &mcp_path,
+            BACKUP_CATEGORY_MCP,
+            &mut entries,
+        )? {
+            *category_counts.entry(BACKUP_CATEGORY_MCP).or_insert(0) += 1;
+        }
+    }
+
+    for artifact in collect_workspace_artifacts(&workspace_root, 8) {
+        let rel = artifact
+            .strip_prefix(&workspace_root)
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|_| {
+                artifact
+                    .file_name()
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|| PathBuf::from("artifact"))
+            });
+        let relative = Path::new("artifacts").join(rel);
+        if copy_and_record_backup(
+            &snapshot_dir,
+            &artifact,
+            &relative,
+            &artifact,
+            BACKUP_CATEGORY_ARTIFACTS,
+            &mut entries,
+        )? {
+            *category_counts
+                .entry(BACKUP_CATEGORY_ARTIFACTS)
+                .or_insert(0) += 1;
+        }
+    }
+
+    if let Some(health_root) = resolve_health_ledger_dir() {
+        if health_root.is_dir() {
+            let mut health_files = Vec::new();
+            collect_files_recursive(&health_root, 8, &mut health_files);
+            for file in health_files {
+                let rel = file
+                    .strip_prefix(&health_root)
+                    .map(Path::to_path_buf)
+                    .unwrap_or_else(|_| {
+                        file.file_name()
+                            .map(PathBuf::from)
+                            .unwrap_or_else(|| PathBuf::from("health-file"))
+                    });
+                let relative = Path::new("health").join(rel);
+                if copy_and_record_backup(
+                    &snapshot_dir,
+                    &file,
+                    &relative,
+                    &file,
+                    BACKUP_CATEGORY_HEALTH,
+                    &mut entries,
+                )? {
+                    *category_counts.entry(BACKUP_CATEGORY_HEALTH).or_insert(0) += 1;
+                }
+            }
+        }
+    }
+
+    let manifest = BackupManifest {
+        version: BACKUP_MANIFEST_VERSION,
+        created_unix: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs(),
+        workspace_root: workspace_root.display().to_string(),
+        entries,
+    };
+
+    fs::write(
+        backup_manifest_path(&snapshot_dir),
+        serde_json::to_string_pretty(&manifest).unwrap_or_else(|_| "{}".to_string()) + "\n",
+    )?;
+    write_checksum_ledger(&snapshot_dir, &manifest.entries)?;
+
+    println!("Agentra backup snapshot created");
+    println!("Snapshot: {}", snapshot_dir.display());
+    println!("Workspace: {}", workspace_root.display());
+    println!("Entries: {}", manifest.entries.len());
+    println!(
+        "Counts: memory={} mcp={} artifacts={} health={}",
+        category_counts
+            .get(BACKUP_CATEGORY_MEMORY)
+            .copied()
+            .unwrap_or(0),
+        category_counts
+            .get(BACKUP_CATEGORY_MCP)
+            .copied()
+            .unwrap_or(0),
+        category_counts
+            .get(BACKUP_CATEGORY_ARTIFACTS)
+            .copied()
+            .unwrap_or(0),
+        category_counts
+            .get(BACKUP_CATEGORY_HEALTH)
+            .copied()
+            .unwrap_or(0),
+    );
+    println!(
+        "Manifest: {}",
+        backup_manifest_path(&snapshot_dir).display()
+    );
+    println!(
+        "Checksums: {}",
+        snapshot_dir.join("meta").join("SHA256SUMS.txt").display()
+    );
+
+    if manifest.entries.is_empty() {
+        println!("Note: no files were discovered to back up in this run.");
+    } else {
+        println!(
+            "Next: run `agentra backup verify {}`",
+            snapshot_dir.display()
+        );
+    }
+    Ok(())
+}
+
+fn run_backup_list(output: Option<PathBuf>, limit: usize) -> io::Result<()> {
+    let backup_root = resolve_backup_root(output);
+    println!("Agentra backups root: {}", backup_root.display());
+    let snapshots = collect_snapshot_dirs(&backup_root)?;
+    if snapshots.is_empty() {
+        println!("No snapshots found.");
+        return Ok(());
+    }
+
+    let mut shown = 0usize;
+    for snapshot in snapshots {
+        if shown >= limit {
+            break;
+        }
+        let name = snapshot
+            .file_name()
+            .and_then(|v| v.to_str())
+            .unwrap_or("<unknown>");
+        match load_backup_manifest(&snapshot) {
+            Ok(manifest) => {
+                println!(
+                    "{:<28} entries={:<4} created_unix={} workspace={}",
+                    name,
+                    manifest.entries.len(),
+                    manifest.created_unix,
+                    manifest.workspace_root
+                );
+            }
+            Err(_) => {
+                println!("{:<28} (missing or invalid manifest)", name);
+            }
+        }
+        shown += 1;
+    }
+    Ok(())
+}
+
+fn run_backup_verify(snapshot: Option<String>, output: Option<PathBuf>) -> io::Result<()> {
+    let backup_root = resolve_backup_root(output);
+    let snapshot_dir = resolve_snapshot_dir(&backup_root, snapshot.as_deref())?;
+    let manifest = load_backup_manifest(&snapshot_dir)?;
+
+    println!("Agentra backup verify");
+    println!("Snapshot: {}", snapshot_dir.display());
+    println!("Entries: {}", manifest.entries.len());
+
+    let mut ok = 0usize;
+    let mut failed = 0usize;
+    for entry in &manifest.entries {
+        let path = snapshot_dir.join(&entry.relative_path);
+        if !path.is_file() {
+            println!("[FAIL] missing: {}", path.display());
+            failed += 1;
+            continue;
+        }
+        let digest = sha256_file(&path)?;
+        if digest != entry.sha256 {
+            println!(
+                "[FAIL] checksum mismatch: {} expected={} actual={}",
+                path.display(),
+                entry.sha256,
+                digest
+            );
+            failed += 1;
+            continue;
+        }
+        ok += 1;
+    }
+
+    println!("Summary: ok={} fail={}", ok, failed);
+    if failed > 0 {
+        return Err(io::Error::other("backup verify detected checksum failures"));
+    }
+    Ok(())
+}
+
+fn should_restore_entry(
+    category: &str,
+    memory: bool,
+    mcp: bool,
+    artifacts: bool,
+    any_selector: bool,
+) -> bool {
+    if !any_selector {
+        return true;
+    }
+    (memory && category == BACKUP_CATEGORY_MEMORY)
+        || (mcp && category == BACKUP_CATEGORY_MCP)
+        || (artifacts
+            && (category == BACKUP_CATEGORY_ARTIFACTS || category == BACKUP_CATEGORY_HEALTH))
+}
+
+fn run_backup_restore(
+    snapshot: String,
+    output: Option<PathBuf>,
+    memory: bool,
+    mcp: bool,
+    artifacts: bool,
+    force: bool,
+) -> io::Result<()> {
+    let backup_root = resolve_backup_root(output);
+    let snapshot_dir = resolve_snapshot_dir(&backup_root, Some(snapshot.as_str()))?;
+    let manifest = load_backup_manifest(&snapshot_dir)?;
+    let any_selector = memory || mcp || artifacts;
+
+    println!("Agentra backup restore");
+    println!("Snapshot: {}", snapshot_dir.display());
+    println!("Stop active MCP/desktop clients before restore for best results.");
+
+    let mut restored = 0usize;
+    let mut failed = 0usize;
+    let mut skipped = 0usize;
+
+    for entry in &manifest.entries {
+        if !should_restore_entry(&entry.category, memory, mcp, artifacts, any_selector) {
+            skipped += 1;
+            continue;
+        }
+
+        let source = snapshot_dir.join(&entry.relative_path);
+        let restore_path = PathBuf::from(&entry.restore_path);
+        if !source.is_file() {
+            println!("[FAIL] missing backup source: {}", source.display());
+            failed += 1;
+            continue;
+        }
+
+        let digest = sha256_file(&source)?;
+        if digest != entry.sha256 {
+            println!(
+                "[FAIL] checksum mismatch before restore: {} expected={} actual={}",
+                source.display(),
+                entry.sha256,
+                digest
+            );
+            failed += 1;
+            continue;
+        }
+
+        if let Some(parent) = restore_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        if restore_path.exists() && !force {
+            let _ = backup_file(&restore_path);
+        }
+        if let Err(err) = fs::copy(&source, &restore_path) {
+            println!(
+                "[FAIL] copy {} -> {} ({err})",
+                source.display(),
+                restore_path.display()
+            );
+            failed += 1;
+            continue;
+        }
+        restored += 1;
+    }
+
+    println!(
+        "Summary: restored={} skipped={} fail={}",
+        restored, skipped, failed
+    );
+    if failed > 0 {
+        return Err(io::Error::other("restore completed with failures"));
+    }
+    println!("Next: run `agentra doctor --fix` and restart MCP clients.");
+    Ok(())
+}
+
+fn run_backup_prune(output: Option<PathBuf>, keep: usize, dry_run: bool) -> io::Result<()> {
+    let backup_root = resolve_backup_root(output);
+    println!("Agentra backup prune");
+    println!("Root: {}", backup_root.display());
+    println!("Keep newest: {}", keep);
+    if dry_run {
+        println!("Mode: dry-run");
+    }
+
+    let all = collect_snapshot_dirs(&backup_root)?;
+    let managed = all
+        .into_iter()
+        .filter(|path| is_managed_snapshot_dir(path))
+        .collect::<Vec<PathBuf>>();
+    if managed.is_empty() {
+        println!("No managed snapshot directories found.");
+        return Ok(());
+    }
+
+    let (kept, removed) = plan_backup_prune(&managed, keep);
+    if removed.is_empty() {
+        println!("Nothing to prune (managed snapshots: {}).", managed.len());
+        return Ok(());
+    }
+
+    for path in &removed {
+        if dry_run {
+            println!("[DRY] remove {}", path.display());
+            continue;
+        }
+        fs::remove_dir_all(path)?;
+        println!("[OK] removed {}", path.display());
+    }
+
+    println!(
+        "Summary: kept={} pruned={} total_managed={}",
+        kept.len(),
+        removed.len(),
+        managed.len()
+    );
+    Ok(())
+}
+
 impl App {
     fn new() -> Self {
         let config = load_config();
@@ -1754,6 +2652,30 @@ fn main() -> io::Result<()> {
         Commands::Toggle { sister, state } => run_toggle(sister, state),
         Commands::Control { state } => run_control(state),
         Commands::Doctor { fix } => run_doctor(fix),
+        Commands::Backup { command } => match command {
+            BackupCommands::Run { workspace, output } => run_backup_run(workspace, output),
+            BackupCommands::List { output, limit } => run_backup_list(output, limit),
+            BackupCommands::Verify { snapshot, output } => run_backup_verify(snapshot, output),
+            BackupCommands::Restore {
+                snapshot,
+                output,
+                memory,
+                mcp,
+                artifacts,
+                force,
+            } => run_backup_restore(snapshot, output, memory, mcp, artifacts, force),
+            BackupCommands::Prune {
+                output,
+                keep,
+                dry_run,
+            } => run_backup_prune(output, keep, dry_run),
+        },
+        Commands::Server { command } => match command {
+            ServerCommands::Preflight {
+                strict,
+                artifact_dirs,
+            } => run_server_preflight(strict, artifact_dirs),
+        },
     }
 }
 
@@ -1944,5 +2866,29 @@ mod tests {
                 PathBuf::from("/c")
             ]
         );
+    }
+
+    #[test]
+    fn prune_plan_keeps_newest_and_removes_older() {
+        let snapshots = vec![
+            PathBuf::from("/tmp/snapshot-300"),
+            PathBuf::from("/tmp/snapshot-200"),
+            PathBuf::from("/tmp/snapshot-100"),
+        ];
+        let (kept, removed) = plan_backup_prune(&snapshots, 2);
+        assert_eq!(
+            kept,
+            vec![
+                PathBuf::from("/tmp/snapshot-300"),
+                PathBuf::from("/tmp/snapshot-200"),
+            ]
+        );
+        assert_eq!(removed, vec![PathBuf::from("/tmp/snapshot-100")]);
+    }
+
+    #[test]
+    fn managed_snapshot_dir_requires_snapshot_prefix() {
+        assert!(is_managed_snapshot_dir(Path::new("/tmp/snapshot-123")));
+        assert!(!is_managed_snapshot_dir(Path::new("/tmp/manual")));
     }
 }

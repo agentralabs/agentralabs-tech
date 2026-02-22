@@ -1,6 +1,6 @@
 # Agentra Workspace How-To
 
-## 1. Install All Sisters Locally
+## 1. Install all sisters locally
 
 From your workspace root (`<agentra-workspace>`):
 
@@ -14,16 +14,25 @@ Dry run only:
 ./install_all.sh --test-mode
 ```
 
-## 2. Verify Tool Detection
+## 2. Verify detection and MCP wiring
 
 ```bash
-cargo run --bin agentra status
+cargo run --bin agentra -- status
 cargo run --bin agentra -- status --session
+cargo run --bin agentra -- doctor
 ```
 
-Expected states are `OK`, `DISABLED`, or `MISSING` with hints.
+Auto-repair MCP wiring:
 
-## 3. Toggle Sisters On/Off
+```bash
+cargo run --bin agentra -- doctor --fix
+```
+
+Expected tool states are `OK`, `DISABLED`, or `MISSING` with hints.
+
+## 3. Toggle sisters and full control
+
+Disable individual sisters:
 
 ```bash
 cargo run --bin agentra -- toggle codebase off
@@ -31,18 +40,27 @@ cargo run --bin agentra -- toggle memory off
 cargo run --bin agentra -- toggle vision off
 ```
 
-Re-enable any sister:
+Re-enable:
 
 ```bash
 cargo run --bin agentra -- toggle codebase on
+cargo run --bin agentra -- toggle memory on
+cargo run --bin agentra -- toggle vision on
 ```
 
-Toggles are persisted in `./agentra-config.json` at workspace root.
-
-## 4. Start the Dashboard
+Release/re-enable full control:
 
 ```bash
-cargo run --bin agentra ui
+cargo run --bin agentra -- control off
+cargo run --bin agentra -- control on
+```
+
+Settings persist in `./agentra-config.json` at workspace root.
+
+## 4. Start the dashboard
+
+```bash
+cargo run --bin agentra -- ui
 ```
 
 Controls:
@@ -51,7 +69,120 @@ Controls:
 - `h` hints
 - `q` quit
 
-## 5. Run a Local AI Smoke Test
+## 5. Operations backup and restore
+
+Create snapshot:
+
+```bash
+cargo run --bin agentra -- backup run --workspace "$PWD"
+```
+
+List snapshots:
+
+```bash
+cargo run --bin agentra -- backup list
+```
+
+Verify latest snapshot:
+
+```bash
+cargo run --bin agentra -- backup verify
+```
+
+Restore examples:
+
+```bash
+cargo run --bin agentra -- backup restore <snapshot-name> --memory
+cargo run --bin agentra -- backup restore <snapshot-name> --mcp
+cargo run --bin agentra -- backup restore <snapshot-name> --artifacts
+```
+
+Retention:
+
+```bash
+cargo run --bin agentra -- backup prune --keep 20 --dry-run
+cargo run --bin agentra -- backup prune --keep 20
+```
+
+## 6. Server runtime (auth + artifact sync)
+
+Hosted/cloud runtimes cannot directly read files on your laptop.
+Sync artifacts to server-accessible paths and configure auth first.
+
+Required environment:
+
+```bash
+export AGENTRA_RUNTIME_MODE=server
+export AGENTIC_TOKEN="$(openssl rand -hex 32)"
+export AGENTRA_ARTIFACT_DIRS="/srv/agentra:/data/brains"
+# optional token file:
+# export AGENTIC_TOKEN_FILE="/etc/agentra/token"
+```
+
+Sync artifacts:
+
+```bash
+./sync_artifacts.sh --target=<server-path-or-rsync-target>
+```
+
+Run strict preflight:
+
+```bash
+cargo run --bin agentra -- server preflight --strict
+```
+
+Start MCP runtimes on the server host:
+
+```bash
+agentic-memory-mcp serve
+agentic-vision-mcp serve
+acb-mcp serve
+```
+
+Client-side validation (any MCP client):
+
+```bash
+which agentic-memory-mcp
+which agentic-vision-mcp
+which acb-mcp
+```
+
+Protocol parity:
+
+- Desktop and server use the same MCP contract.
+- Server mode only adds explicit auth and artifact-sync requirements.
+
+### Troubleshooting Matrix
+
+| Symptom | Likely cause | Check | Fix |
+|:--|:--|:--|:--|
+| Sister shows `MISSING` in status | Binary not installed or not in `PATH` | `which acb-mcp`, `which agentic-memory-mcp`, `which agentic-vision-mcp` | Reinstall sister, reopen shell, rerun `agentra doctor --fix` |
+| MCP client does not show sister tools | Client config not reloaded | Inspect MCP config and process state | Restart MCP client after install/repair |
+| Server preflight fails token check | Missing `AGENTIC_TOKEN` or token file | `echo $AGENTIC_TOKEN`, inspect token file path | Set token env or `AGENTIC_TOKEN_FILE`, rerun preflight |
+| Server preflight fails artifact check | Artifacts not synced to server dirs | Inspect `AGENTRA_ARTIFACT_DIRS` and target directory contents | Run `./sync_artifacts.sh --target=...`, rerun preflight |
+| Takeover does not activate | Sisters disabled or control off | `agentra status`, check toggle state | `agentra toggle <sister> on`, `agentra control on`, then `agentra doctor` |
+| Backup verify fails | Snapshot corruption or partial copy | `agentra backup verify` output | Restore previous valid snapshot, rerun backup |
+| Doc command mismatch suspected | Old docs cache | Compare against `--help` output of current binaries | Use the command surface pages and regenerate docs sync |
+
+## 7. OpenClaw TUI command namespace
+
+Primary runtime control namespace is `agentra`:
+
+```text
+/agentra <status|where|on|off|resync|disable|enable>
+/agentra-status
+/agentra-where
+```
+
+Legacy aliases remain valid:
+
+```text
+/sisters ...
+/sisters-status
+/sisters-where
+```
+
+## 8. Run local AI smoke test
 
 ```bash
 ./local_ai_test.sh
@@ -62,43 +193,29 @@ Requirements:
 - `ollama` in `PATH`
 - local model `llama3`
 
-## 6. Build and Package
+## 9. Build and package
 
 ```bash
 cargo build --release -p agentra-cli
 cargo package -p agentra-cli
 ```
 
-## 7. Server Runtime (Auth + Local Artifacts)
-
-For server takeover with local artifacts, set:
-
-```bash
-export AGENTRA_RUNTIME_MODE=server
-export AGENTIC_TOKEN="$(openssl rand -hex 32)"
-export AGENTRA_ARTIFACT_DIRS="/srv/agentra:/data/brains"
-cargo run --bin agentra -- status --session
-```
-
-If you prefer token file:
-
-```bash
-export AGENTIC_TOKEN_FILE="/etc/agentra/token"
-```
-
-Cloud/server runtimes cannot read files from your laptop directly. Sync first:
-
-```bash
-./sync_artifacts.sh --target=<server-path-or-rsync-target>
-```
-
-## 8. Screenshot Evidence (Sisters Running)
+## 10. Screenshot evidence (sisters running)
 
 Generated runtime screenshots are stored under:
 
-- `docs/assets/web-screenshots/codebase-query.png`
-- `docs/assets/web-screenshots/memory-add-search.png`
-- `docs/assets/web-screenshots/vision-runtime.png`
-- `docs/assets/web-screenshots/agentra-status.png`
-- `docs/assets/web-screenshots/install-progress.png`
-- `docs/assets/web-screenshots/integrated-workflow.png`
+- [`/images/docs/sisters/codebase-query.png`](/images/docs/sisters/codebase-query.png)
+- [`/images/docs/sisters/memory-add-search.png`](/images/docs/sisters/memory-add-search.png)
+- [`/images/docs/sisters/vision-runtime.png`](/images/docs/sisters/vision-runtime.png)
+- [`/images/docs/sisters/agentra-status.png`](/images/docs/sisters/agentra-status.png)
+- [`/images/docs/sisters/install-progress.png`](/images/docs/sisters/install-progress.png)
+- [`/images/docs/sisters/integrated-workflow.png`](/images/docs/sisters/integrated-workflow.png)
+
+Preview:
+
+![Codebase query runtime](/images/docs/sisters/codebase-query.png)
+![Memory add and search runtime](/images/docs/sisters/memory-add-search.png)
+![Vision runtime](/images/docs/sisters/vision-runtime.png)
+![Agentra status runtime](/images/docs/sisters/agentra-status.png)
+![Install progress runtime](/images/docs/sisters/install-progress.png)
+![Integrated workflow runtime](/images/docs/sisters/integrated-workflow.png)

@@ -23,10 +23,10 @@ flowchart TD
     B --> C["Install agentic-codebase"]
     B --> D["Install agentic-memory"]
     B --> E["Install agentic-vision"]
-    C --> F["Run cargo run --bin agentra status"]
+    C --> F["Run cargo run --bin agentra -- status"]
     D --> F
     E --> F
-    F --> G["Run cargo run --bin agentra ui"]
+    F --> G["Run cargo run --bin agentra -- ui"]
     G --> H["Detect MCP/CLI tools and show hints"]
 ```
 
@@ -51,10 +51,12 @@ flowchart TD
 From this directory:
 
 ```bash
-cargo run --bin agentra status
+cargo run --bin agentra -- status
 cargo run --bin agentra -- status --session
-cargo run --bin agentra ui
+cargo run --bin agentra -- ui
 cargo run --bin agentra -- toggle codebase off
+cargo run --bin agentra -- toggle codebase on
+cargo run --bin agentra -- control on
 ```
 
 UI controls:
@@ -69,13 +71,33 @@ UI controls:
 - `DISABLED`
 - `MISSING`
 
-Server takeover notes:
+Health + repair:
+
+```bash
+cargo run --bin agentra -- doctor
+cargo run --bin agentra -- doctor --fix
+```
+
+Backup and restore:
+
+```bash
+cargo run --bin agentra -- backup run
+cargo run --bin agentra -- backup list
+cargo run --bin agentra -- backup verify
+```
+
+Server takeover notes and preflight:
 
 - Set `AGENTRA_RUNTIME_MODE=server` for server runtime.
 - Server takeover requires `AGENTIC_TOKEN` or `AGENTIC_TOKEN_FILE`.
 - To scan local artifact paths from server runtime, set `AGENTRA_ARTIFACT_DIRS=/path/a:/path/b`.
 - Generate a token with `openssl rand -hex 32`.
 - Cloud runtimes cannot read laptop files directly; sync artifacts first with `./sync_artifacts.sh`.
+
+```bash
+cargo run --bin agentra -- server preflight
+# add --strict in CI/automation once env is configured
+```
 
 ## UI Screenshot
 
@@ -122,10 +144,25 @@ Dry-run test mode:
 ./install_all.sh --test-mode
 ```
 
+Install with explicit environment profile:
+
+```bash
+./install_all.sh --profile=desktop
+./install_all.sh --profile=terminal
+./install_all.sh --profile=server
+```
+
 Help:
 
 ```bash
 ./install_all.sh --help
+```
+
+## Sync Artifacts For Server Runtime
+
+```bash
+./sync_artifacts.sh --target=/srv/agentra/artifacts
+./sync_artifacts.sh --target=user@server:/srv/agentra/artifacts --dry-run
 ```
 
 ## Local AI Smoke Test
