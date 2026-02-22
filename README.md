@@ -51,6 +51,7 @@ From this directory:
 
 ```bash
 cargo run --bin agentra status
+cargo run --bin agentra -- status --session
 cargo run --bin agentra ui
 cargo run --bin agentra -- toggle codebase off
 ```

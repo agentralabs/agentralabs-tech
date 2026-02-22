@@ -30,7 +30,11 @@ enum Commands {
     /// Launch interactive terminal dashboard.
     Ui,
     /// Print non-interactive status of sister tools.
-    Status,
+    Status {
+        /// Print compact notification-style status block.
+        #[arg(long)]
+        session: bool,
+    },
     /// Toggle sister usage in persistent config.
     Toggle {
         #[arg(value_enum)]
@@ -496,6 +500,45 @@ fn run_status() {
     );
 }
 
+fn run_status_session() {
+    let config = load_config();
+
+    let enabled_count = [config.use_codebase, config.use_memory, config.use_vision]
+        .iter()
+        .filter(|v| **v)
+        .count();
+
+    let (state_icon, state_label) = if enabled_count == 0 {
+        ("🔴", "Disconnected")
+    } else {
+        ("🟢", "Connected")
+    };
+
+    let codebase_icon = if config.use_codebase { "✅" } else { "❌" };
+    let memory_icon = if config.use_memory { "✅" } else { "❌" };
+    let vision_icon = if config.use_vision { "✅" } else { "❌" };
+
+    let codebase_state = if config.use_codebase { "On" } else { "Off" };
+    let memory_state = if config.use_memory { "On" } else { "Off" };
+    let vision_state = if config.use_vision { "On" } else { "Off" };
+
+    let full_control = if config.agentra_full_control && enabled_count == 3 {
+        "Yes"
+    } else {
+        "No"
+    };
+
+    println!("{state_icon} {state_label} | Idle");
+    println!("Agentra: ✅ Active | Use for status/control");
+    println!(
+        "Sisters: Codebase {codebase_icon} ({codebase_state}) | Memory {memory_icon} ({memory_state}) | Vision {vision_icon} ({vision_state})"
+    );
+    println!(
+        "Full Control: {full_control} ({enabled_count}/3 enabled) | Toggle with `agentra ui` or command"
+    );
+    println!("Config file: {}", config_path().display());
+}
+
 fn run_toggle(sister: Sister, state: ToggleState) -> io::Result<()> {
     let mut config = load_config();
     config.set_enabled(sister, state.is_enabled());
@@ -512,8 +555,12 @@ fn main() -> io::Result<()> {
 
     match cli.command.unwrap_or(Commands::Ui) {
         Commands::Ui => run_ui(),
-        Commands::Status => {
-            run_status();
+        Commands::Status { session } => {
+            if session {
+                run_status_session();
+            } else {
+                run_status();
+            }
             Ok(())
         }
         Commands::Toggle { sister, state } => run_toggle(sister, state),

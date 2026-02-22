@@ -18,6 +18,7 @@ Dry run only:
 
 ```bash
 cargo run --bin agentra status
+cargo run --bin agentra -- status --session
 ```
 
 Expected states are `OK`, `DISABLED`, or `MISSING` with hints.

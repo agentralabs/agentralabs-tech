@@ -9,6 +9,7 @@ It does **not** replace sister CLIs/MCPs. It detects and coordinates them.
 ```bash
 agentra ui
 agentra status
+agentra status --session
 agentra toggle codebase off
 agentra toggle memory off
 agentra toggle vision off
@@ -19,6 +20,7 @@ Or via workspace:
 ```bash
 cargo run --bin agentra ui
 cargo run --bin agentra status
+cargo run --bin agentra -- status --session
 cargo run --bin agentra -- toggle codebase off
 ```
 
