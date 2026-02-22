@@ -26,6 +26,13 @@ jobs:
         run: cargo test -p agentra-cli
       - name: Installer syntax guardrails
         run: |
-          bash -n agentic-memory/scripts/install.sh
-          bash -n agentic-codebase/scripts/install.sh
-          bash -n agentic-vision/scripts/install.sh
+          for file in \
+            agentic-memory/scripts/install.sh \
+            agentic-codebase/scripts/install.sh \
+            agentic-vision/scripts/install.sh; do
+            if [ -f "$file" ]; then
+              bash -n "$file"
+            else
+              echo "Skipping missing file in this repo checkout: $file"
+            fi
+          done

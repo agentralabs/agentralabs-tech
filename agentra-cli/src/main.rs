@@ -399,7 +399,15 @@ fn detect_tools(config: &AgentraConfig) -> Vec<ToolState> {
 }
 
 fn now_string() -> String {
-    format!("{:?}", SystemTime::now())
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+        % 86_400;
+    let h = secs / 3_600;
+    let m = (secs % 3_600) / 60;
+    let s = secs % 60;
+    format!("{h:02}:{m:02}:{s:02}")
 }
 
 fn hhmm_string() -> String {
@@ -423,6 +431,23 @@ fn counts(tools: &[ToolState]) -> (usize, usize, usize) {
         .filter(|t| matches!(t.status, ToolStatus::Disabled))
         .count();
     (ok, disabled, tools.len())
+}
+
+fn health_summary(ok: usize, disabled: usize, total: usize) -> String {
+    if ok == total {
+        return "All good.".to_string();
+    }
+    if ok == 0 {
+        return "No active tools detected.".to_string();
+    }
+    let missing = total.saturating_sub(ok + disabled);
+    if missing > 0 {
+        return format!("{missing} missing, {disabled} disabled.");
+    }
+    if disabled > 0 {
+        return format!("{disabled} disabled.");
+    }
+    "Status updated.".to_string()
 }
 
 fn bool_label(value: bool) -> &'static str {
@@ -1222,10 +1247,12 @@ impl App {
             config,
             last_refresh: now_string(),
             last_action_log: format!(
-                "Initialized at {} - OK: {ok}/{total}, Disabled: {disabled}.",
-                hhmm_string()
+                "Initialized at {} - {} Press h for hints.",
+                hhmm_string(),
+                health_summary(ok, disabled, total)
             ),
-            message: "Press r to refresh, h for start hints, q to quit.".to_string(),
+            message: "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit."
+                .to_string(),
             show_help_popup: false,
         }
     }
@@ -1236,10 +1263,12 @@ impl App {
         self.last_refresh = now_string();
         let (ok, disabled, total) = counts(&self.tools);
         self.last_action_log = format!(
-            "{reason} at {} - OK: {ok}/{total}, Disabled: {disabled}.",
-            hhmm_string()
+            "{reason} at {} - {} Press h for hints.",
+            hhmm_string(),
+            health_summary(ok, disabled, total)
         );
-        self.message = "Press h for hints popup, r to refresh, q to quit.".to_string();
+        self.message = "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit."
+            .to_string();
     }
 
     fn open_hints(&mut self) {
@@ -1262,7 +1291,8 @@ impl App {
 
     fn close_hints(&mut self) {
         self.show_help_popup = false;
-        self.message = "Press h for hints popup, r to refresh, q to quit.".to_string();
+        self.message = "Live auto-refresh every 5s. Press h for hints, r to refresh, q to quit."
+            .to_string();
     }
 }
 
@@ -1324,10 +1354,7 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
 
     frame.render_widget(table, chunks[1]);
 
-    let log_widget = Paragraph::new(format!(
-        "{} (snapshot: {})",
-        app.last_action_log, app.last_refresh
-    ))
+    let log_widget = Paragraph::new(app.last_action_log.clone())
     .block(
         Block::default()
             .borders(Borders::ALL)
