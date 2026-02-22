@@ -2,7 +2,7 @@
 
 ## 1. Install All Sisters Locally
 
-From `/Users/omoshola/Documents/agentralabs-tech`:
+From your workspace root (`<agentra-workspace>`):
 
 ```bash
 ./install_all.sh
@@ -37,7 +37,7 @@ Re-enable any sister:
 cargo run --bin agentra -- toggle codebase on
 ```
 
-Toggles are persisted in `/Users/omoshola/Documents/agentralabs-tech/agentra-config.json`.
+Toggles are persisted in `./agentra-config.json` at workspace root.
 
 ## 4. Start the Dashboard
 
@@ -96,9 +96,9 @@ Cloud/server runtimes cannot read files from your laptop directly. Sync first:
 
 Generated runtime screenshots are stored under:
 
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/codebase-query.png`
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/memory-add-search.png`
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/vision-runtime.png`
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/agentra-status.png`
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/install-progress.png`
-- `/Users/omoshola/Documents/agentralabs-tech/docs/assets/web-screenshots/integrated-workflow.png`
+- `docs/assets/web-screenshots/codebase-query.png`
+- `docs/assets/web-screenshots/memory-add-search.png`
+- `docs/assets/web-screenshots/vision-runtime.png`
+- `docs/assets/web-screenshots/agentra-status.png`
+- `docs/assets/web-screenshots/install-progress.png`
+- `docs/assets/web-screenshots/integrated-workflow.png`
