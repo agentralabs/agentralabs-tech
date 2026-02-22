@@ -8,6 +8,28 @@ This repository is the top-level UX/orchestration workspace for the three core s
 
 The sisters remain independently installable and independently runnable. This workspace adds a unified operator CLI (`agentra`) so users can quickly validate local setup and launch an interactive dashboard.
 
+## What This Project Does
+
+- Provides one workspace entrypoint for the Agentra sister ecosystem.
+- Keeps each sister independently installable and runnable.
+- Adds a fast operator UX (`agentra status` and `agentra ui`) to verify local readiness.
+- Adds local install/test scripts for repeatable setup.
+
+## Workspace Flow
+
+```mermaid
+flowchart TD
+    A["User in agentralabs-tech"] --> B["Run ./install_all.sh"]
+    B --> C["Install agentic-codebase"]
+    B --> D["Install agentic-memory"]
+    B --> E["Install agentic-vision"]
+    C --> F["Run cargo run --bin agentra status"]
+    D --> F
+    E --> F
+    F --> G["Run cargo run --bin agentra ui"]
+    G --> H["Detect MCP/CLI tools and show hints"]
+```
+
 ## Goals
 
 - Keep each sister project standalone.
@@ -38,13 +60,33 @@ UI controls:
 - `h` show start hints
 - `q` quit
 
+## UI Screenshot
+
+<p align="center">
+  <img src="docs/assets/agentra-ui-screenshot.svg" alt="Agentra UI screenshot placeholder" width="980">
+</p>
+
+See [How-To Guide](docs/how-to.md) for step-by-step usage.
+
 ## Install Sisters (Local)
 
 ```bash
 ./install_all.sh
 ```
 
-This script installs binaries from each sister repo using `cargo install --path ...`.
+This script installs binaries from each sister repo using `cargo install --path ...` and shows progress.
+
+Dry-run test mode:
+
+```bash
+./install_all.sh --test-mode
+```
+
+Help:
+
+```bash
+./install_all.sh --help
+```
 
 ## Local AI Smoke Test
 

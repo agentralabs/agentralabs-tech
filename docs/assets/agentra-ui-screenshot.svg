@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Agentra UI screenshot placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0e1116"/>
+      <stop offset="100%" stop-color="#1f2735"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="60" y="50" width="1160" height="620" rx="12" fill="#0b0f14" stroke="#2a3342"/>
+  <rect x="90" y="90" width="1100" height="60" rx="8" fill="#151d28" stroke="#2a3342"/>
+  <text x="110" y="128" fill="#e6edf6" font-family="Menlo, Consolas, monospace" font-size="24">Agentra Dashboard</text>
+  <rect x="90" y="170" width="1100" height="380" rx="8" fill="#101722" stroke="#2a3342"/>
+  <text x="110" y="210" fill="#8fb0d8" font-family="Menlo, Consolas, monospace" font-size="20">Tooling Status</text>
+  <text x="110" y="255" fill="#8fd18f" font-family="Menlo, Consolas, monospace" font-size="18">Codebase CLI: OK</text>
+  <text x="110" y="290" fill="#8fd18f" font-family="Menlo, Consolas, monospace" font-size="18">Memory MCP: OK</text>
+  <text x="110" y="325" fill="#8fd18f" font-family="Menlo, Consolas, monospace" font-size="18">Vision MCP: OK</text>
+  <rect x="90" y="570" width="1100" height="80" rx="8" fill="#151d28" stroke="#2a3342"/>
+  <text x="110" y="618" fill="#e6edf6" font-family="Menlo, Consolas, monospace" font-size="18">Controls: r refresh | h hints | q quit</text>
+</svg>
