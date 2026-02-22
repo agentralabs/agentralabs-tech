@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "some-other-server": {
+      "command": "other-mcp",
+      "args": ["serve"]
+    },
+    "agentic-memory": {
+      "command": "/old/path/agentic-memory-mcp",
+      "args": ["serve"]
+    }
+  },
+  "theme": "dark"
+}

@@ -1,0 +1,31 @@
+name: Agentra CLI CI
+
+on:
+  push:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "agentra-cli/**"
+      - ".github/workflows/agentra-cli-ci.yml"
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "agentra-cli/**"
+      - ".github/workflows/agentra-cli-ci.yml"
+
+jobs:
+  test-agentra-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cargo check
+        run: cargo check -p agentra-cli
+      - name: Cargo test
+        run: cargo test -p agentra-cli
+      - name: Installer syntax guardrails
+        run: |
+          bash -n agentic-memory/scripts/install.sh
+          bash -n agentic-codebase/scripts/install.sh
+          bash -n agentic-vision/scripts/install.sh

@@ -10,6 +10,10 @@ It does **not** replace sister CLIs/MCPs. It detects and coordinates them.
 agentra ui
 agentra status
 agentra status --session
+agentra doctor
+agentra doctor --fix
+agentra control off
+agentra control on
 agentra toggle codebase off
 agentra toggle memory off
 agentra toggle vision off
@@ -21,6 +25,7 @@ Or via workspace:
 cargo run --bin agentra ui
 cargo run --bin agentra status
 cargo run --bin agentra -- status --session
+cargo run --bin agentra -- doctor --fix
 cargo run --bin agentra -- toggle codebase off
 ```
 
@@ -29,6 +34,10 @@ cargo run --bin agentra -- toggle codebase off
 - Detects binaries from `PATH` first.
 - Falls back to local release binaries under sister directories when present.
 - Persists sister enable/disable toggles to `agentra-config.json` at workspace root.
+- `agentra doctor` checks MCP wiring and binary health across detected clients.
+- `agentra doctor --fix` repairs stale/missing MCP entries (non-destructive merge/backup behavior).
+- Runtime artifact resync: when full control is on, `.acb` / `.amem` / `.avis` artifacts auto-enable matching sisters.
+- `agentra control off` disables auto-takeover/resync; `agentra control on` enables it.
 - Reports status per tool:
   - `OK`
   - `DISABLED`

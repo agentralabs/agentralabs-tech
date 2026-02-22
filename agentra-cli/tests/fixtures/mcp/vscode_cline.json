@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+    },
+    "agentic-codebase": {
+      "command": "/stale/acb-mcp",
+      "args": ["--wrong"]
+    }
+  },
+  "window": {
+    "zoomLevel": 1
+  }
+}
