@@ -1,0 +1,11 @@
+.DS_Store
+.claude/
+export
+output.txt
+
+# Nested repos managed independently
+.github-org-profile/
+agentic-codebase/
+agentic-memory/
+agentic-vision/
+agentralabs-tech-web/
