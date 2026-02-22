@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -11,9 +11,9 @@ use crossterm::terminal::{
 };
 use crossterm::ExecutableCommand;
 use ratatui::backend::CrosstermBackend;
-use ratatui::layout::{Constraint, Direction, Layout};
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
-use ratatui::widgets::{Block, Borders, Cell, Paragraph, Row, Table, Wrap};
+use ratatui::widgets::{Block, Borders, Cell, Clear, Paragraph, Row, Table, Wrap};
 use ratatui::Terminal;
 use serde::{Deserialize, Serialize};
 
@@ -167,8 +167,12 @@ struct App {
     tools: Vec<ToolState>,
     config: AgentraConfig,
     last_refresh: String,
+    last_action_log: String,
     message: String,
+    show_help_popup: bool,
 }
+
+const AUTO_REFRESH_INTERVAL: Duration = Duration::from_secs(5);
 
 const TOOL_SPECS: [ToolSpec; 6] = [
     ToolSpec {
@@ -310,6 +314,29 @@ fn now_string() -> String {
     format!("{:?}", SystemTime::now())
 }
 
+fn hhmm_string() -> String {
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+        % 86_400;
+    let h = secs / 3_600;
+    let m = (secs % 3_600) / 60;
+    format!("{h:02}:{m:02}")
+}
+
+fn counts(tools: &[ToolState]) -> (usize, usize, usize) {
+    let ok = tools
+        .iter()
+        .filter(|t| matches!(t.status, ToolStatus::Ok))
+        .count();
+    let disabled = tools
+        .iter()
+        .filter(|t| matches!(t.status, ToolStatus::Disabled))
+        .count();
+    (ok, disabled, tools.len())
+}
+
 fn bool_label(value: bool) -> &'static str {
     if value {
         "on"
@@ -321,23 +348,36 @@ fn bool_label(value: bool) -> &'static str {
 impl App {
     fn new() -> Self {
         let config = load_config();
+        let tools = detect_tools(&config);
+        let (ok, disabled, total) = counts(&tools);
 
         Self {
-            tools: detect_tools(&config),
+            tools,
             config,
             last_refresh: now_string(),
+            last_action_log: format!(
+                "Initialized at {} - OK: {ok}/{total}, Disabled: {disabled}.",
+                hhmm_string()
+            ),
             message: "Press r to refresh, h for start hints, q to quit.".to_string(),
+            show_help_popup: false,
         }
     }
 
-    fn refresh(&mut self) {
+    fn refresh(&mut self, reason: &str) {
         self.config = load_config();
         self.tools = detect_tools(&self.config);
         self.last_refresh = now_string();
-        self.message = "Status refreshed.".to_string();
+        let (ok, disabled, total) = counts(&self.tools);
+        self.last_action_log = format!(
+            "{reason} at {} - OK: {ok}/{total}, Disabled: {disabled}.",
+            hhmm_string()
+        );
+        self.message = "Press h for hints popup, r to refresh, q to quit.".to_string();
     }
 
-    fn show_hints(&mut self) {
+    fn open_hints(&mut self) {
+        self.show_help_popup = true;
         let hints: Vec<&str> = self
             .tools
             .iter()
@@ -350,8 +390,13 @@ impl App {
                 "No active tools detected. Enable sisters with agentra toggle <sister> on."
                     .to_string();
         } else {
-            self.message = format!("Start hints: {}", hints.join(" | "));
+            self.message = format!("Hints: {}", hints.join(" | "));
         }
+    }
+
+    fn close_hints(&mut self) {
+        self.show_help_popup = false;
+        self.message = "Press h for hints popup, r to refresh, q to quit.".to_string();
     }
 }
 
@@ -361,16 +406,19 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
         .constraints([
             Constraint::Length(3),
             Constraint::Min(8),
-            Constraint::Length(4),
+            Constraint::Length(3),
             Constraint::Length(3),
         ])
         .split(frame.area());
 
-    let header = Paragraph::new(
-        "Agentra Dashboard: sisters remain independently installable; this UI orchestrates state and visibility.",
-    )
-    .block(Block::default().borders(Borders::ALL).title("Agentra"))
-    .wrap(Wrap { trim: true });
+    let header =
+        Paragraph::new("Sisters remain independently installable; this UI is only for ease.")
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Agentra Dashboard"),
+            )
+            .wrap(Wrap { trim: true });
     frame.render_widget(header, chunks[0]);
 
     let rows = app.tools.iter().map(|t| {
@@ -390,9 +438,9 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
     let table = Table::new(
         rows,
         [
-            Constraint::Length(16),
-            Constraint::Length(10),
-            Constraint::Min(20),
+            Constraint::Length(14),
+            Constraint::Length(9),
+            Constraint::Min(40),
         ],
     )
     .header(
@@ -410,29 +458,17 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
 
     frame.render_widget(table, chunks[1]);
 
-    let ok_count = app
-        .tools
-        .iter()
-        .filter(|t| matches!(t.status, ToolStatus::Ok))
-        .count();
-    let disabled_count = app
-        .tools
-        .iter()
-        .filter(|t| matches!(t.status, ToolStatus::Disabled))
-        .count();
-    let summary = format!(
-        "OK: {} | Disabled: {} | Total: {} | Last refresh: {}\nConfig: {}",
-        ok_count,
-        disabled_count,
-        app.tools.len(),
-        app.last_refresh,
-        app.config.summary()
-    );
-
-    let summary_widget = Paragraph::new(summary)
-        .block(Block::default().borders(Borders::ALL).title("Summary"))
-        .wrap(Wrap { trim: true });
-    frame.render_widget(summary_widget, chunks[2]);
+    let log_widget = Paragraph::new(format!(
+        "{} (snapshot: {})",
+        app.last_action_log, app.last_refresh
+    ))
+    .block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title("Last Action Log"),
+    )
+    .wrap(Wrap { trim: true });
+    frame.render_widget(log_widget, chunks[2]);
 
     let footer = Paragraph::new(app.message.clone())
         .block(
@@ -442,6 +478,60 @@ fn draw_ui(frame: &mut ratatui::Frame, app: &App) {
         )
         .wrap(Wrap { trim: true });
     frame.render_widget(footer, chunks[3]);
+
+    if app.show_help_popup {
+        let popup_area = centered_rect(72, 52, frame.area());
+        frame.render_widget(Clear, popup_area);
+
+        let hints: Vec<&str> = app
+            .tools
+            .iter()
+            .filter(|t| matches!(t.status, ToolStatus::Ok))
+            .map(|t| t.start_hint)
+            .collect();
+        let hint_line = if hints.is_empty() {
+            "No active tools. Enable sisters with: agentra toggle <sister> on".to_string()
+        } else {
+            hints.join(" | ")
+        };
+        let popup_text = format!(
+            "Agentra Help\n\n\
+             - Auto refresh: every {}s\n\
+             - Press r: manual refresh\n\
+             - Press h or Esc: close this popup\n\
+             - Press q: quit dashboard\n\n\
+             Start hints:\n{}\n\n\
+             Full config:\n{}",
+            AUTO_REFRESH_INTERVAL.as_secs(),
+            hint_line,
+            app.config.summary()
+        );
+
+        let popup = Paragraph::new(popup_text)
+            .block(Block::default().borders(Borders::ALL).title("Hints"))
+            .wrap(Wrap { trim: true });
+        frame.render_widget(popup, popup_area);
+    }
+}
+
+fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(r);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup_layout[1])[1]
 }
 
 fn run_ui() -> io::Result<()> {
@@ -452,17 +542,39 @@ fn run_ui() -> io::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     let mut app = App::new();
+    let mut last_auto_refresh = Instant::now();
 
     let result = loop {
+        if last_auto_refresh.elapsed() >= AUTO_REFRESH_INTERVAL {
+            app.refresh("Auto-refreshed");
+            last_auto_refresh = Instant::now();
+        }
+
         terminal.draw(|f| draw_ui(f, &app))?;
 
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     match key.code {
-                        KeyCode::Char('q') | KeyCode::Esc => break Ok(()),
-                        KeyCode::Char('r') => app.refresh(),
-                        KeyCode::Char('h') => app.show_hints(),
+                        KeyCode::Esc => {
+                            if app.show_help_popup {
+                                app.close_hints();
+                            } else {
+                                break Ok(());
+                            }
+                        }
+                        KeyCode::Char('q') => break Ok(()),
+                        KeyCode::Char('r') => {
+                            app.refresh("Manually refreshed");
+                            last_auto_refresh = Instant::now();
+                        }
+                        KeyCode::Char('h') => {
+                            if app.show_help_popup {
+                                app.close_hints();
+                            } else {
+                                app.open_hints();
+                            }
+                        }
                         _ => {}
                     }
                 }
