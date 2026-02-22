@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd agentic-codebase
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cd "$ROOT_DIR/agentic-codebase"
 cargo install --path .
 
-cd ../agentic-memory
+cd "$ROOT_DIR/agentic-memory"
 cargo install --path .
 
-cd ../agentic-vision
+cd "$ROOT_DIR/agentic-vision"
 cargo install --path .

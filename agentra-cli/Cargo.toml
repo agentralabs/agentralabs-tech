@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Orchestrator CLI for Agentra sister projects"
+repository = "https://github.com/agentralabs/agentralabs-tech"
+homepage = "https://github.com/agentralabs/agentralabs-tech"
+documentation = "https://github.com/agentralabs/agentralabs-tech/tree/main/agentra-cli"
+readme = "README.md"
 
 [[bin]]
 name = "agentra"
