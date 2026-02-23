@@ -199,23 +199,3 @@ Requirements:
 cargo build --release -p agentra-cli
 cargo package -p agentra-cli
 ```
-
-## 10. Screenshot evidence (sisters running)
-
-Generated runtime screenshots are stored under:
-
-- [`/images/docs/sisters/codebase-query.png`](/images/docs/sisters/codebase-query.png)
-- [`/images/docs/sisters/memory-add-search.png`](/images/docs/sisters/memory-add-search.png)
-- [`/images/docs/sisters/vision-runtime.png`](/images/docs/sisters/vision-runtime.png)
-- [`/images/docs/sisters/agentra-status.png`](/images/docs/sisters/agentra-status.png)
-- [`/images/docs/sisters/install-progress.png`](/images/docs/sisters/install-progress.png)
-- [`/images/docs/sisters/integrated-workflow.png`](/images/docs/sisters/integrated-workflow.png)
-
-Preview:
-
-![Codebase query runtime](/images/docs/sisters/codebase-query.png)
-![Memory add and search runtime](/images/docs/sisters/memory-add-search.png)
-![Vision runtime](/images/docs/sisters/vision-runtime.png)
-![Agentra status runtime](/images/docs/sisters/agentra-status.png)
-![Install progress runtime](/images/docs/sisters/install-progress.png)
-![Integrated workflow runtime](/images/docs/sisters/integrated-workflow.png)
