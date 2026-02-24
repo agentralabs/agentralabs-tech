@@ -10,7 +10,7 @@ Use this page to report issues, request features, and share runtime outcomes.
 
 - Workspace and orchestration issues: [agentralabs-tech](https://github.com/agentralabs/agentralabs-tech/issues)
 - AgenticMemory issues: [agentic-memory](https://github.com/agentralabs/agentic-memory/issues)
-- AgenticCodebase issues: [codebase](https://github.com/agentralabs/codebase/issues)
+- AgenticCodebase issues: [agentic-codebase](https://github.com/agentralabs/agentic-codebase/issues)
 - AgenticVision issues: [agentic-vision](https://github.com/agentralabs/agentic-vision/issues)
 
 ## What to include
