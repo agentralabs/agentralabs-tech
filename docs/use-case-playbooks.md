@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # Use-Case Playbooks
 
 Step-based operational playbooks for common user goals.

@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # New Sister Rollout Checklist
 
 Use this page when a new sister is being prepared for public release. It follows the same frame and layout as existing docs. No new UI pane is required.

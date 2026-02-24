@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # Agentra Workspace How-To
 
 ## 1. Install all sisters locally

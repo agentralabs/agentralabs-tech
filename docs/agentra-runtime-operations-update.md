@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # Agentra Runtime + Operations Update
 
 **Date:** February 22, 2026  

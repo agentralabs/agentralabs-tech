@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # Server Runtime Auth and Artifact Sync
 
 How hosted agents authenticate and consume local sister artifacts safely.

@@ -1,3 +1,7 @@
+---
+status: stable
+---
+
 # System Architecture
 
 This page shows how Agentra orchestration and the three sisters operate together across local and server runtime environments.
