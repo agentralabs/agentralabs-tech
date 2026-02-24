@@ -349,7 +349,7 @@ const MCP_SISTERS: [SisterMcpSpec; 3] = [
         binary: "agentic-vision-mcp",
         launcher: "agentic-vision-mcp-agentra",
         local_rel: "agentic-vision/target/release/agentic-vision-mcp",
-        args: &["serve"],
+        args: &["--log-level", "error", "serve"],
     },
 ];
 
