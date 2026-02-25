@@ -13,6 +13,7 @@ Installs all sister tools from local paths:
   - agentic-codebase
   - agentic-memory
   - agentic-vision
+  - agentic-identity
 
 Options:
   --test-mode   Print planned install commands without executing.
@@ -57,6 +58,7 @@ SISTERS=(
   "agentic-codebase"
   "agentic-memory"
   "agentic-vision"
+  "agentic-identity"
 )
 
 draw_progress() {
