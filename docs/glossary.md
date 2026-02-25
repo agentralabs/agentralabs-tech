@@ -12,9 +12,9 @@ Key terms used across Agentra Labs projects.
 
 **MCP (Model Context Protocol)** — An open standard that lets AI applications discover and call tools exposed by external servers. All Agentra sisters expose their capabilities as MCP tools.
 
-**Sister** — One of the three Agentra runtime components: AgenticMemory, AgenticVision, or AgenticCodebase. Each sister runs as an independent MCP server and produces its own artifact.
+**Sister** — One of the four Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, and AgenticIdentity. Each sister runs as an independent MCP server and produces its own artifact.
 
-**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase).
+**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity).
 
 **Workspace** — The parent directory containing the web repo and all sister repos. The docs sync script reads from this workspace to build the documentation site.
 
@@ -69,3 +69,25 @@ Key terms used across Agentra Labs projects.
 **Gate check** — A pre-merge safety check that evaluates risk score, test coverage, and coupling for a proposed change.
 
 **Collective intelligence** — Ecosystem-level pattern knowledge attached to dependencies, including common failure signatures and mitigation strategies.
+
+## AgenticIdentity
+
+**Identity anchor** — An Ed25519 key pair that serves as the permanent cryptographic root of an agent's identity. The public key is the identity; the identity ID is derived from it via `aid_` + base58(SHA-256(public_key)[0..16]).
+
+**Action receipt** — A signed, timestamped proof that a specific agent took a specific action. Includes the actor's identity, action type, content hash, and Ed25519 signature. Receipts are non-repudiable.
+
+**Receipt chain** — A linked sequence of action receipts where each receipt references the previous receipt's ID. Chain verification checks every signature and every link.
+
+**Trust grant** — A cryptographic statement where one identity delegates specific capabilities to another, with constraints on time, use count, and delegation depth.
+
+**Capability URI** — A colon-delimited string describing a permitted action, with wildcard support. Examples: `read:calendar`, `execute:deploy:*`, `*` (root trust).
+
+**Delegation chain** — A sequence of trust grants where each grantee re-delegates trust to the next party. Verification walks the full chain and checks every signature and delegation permission.
+
+**Revocation** — A signed record that permanently invalidates a trust grant. Revoking any link in a delegation chain invalidates the entire chain downstream.
+
+**Key rotation** — Replacing an identity's signing key with a new Ed25519 key pair. The old key signs an authorization proving the rotation was intentional. Rotation history is preserved for chain-of-custody verification.
+
+**Derived key** — A child signing key generated from the root key using HKDF-SHA256 with a context-specific path. Types: session keys, capability keys, device keys. Compromising a derived key does not expose the root key.
+
+**.aid** — The AgenticIdentity artifact file. A JSON document containing encrypted private key material (ChaCha20-Poly1305) and plaintext public identity metadata. The public document can be read without the passphrase.

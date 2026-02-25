@@ -4,7 +4,7 @@ status: stable
 
 # System Architecture
 
-This page shows how Agentra orchestration and the three sisters operate together across local and server runtime environments.
+This page shows how Agentra orchestration and the four sisters operate together across local and server runtime environments.
 
 ## Architecture overview flowchart
 
@@ -13,8 +13,8 @@ This page shows how Agentra orchestration and the three sisters operate together
 The overview flow is:
 
 1. MCP client requests go through `agentra`.
-2. `agentra` coordinates sister runtimes (`acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`).
-3. Sister runtimes produce and consume artifacts (`.acb`, `.amem`, `.avis`).
+2. `agentra` coordinates sister runtimes (`acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, `agentic-identity-mcp`).
+3. Sister runtimes produce and consume artifacts (`.acb`, `.amem`, `.avis`, `.aid`).
 4. Runtime targets (desktop, terminal, server) execute under one contract.
 
 ## Local runtime flowchart (desktop and terminal)
@@ -40,8 +40,8 @@ Server mode adds two non-optional requirements:
 ## Layer model
 
 1. **Workspace orchestrator (`agentra`)**: detection, takeover state, doctor/preflight, backup and restore.
-2. **Sister runtimes**: `acb-mcp`, `agentic-memory-mcp`, and `agentic-vision-mcp` expose MCP tools.
-3. **Artifacts**: `.acb` (code graph), `.amem` (memory graph), `.avis` (visual memory).
+2. **Sister runtimes**: `acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, and `agentic-identity-mcp` expose MCP tools.
+3. **Artifacts**: `.acb` (code graph), `.amem` (memory graph), `.avis` (visual memory), `.aid` (identity anchor).
 4. **MCP clients**: any compliant desktop, terminal, or server MCP client.
 
 ## Runtime modes
