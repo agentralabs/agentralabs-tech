@@ -485,6 +485,48 @@ for i in "${!SISTERS[@]}"; do
   fi
 done
 
+# ── 20. Required SVG assets per sister ────────────────────────────────────────
+
+section "Required SVG assets per sister"
+
+REQUIRED_SVGS=(
+  "assets/github-hero-pane.svg"
+  "assets/github-terminal-pane.svg"
+  "assets/benchmark-chart.svg"
+  "assets/architecture-agentra.svg"
+)
+
+for sister in "${SISTERS[@]}"; do
+  missing=0
+  for svg in "${REQUIRED_SVGS[@]}"; do
+    if [ ! -f "${WORKSPACE}/${sister}/${svg}" ]; then
+      fail "${sister}: missing ${svg}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: all required SVGs present"
+  fi
+done
+
+# ── 21. README references benchmark and architecture SVGs ────────────────────
+
+section "README benchmark + architecture SVG references"
+
+for sister in "${SISTERS[@]}"; do
+  readme="${WORKSPACE}/${sister}/README.md"
+  if [ ! -f "$readme" ]; then
+    continue
+  fi
+  if ! grep -qF 'benchmark-chart.svg' "$readme"; then
+    fail "${sister}: README missing benchmark-chart.svg reference"
+  elif ! grep -qF 'architecture-agentra.svg' "$readme"; then
+    fail "${sister}: README missing architecture-agentra.svg reference"
+  else
+    pass "${sister}: README references both benchmark + architecture SVGs"
+  fi
+done
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
