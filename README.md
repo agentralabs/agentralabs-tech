@@ -1,10 +1,11 @@
 # AgentraLabs Tech Workspace
 
-This repository is the top-level UX/orchestration workspace for the three core sister projects:
+This repository is the top-level UX/orchestration workspace for the four core sister projects:
 
-- `agentic-codebase`
 - `agentic-memory`
 - `agentic-vision`
+- `agentic-codebase`
+- `agentic-identity`
 
 The sisters remain independently installable and independently runnable. This workspace adds a unified operator CLI (`agentra`) so users can quickly validate local setup and launch an interactive dashboard.
 
@@ -20,12 +21,14 @@ The sisters remain independently installable and independently runnable. This wo
 ```mermaid
 flowchart TD
     A["User in agentralabs-tech"] --> B["Run ./install_all.sh"]
-    B --> C["Install agentic-codebase"]
-    B --> D["Install agentic-memory"]
-    B --> E["Install agentic-vision"]
+    B --> C["Install agentic-memory"]
+    B --> D["Install agentic-vision"]
+    B --> E["Install agentic-codebase"]
+    B --> F2["Install agentic-identity"]
     C --> F["Run cargo run --bin agentra -- status"]
     D --> F
     E --> F
+    F2 --> F
     F --> G["Run cargo run --bin agentra -- ui"]
     G --> H["Detect MCP/CLI tools and show hints"]
 ```
@@ -39,11 +42,12 @@ flowchart TD
 ## Layout
 
 - `agentra-cli/` — unified orchestrator CLI (`agentra`)
-- `agentic-codebase/` — code graph + query tooling
 - `agentic-memory/` — persistent graph memory tooling
 - `agentic-vision/` — visual memory tooling
+- `agentic-codebase/` — code graph + query tooling
+- `agentic-identity/` — cryptographic agent identity tooling
 - `install_all.sh` — install sisters from local paths
-- `sync_artifacts.sh` — sync `.acb/.amem/.avis` artifacts to server paths
+- `sync_artifacts.sh` — sync `.amem/.avis/.acb/.aid` artifacts to server paths
 - `local_ai_test.sh` — simple local Ollama integration smoke script
 
 ## Quick Start
