@@ -527,6 +527,27 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
+# ── 22. MCP command-surface documentation completeness ─────────────────────
+
+section "MCP command-surface documentation completeness"
+
+CMD_SURFACE_SCRIPT="${WORKSPACE}/scripts/check-command-surface.sh"
+if [ -f "$CMD_SURFACE_SCRIPT" ]; then
+  if bash "$CMD_SURFACE_SCRIPT" >/dev/null 2>&1; then
+    pass "All MCP tools documented in command-surface.md (all sisters)"
+  else
+    # Re-run to capture which tools are missing
+    bash "$CMD_SURFACE_SCRIPT" 2>&1 | grep '^FAIL:' | while IFS= read -r line; do
+      fail "$line"
+    done
+    # Count failures from the sub-script
+    sub_errors="$(bash "$CMD_SURFACE_SCRIPT" 2>&1 | grep -c '^FAIL:' || true)"
+    ERRORS=$((ERRORS + sub_errors))
+  fi
+else
+  fail "scripts/check-command-surface.sh not found"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
