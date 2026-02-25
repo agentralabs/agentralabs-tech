@@ -5,9 +5,14 @@ output.txt
 target/
 agentra-config.json
 
+# Internal planning documents
+PYPI-BACKFILL-VISION-CODEBASE.md
+SISTER-VISION-20-YEAR.md
+
 # Nested repos managed independently
 .github-org-profile/
 agentic-codebase/
+agentic-identity/
 agentic-memory/
 agentic-vision/
 agentralabs-tech-web/
