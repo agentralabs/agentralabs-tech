@@ -10,10 +10,10 @@ usage() {
 Usage: ./install_all.sh [--test-mode] [--profile=desktop|terminal|server] [--help]
 
 Installs all sister tools from local paths:
-  - agentic-codebase
-  - agentic-memory
-  - agentic-vision
-  - agentic-identity
+  - agentic-memory-cli + agentic-memory-mcp
+  - agentic-vision-cli + agentic-vision-mcp
+  - agentic-codebase-cli + agentic-codebase-mcp
+  - agentic-identity-cli + agentic-identity-mcp
 
 Options:
   --test-mode   Print planned install commands without executing.
@@ -54,11 +54,15 @@ case "$PROFILE" in
     ;;
 esac
 
-SISTERS=(
-  "agentic-codebase"
-  "agentic-memory"
-  "agentic-vision"
-  "agentic-identity"
+INSTALL_TARGETS=(
+  "agentic-memory-cli|$ROOT_DIR/agentic-memory/crates/agentic-memory-cli"
+  "agentic-memory-mcp|$ROOT_DIR/agentic-memory/crates/agentic-memory-mcp"
+  "agentic-vision-cli|$ROOT_DIR/agentic-vision/crates/agentic-vision-cli"
+  "agentic-vision-mcp|$ROOT_DIR/agentic-vision/crates/agentic-vision-mcp"
+  "agentic-codebase-cli|$ROOT_DIR/agentic-codebase/crates/agentic-codebase-cli"
+  "agentic-codebase-mcp|$ROOT_DIR/agentic-codebase/crates/agentic-codebase-mcp"
+  "agentic-identity-cli|$ROOT_DIR/agentic-identity/crates/agentic-identity-cli"
+  "agentic-identity-mcp|$ROOT_DIR/agentic-identity/crates/agentic-identity-mcp"
 )
 
 draw_progress() {
@@ -75,8 +79,8 @@ draw_progress() {
 }
 
 run_install() {
-  local sister="$1"
-  local path="$ROOT_DIR/$sister"
+  local label="$1"
+  local path="$2"
 
   if [[ ! -d "$path" ]]; then
     echo
@@ -93,17 +97,18 @@ run_install() {
   cargo install --path "$path"
 }
 
-total="${#SISTERS[@]}"
+total="${#INSTALL_TARGETS[@]}"
 completed=0
 
 echo "Installing all sisters from: $ROOT_DIR"
 [[ "$TEST_MODE" -eq 1 ]] && echo "Running in test mode (no installs will be executed)."
 echo "Profile: $PROFILE"
 
-for sister in "${SISTERS[@]}"; do
+for target in "${INSTALL_TARGETS[@]}"; do
+  IFS='|' read -r label path <<< "$target"
   completed=$((completed + 1))
-  draw_progress "$completed" "$total" "Installing $sister"
-  run_install "$sister"
+  draw_progress "$completed" "$total" "Installing $label"
+  run_install "$label" "$path"
 done
 
 echo

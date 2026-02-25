@@ -50,6 +50,22 @@ flowchart TD
 - `sync_artifacts.sh` — sync `.amem/.avis/.acb/.aid` artifacts to server paths
 - `local_ai_test.sh` — simple local Ollama integration smoke script
 
+## Current Published State (2026-02-25)
+
+- `agentic-memory`: `0.3.1` (`agentic-memory`, `agentic-memory-ffi`, `agentic-memory-mcp`, `agentic-memory-cli`)
+- `agentic-vision`: `0.2.1` (`agentic-vision`, `agentic-vision-ffi`, `agentic-vision-mcp`, `agentic-vision-cli`)
+- `agentic-codebase`: `0.2.1` (`agentic-codebase`, `agentic-codebase-ffi`, `agentic-codebase-mcp`, `agentic-codebase-cli`)
+- `agentic-identity`: `0.2.2` (`agentic-identity`, `agentic-identity-ffi`, `agentic-identity-mcp`, `agentic-identity-cli`)
+
+Quick install commands for the public CLIs:
+
+```bash
+cargo install agentic-memory-cli && amem --help
+cargo install agentic-vision-cli && avis --version
+cargo install agentic-codebase-cli && acb --version
+cargo install agentic-identity-cli && aid --version
+```
+
 ## Quick Start
 
 From this directory:
@@ -198,4 +214,4 @@ cargo package -p agentra-cli
 
 - The orchestrator must not force a monolithic install.
 - Missing tools should be reported as `MISSING` with actionable hints.
-- Sister repos stay versioned and shipped independently.
+- Sister repos stay versioned and released independently.
