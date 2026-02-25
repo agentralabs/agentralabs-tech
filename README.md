@@ -52,10 +52,10 @@ flowchart TD
 
 ## Current Published State (2026-02-25)
 
-- `agentic-memory`: `0.3.1` (`agentic-memory`, `agentic-memory-ffi`, `agentic-memory-mcp`, `agentic-memory-cli`)
-- `agentic-vision`: `0.2.1` (`agentic-vision`, `agentic-vision-ffi`, `agentic-vision-mcp`, `agentic-vision-cli`)
-- `agentic-codebase`: `0.2.1` (`agentic-codebase`, `agentic-codebase-ffi`, `agentic-codebase-mcp`, `agentic-codebase-cli`)
-- `agentic-identity`: `0.2.2` (`agentic-identity`, `agentic-identity-ffi`, `agentic-identity-mcp`, `agentic-identity-cli`)
+- `agentic-memory`: `0.3.2` (`agentic-memory`, `agentic-memory-ffi`, `agentic-memory-mcp`, `agentic-memory-cli`)
+- `agentic-vision`: `0.2.2` (`agentic-vision`, `agentic-vision-ffi`, `agentic-vision-mcp`, `agentic-vision-cli`)
+- `agentic-codebase`: `0.2.2` (`agentic-codebase`, `agentic-codebase-ffi`, `agentic-codebase-mcp`, `agentic-codebase-cli`)
+- `agentic-identity`: `0.2.3` (`agentic-identity`, `agentic-identity-ffi`, `agentic-identity-mcp`, `agentic-identity-cli`)
 
 Quick install commands for the public CLIs:
 
