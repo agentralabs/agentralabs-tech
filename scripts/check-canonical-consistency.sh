@@ -7,7 +7,7 @@
 set -euo pipefail
 
 WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
-SISTERS=(agentic-memory agentic-vision agentic-codebase agentic-identity)
+SISTERS=(agentic-memory agentic-vision agentic-codebase agentic-identity agentic-time)
 ERRORS=0
 
 fail() {
@@ -95,8 +95,8 @@ done
 
 section "Sister manifest validation"
 
-EXPECTED_KEYS=(memory vision codebase identity)
-EXPECTED_NAMES=(AgenticMemory AgenticVision AgenticCodebase AgenticIdentity)
+EXPECTED_KEYS=(memory vision codebase identity time)
+EXPECTED_NAMES=(AgenticMemory AgenticVision AgenticCodebase AgenticIdentity AgenticTime)
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -223,6 +223,7 @@ CORE_CRATES=(
   "agentic-vision"
   "agentic-codebase"
   "agentic-identity"
+  "agentic-time"
 )
 
 FFI_CRATES=(
@@ -230,6 +231,7 @@ FFI_CRATES=(
   "agentic-vision-ffi"
   "agentic-codebase-ffi"
   "agentic-identity-ffi"
+  "agentic-time-ffi"
 )
 
 MCP_CRATES=(
@@ -237,6 +239,7 @@ MCP_CRATES=(
   "agentic-vision-mcp"
   "agentic-codebase-mcp"
   "agentic-identity-mcp"
+  "agentic-time-mcp"
 )
 
 CLI_CRATES=(
@@ -244,6 +247,7 @@ CLI_CRATES=(
   "agentic-vision-cli"
   "agentic-codebase-cli"
   "agentic-identity-cli"
+  "agentic-time-cli"
 )
 
 for i in "${!SISTERS[@]}"; do
@@ -314,7 +318,7 @@ ROUTE_FILE="${WORKSPACE}/agentralabs-tech-web/app/install/[target]/[profile]/rou
 if [ ! -f "$ROUTE_FILE" ]; then
   pass "Skipping web install route check (web repo not available)"
 else
-  for key in memory vision codebase identity; do
+  for key in memory vision codebase identity time; do
     if ! grep -qF "\"${key}\"" "$ROUTE_FILE"; then
       fail "Web route missing target: ${key}"
     else
@@ -386,7 +390,7 @@ NAV_CONTRACT="${WORKSPACE}/agentralabs-tech-web/docs/ecosystem/navigation-contra
 if [ ! -f "$NAV_CONTRACT" ]; then
   pass "Skipping navigation contract check (web repo not available)"
 else
-  for key in memory vision codebase identity; do
+  for key in memory vision codebase identity time; do
     if ! grep -qF "\"key\": \"${key}\"" "$NAV_CONTRACT"; then
       fail "navigation-contract.json missing sister key: ${key}"
     else
@@ -479,7 +483,7 @@ WEB_DATA_DIR="${WORKSPACE}/agentralabs-tech-web/data"
 if [ ! -d "$WEB_DATA_DIR" ]; then
   pass "Skipping web scenario data check (web repo not available)"
 else
-  for key in memory vision codebase identity; do
+  for key in memory vision codebase identity time; do
     datafile="${WEB_DATA_DIR}/scenarios-${key}.ts"
     if [ ! -f "$datafile" ]; then
       fail "Web missing data/scenarios-${key}.ts"
@@ -515,6 +519,7 @@ NPM_PACKAGES=(
   "@agenticamem/vision"
   "@agenticamem/codebase"
   "@agenticamem/identity"
+  "@agenticamem/time"
 )
 
 for i in "${!SISTERS[@]}"; do
@@ -617,7 +622,7 @@ fi
 
 section "4-crate structure + language bindings"
 
-SISTER_KEYS=(memory vision codebase identity)
+SISTER_KEYS=(memory vision codebase identity time)
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -835,6 +840,32 @@ else
     pass "agentic-contracts/ crate structure complete (10 source files + compliance doc)"
   fi
 fi
+
+# ── 28. Research paper directory parity ──────────────────────────────────────
+
+section "Research paper directory parity"
+
+for sister in "${SISTERS[@]}"; do
+  paper_dir="${WORKSPACE}/${sister}/paper"
+  if [ ! -d "$paper_dir" ]; then
+    fail "${sister}: missing paper/ directory"
+    continue
+  fi
+
+  paper_i="$(ls -d "${paper_dir}"/paper-i-* 2>/dev/null | head -1)"
+  if [ -z "$paper_i" ]; then
+    fail "${sister}: missing paper/paper-i-* subdirectory"
+    continue
+  fi
+
+  if ! ls "$paper_i"/*.tex >/dev/null 2>&1; then
+    fail "${sister}: missing .tex file in $(basename "$paper_i")"
+  elif [ ! -f "$paper_i/references.bib" ]; then
+    fail "${sister}: missing references.bib in $(basename "$paper_i")"
+  else
+    pass "${sister}: paper/paper-i-* with .tex + references.bib present"
+  fi
+done
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
