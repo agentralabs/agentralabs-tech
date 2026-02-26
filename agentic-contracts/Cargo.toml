@@ -1,0 +1,52 @@
+[package]
+name = "agentic-contracts"
+version = "0.1.0"
+edition = "2021"
+authors = ["Agentra Labs <contact@agentralabs.tech>"]
+description = "Shared contracts for the AgenticOS ecosystem - traits, types, and standards that all sisters implement"
+license = "MIT"
+homepage = "https://agentralabs.tech"
+repository = "https://github.com/agentralabs/agentic-contracts"
+keywords = ["agentic", "ai", "agents", "contracts", "mcp"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
+
+[dependencies]
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUIDs for identifiers
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Async runtime (for event streams)
+tokio = { version = "1.0", features = ["sync"] }
+
+# Error handling
+thiserror = "1.0"
+
+# Fast hashing
+blake3 = "1.5"
+
+# CRC32 for header checksums
+crc32fast = "1.3"
+
+# Hex encoding
+hex = "0.4"
+
+# Base64 encoding
+base64 = "0.21"
+
+# Semantic versioning
+semver = { version = "1.0", features = ["serde"] }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full", "test-util"] }
+
+[features]
+default = []
+# Enable async traits (requires nightly or async-trait crate)
+async-traits = []
