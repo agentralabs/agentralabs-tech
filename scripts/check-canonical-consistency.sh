@@ -608,6 +608,40 @@ else
   fail "scripts/check-command-surface.sh not found"
 fi
 
+# ── 24. 4-crate structure + language bindings per sister ──────────────────────
+
+section "4-crate structure + language bindings"
+
+SISTER_KEYS=(memory vision codebase identity)
+
+for i in "${!SISTERS[@]}"; do
+  sister="${SISTERS[$i]}"
+  key="${SISTER_KEYS[$i]}"
+  missing=0
+
+  for suffix in cli mcp ffi; do
+    crate_dir="${WORKSPACE}/${sister}/crates/agentic-${key}-${suffix}"
+    if [ ! -d "$crate_dir" ] || [ ! -f "${crate_dir}/Cargo.toml" ]; then
+      fail "${sister}: missing crate crates/agentic-${key}-${suffix}"
+      missing=1
+    fi
+  done
+
+  if [ ! -d "${WORKSPACE}/${sister}/python" ] || [ ! -f "${WORKSPACE}/${sister}/python/pyproject.toml" ]; then
+    fail "${sister}: missing python/pyproject.toml"
+    missing=1
+  fi
+
+  if [ ! -d "${WORKSPACE}/${sister}/npm/wasm" ] || [ ! -f "${WORKSPACE}/${sister}/npm/wasm/Cargo.toml" ]; then
+    fail "${sister}: missing npm/wasm/Cargo.toml"
+    missing=1
+  fi
+
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: 4-crate structure + python + wasm present"
+  fi
+done
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
