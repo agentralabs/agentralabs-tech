@@ -642,7 +642,46 @@ for i in "${!SISTERS[@]}"; do
   fi
 done
 
-# ── 25. Local goals/ directory structure (gitignored but must exist) ─────────
+# ── 25. MCP stdio hardening parity ──────────────────────────────────────────
+
+section "MCP stdio hardening parity (frame limit + Content-Length + JSON-RPC)"
+
+for i in "${!SISTERS[@]}"; do
+  sister="${SISTERS[$i]}"
+  key="${SISTER_KEYS[$i]}"
+  mcp_src="${WORKSPACE}/${sister}/crates/agentic-${key}-mcp/src"
+
+  if [ ! -d "$mcp_src" ]; then
+    fail "${sister}: MCP source directory missing (crates/agentic-${key}-mcp/src)"
+    continue
+  fi
+
+  missing=0
+
+  # 8 MiB frame limit constant
+  if ! grep -rqF "MAX_CONTENT_LENGTH_BYTES" "$mcp_src"; then
+    fail "${sister}: MCP source missing MAX_CONTENT_LENGTH_BYTES (8 MiB frame limit)"
+    missing=1
+  fi
+
+  # Content-Length framing support
+  if ! grep -rqiF "content-length:" "$mcp_src"; then
+    fail "${sister}: MCP source missing Content-Length framing"
+    missing=1
+  fi
+
+  # JSON-RPC version handling
+  if ! grep -rqF "jsonrpc" "$mcp_src"; then
+    fail "${sister}: MCP source missing jsonrpc version handling"
+    missing=1
+  fi
+
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: MCP hardening patterns present (frame limit + framing + jsonrpc)"
+  fi
+done
+
+# ── 26. Local goals/ directory structure (gitignored but must exist) ──────────
 #
 # WHEN YOU NEED CONTRACTS:
 #   cat goals/validation/SISTER-HYDRA-INTEGRATION-CONTRACT.md
@@ -736,7 +775,7 @@ else
   fi
 fi
 
-# ── 26. Local agentic-contracts/ crate (gitignored but must exist) ──────────
+# ── 27. Local agentic-contracts/ crate (gitignored but must exist) ──────────
 #
 # Single source of truth for Rust traits all sisters implement.
 # Will be published to crates.io when ready.
