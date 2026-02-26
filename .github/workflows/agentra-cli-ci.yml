@@ -29,7 +29,8 @@ jobs:
           for file in \
             agentic-memory/scripts/install.sh \
             agentic-codebase/scripts/install.sh \
-            agentic-vision/scripts/install.sh; do
+            agentic-vision/scripts/install.sh \
+            agentic-identity/scripts/install.sh; do
             if [ -f "$file" ]; then
               bash -n "$file"
             else

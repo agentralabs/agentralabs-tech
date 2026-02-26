@@ -214,7 +214,67 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 7. CI workflow trigger alignment ────────────────────────────────────────
+# ── 7. Release workflow publish parity ───────────────────────────────────────
+
+section "Release workflow publish parity (core + ffi + mcp + cli)"
+
+CORE_CRATES=(
+  "agentic-memory"
+  "agentic-vision"
+  "agentic-codebase"
+  "agentic-identity"
+)
+
+FFI_CRATES=(
+  "agentic-memory-ffi"
+  "agentic-vision-ffi"
+  "agentic-codebase-ffi"
+  "agentic-identity-ffi"
+)
+
+MCP_CRATES=(
+  "agentic-memory-mcp"
+  "agentic-vision-mcp"
+  "agentic-codebase-mcp"
+  "agentic-identity-mcp"
+)
+
+CLI_CRATES=(
+  "agentic-memory-cli"
+  "agentic-vision-cli"
+  "agentic-codebase-cli"
+  "agentic-identity-cli"
+)
+
+for i in "${!SISTERS[@]}"; do
+  sister="${SISTERS[$i]}"
+  release_wf="${WORKSPACE}/${sister}/.github/workflows/release.yml"
+
+  if [ ! -f "$release_wf" ]; then
+    fail "${sister}: missing .github/workflows/release.yml"
+    continue
+  fi
+
+  missing=0
+  for pkg in "${CORE_CRATES[$i]}" "${FFI_CRATES[$i]}" "${MCP_CRATES[$i]}" "${CLI_CRATES[$i]}"; do
+    if ! grep -qF "$pkg" "$release_wf"; then
+      fail "${sister}: release workflow missing publish target ${pkg}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: release workflow references core+ffi+mcp+cli crates"
+  fi
+
+  if grep -Eq 'cargo publish[^#\n]*\|\|[[:space:]]*true' "$release_wf"; then
+    fail "${sister}: release workflow has non-blocking cargo publish (|| true)"
+  fi
+  if grep -qF 'continue-on-error: true' "$release_wf"; then
+    fail "${sister}: release workflow has continue-on-error: true (publish must fail fast)"
+  fi
+done
+
+# ── 8. CI workflow trigger alignment ────────────────────────────────────────
 
 section "CI workflow trigger alignment (canonical-sister-guardrails.yml)"
 
@@ -232,7 +292,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 8. Asset directory ──────────────────────────────────────────────────────
+# ── 9. Asset directory ──────────────────────────────────────────────────────
 
 section "Design asset presence"
 
@@ -246,7 +306,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 9. Web install route registration ───────────────────────────────────────
+# ── 10. Web install route registration ───────────────────────────────────────
 
 section "Web install route registration"
 
@@ -263,7 +323,7 @@ else
   done
 fi
 
-# ── 10. Public docs baseline parity ────────────────────────────────────────
+# ── 11. Public docs baseline parity ────────────────────────────────────────
 
 section "Public docs baseline parity"
 
@@ -293,7 +353,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 11. Core scripts presence ──────────────────────────────────────────────
+# ── 12. Core scripts presence ──────────────────────────────────────────────
 
 section "Core scripts presence"
 
@@ -318,7 +378,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 12. Web navigation contract — all sister keys present ────────────────────
+# ── 13. Web navigation contract — all sister keys present ────────────────────
 
 section "Web navigation contract"
 
@@ -335,7 +395,7 @@ else
   done
 fi
 
-# ── 13. Manifest page_ids baseline ──────────────────────────────────────────
+# ── 14. Manifest page_ids baseline ──────────────────────────────────────────
 
 section "Manifest page_ids baseline"
 
@@ -364,7 +424,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 14. README nav bar links ────────────────────────────────────────────────
+# ── 15. README nav bar links ────────────────────────────────────────────────
 
 section "README nav bar links"
 
@@ -393,7 +453,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 15. README architecture SVG width ───────────────────────────────────────
+# ── 16. README architecture SVG width ───────────────────────────────────────
 
 section "README architecture SVG width"
 
@@ -411,7 +471,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 16. Web scenario data files ─────────────────────────────────────────────
+# ── 17. Web scenario data files ─────────────────────────────────────────────
 
 section "Web scenario data files"
 
@@ -424,7 +484,7 @@ for key in memory vision codebase identity; do
   fi
 done
 
-# ── 17. Workspace README sister mentions ──────────────────────────────────
+# ── 18. Workspace README sister mentions ──────────────────────────────────
 
 section "Workspace README sister mentions"
 
@@ -441,7 +501,7 @@ else
   done
 fi
 
-# ── 18. README npm install rows ──────────────────────────────────────────────
+# ── 19. README npm install rows ──────────────────────────────────────────────
 
 section "README npm install rows"
 
@@ -466,7 +526,7 @@ for i in "${!SISTERS[@]}"; do
   fi
 done
 
-# ── 19. Installation doc npm sections ────────────────────────────────────────
+# ── 20. Installation doc npm sections ────────────────────────────────────────
 
 section "Installation doc npm sections"
 
@@ -485,7 +545,7 @@ for i in "${!SISTERS[@]}"; do
   fi
 done
 
-# ── 20. Required SVG assets per sister ────────────────────────────────────────
+# ── 21. Required SVG assets per sister ────────────────────────────────────────
 
 section "Required SVG assets per sister"
 
@@ -509,7 +569,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 21. README references benchmark and architecture SVGs ────────────────────
+# ── 22. README references benchmark and architecture SVGs ────────────────────
 
 section "README benchmark + architecture SVG references"
 
@@ -527,7 +587,7 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── 22. MCP command-surface documentation completeness ─────────────────────
+# ── 23. MCP command-surface documentation completeness ─────────────────────
 
 section "MCP command-surface documentation completeness"
 

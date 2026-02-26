@@ -1,0 +1,37 @@
+name: Canonical Consistency
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/check-canonical-consistency.sh"
+      - "scripts/check-command-surface.sh"
+      - "README.md"
+      - "docs/**"
+      - "agentic-memory/**"
+      - "agentic-vision/**"
+      - "agentic-codebase/**"
+      - "agentic-identity/**"
+      - "agentralabs-tech-web/**"
+      - ".github/workflows/canonical-consistency.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/check-canonical-consistency.sh"
+      - "scripts/check-command-surface.sh"
+      - "README.md"
+      - "docs/**"
+      - "agentic-memory/**"
+      - "agentic-vision/**"
+      - "agentic-codebase/**"
+      - "agentic-identity/**"
+      - "agentralabs-tech-web/**"
+      - ".github/workflows/canonical-consistency.yml"
+
+jobs:
+  check-canonical-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cross-sister canonical consistency checks
+        run: ./scripts/check-canonical-consistency.sh
