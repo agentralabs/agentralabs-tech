@@ -33,5 +33,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Checkout sister repos
+        run: |
+          for repo in agentic-memory agentic-vision agentic-codebase agentic-identity; do
+            git clone --depth 1 https://github.com/agentralabs/${repo}.git ${repo}
+          done
+
+      - name: Checkout web repo
+        run: git clone --depth 1 https://github.com/agentralabs/agentralabs-tech-web.git agentralabs-tech-web
+        continue-on-error: true
+
       - name: Run cross-sister canonical consistency checks
         run: ./scripts/check-canonical-consistency.sh
