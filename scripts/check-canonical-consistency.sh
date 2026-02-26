@@ -642,6 +642,156 @@ for i in "${!SISTERS[@]}"; do
   fi
 done
 
+# ── 25. Local goals/ directory structure (gitignored but must exist) ─────────
+#
+# WHEN YOU NEED CONTRACTS:
+#   cat goals/validation/SISTER-HYDRA-INTEGRATION-CONTRACT.md
+#   cat goals/validation/MCP-TOOL-STANDARDS.md
+#
+# WHEN BUILDING A NEW SISTER:
+#   cat goals/new-sisters/SISTER-V2-PATTERNS.md
+#   cp -r agentic-contracts/ ../new-sister/deps/
+#
+# WHEN BUILDING HYDRA:
+#   ls goals/hydra/   # 13 specification documents
+#
+
+section "Local goals/ directory structure"
+
+GOALS_DIR="${WORKSPACE}/goals"
+if [ ! -d "$GOALS_DIR" ]; then
+  fail "goals/ directory missing (gitignored but must exist locally)"
+else
+  GOALS_GROUPS=(validation new-sisters hydra vision)
+  missing=0
+  for group in "${GOALS_GROUPS[@]}"; do
+    if [ ! -d "${GOALS_DIR}/${group}" ]; then
+      fail "goals/${group}/ subdirectory missing"
+      missing=1
+    fi
+  done
+
+  # Validation group — needed NOW for sister compliance
+  VALIDATION_DOCS=(
+    "SISTER-HYDRA-INTEGRATION-CONTRACT.md"
+    "MCP-TOOL-STANDARDS.md"
+    "EDGE-CASE-HANDLERS-SPEC.md"
+  )
+  for doc in "${VALIDATION_DOCS[@]}"; do
+    if [ ! -f "${GOALS_DIR}/validation/${doc}" ]; then
+      fail "goals/validation/${doc} missing"
+      missing=1
+    fi
+  done
+
+  # New-sisters group — needed when building future sisters
+  NEW_SISTER_DOCS=(
+    "ASTRAL-MISSING-SISTERS.md"
+    "SISTER-V2-PATTERNS.md"
+    "SISTER-V2-PLANNED-PRE-PHILIP.md"
+  )
+  for doc in "${NEW_SISTER_DOCS[@]}"; do
+    if [ ! -f "${GOALS_DIR}/new-sisters/${doc}" ]; then
+      fail "goals/new-sisters/${doc} missing"
+      missing=1
+    fi
+  done
+
+  # Hydra group — needed LATER when building Hydra orchestrator
+  HYDRA_DOCS=(
+    "HYDRA-COMPLETE-SPEC.md"
+    "HYDRA-INVENTIONS.md"
+    "SKILL-FABRIC-SPEC.md"
+    "RESOURCE-OPTIMIZATION-SPEC.md"
+    "HYDRA-UX-SPEC.md"
+    "HYDRA-ARCHITECTURE-FEEDBACK.md"
+    "HYDRA-SKILL-ECOSYSTEMS.md"
+    "HydraPhilosophy.md"
+    "HydraMail.md"
+    "HYDRA-PHONECOMM.md"
+    "MOREOFHYDRA.md"
+    "UIUX-minset.md"
+  )
+  for doc in "${HYDRA_DOCS[@]}"; do
+    if [ ! -f "${GOALS_DIR}/hydra/${doc}" ]; then
+      fail "goals/hydra/${doc} missing"
+      missing=1
+    fi
+  done
+
+  # Vision group — 20-year roadmaps
+  VISION_DOCS=(
+    "SISTER-VISION-20-YEAR.md"
+    "VISION-AMEM-20-YEAR-ROADMAP.md"
+  )
+  for doc in "${VISION_DOCS[@]}"; do
+    if [ ! -f "${GOALS_DIR}/vision/${doc}" ]; then
+      fail "goals/vision/${doc} missing"
+      missing=1
+    fi
+  done
+
+  if [ "$missing" -eq 0 ]; then
+    pass "goals/ has all 4 groups with all required documents"
+  fi
+fi
+
+# ── 26. Local agentic-contracts/ crate (gitignored but must exist) ──────────
+#
+# Single source of truth for Rust traits all sisters implement.
+# Will be published to crates.io when ready.
+#
+# WHEN VALIDATING A SISTER:
+#   cd agentic-contracts && cargo test
+#   cat docs/SISTER-COMPLIANCE-VERIFICATION.md
+#
+# WHEN BUILDING A NEW SISTER:
+#   # Add to new sister's Cargo.toml:
+#   # agentic-contracts = { path = "../agentic-contracts" }
+#
+
+section "Local agentic-contracts/ crate"
+
+CONTRACTS_DIR="${WORKSPACE}/agentic-contracts"
+if [ ! -d "$CONTRACTS_DIR" ]; then
+  fail "agentic-contracts/ directory missing (gitignored but must exist locally)"
+else
+  missing=0
+
+  if [ ! -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
+    fail "agentic-contracts/Cargo.toml missing"
+    missing=1
+  fi
+
+  REQUIRED_SOURCES=(
+    src/lib.rs
+    src/types.rs
+    src/sister.rs
+    src/context.rs
+    src/errors.rs
+    src/events.rs
+    src/grounding.rs
+    src/query.rs
+    src/receipts.rs
+    src/file_format.rs
+  )
+  for src in "${REQUIRED_SOURCES[@]}"; do
+    if [ ! -f "${CONTRACTS_DIR}/${src}" ]; then
+      fail "agentic-contracts/${src} missing"
+      missing=1
+    fi
+  done
+
+  if [ ! -f "${CONTRACTS_DIR}/docs/SISTER-COMPLIANCE-VERIFICATION.md" ]; then
+    fail "agentic-contracts/docs/SISTER-COMPLIANCE-VERIFICATION.md missing"
+    missing=1
+  fi
+
+  if [ "$missing" -eq 0 ]; then
+    pass "agentic-contracts/ crate structure complete (10 source files + compliance doc)"
+  fi
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
