@@ -1,11 +1,12 @@
 # AgentraLabs Tech Workspace
 
-This repository is the top-level UX/orchestration workspace for the four core sister projects:
+This repository is the top-level UX/orchestration workspace for the five core sister projects:
 
 - `agentic-memory`
 - `agentic-vision`
 - `agentic-codebase`
 - `agentic-identity`
+- `agentic-time`
 
 The sisters remain independently installable and independently runnable. This workspace adds a unified operator CLI (`agentra`) so users can quickly validate local setup and launch an interactive dashboard.
 
@@ -25,10 +26,12 @@ flowchart TD
     B --> D["Install agentic-vision"]
     B --> E["Install agentic-codebase"]
     B --> F2["Install agentic-identity"]
+    B --> F3["Install agentic-time"]
     C --> F["Run cargo run --bin agentra -- status"]
     D --> F
     E --> F
     F2 --> F
+    F3 --> F
     F --> G["Run cargo run --bin agentra -- ui"]
     G --> H["Detect MCP/CLI tools and show hints"]
 ```
@@ -46,8 +49,9 @@ flowchart TD
 - `agentic-vision/` — visual memory tooling
 - `agentic-codebase/` — code graph + query tooling
 - `agentic-identity/` — cryptographic agent identity tooling
+- `agentic-time/` — temporal reasoning tooling (deadlines, schedules, decay)
 - `install_all.sh` — install sisters from local paths
-- `sync_artifacts.sh` — sync `.amem/.avis/.acb/.aid` artifacts to server paths
+- `sync_artifacts.sh` — sync `.amem/.avis/.acb/.aid/.atime` artifacts to server paths
 - `local_ai_test.sh` — simple local Ollama integration smoke script
 
 ## Current Published State (2026-02-25)
@@ -56,6 +60,7 @@ flowchart TD
 - `agentic-vision`: `0.2.2` (`agentic-vision`, `agentic-vision-ffi`, `agentic-vision-mcp`, `agentic-vision-cli`)
 - `agentic-codebase`: `0.2.2` (`agentic-codebase`, `agentic-codebase-ffi`, `agentic-codebase-mcp`, `agentic-codebase-cli`)
 - `agentic-identity`: `0.2.3` (`agentic-identity`, `agentic-identity-ffi`, `agentic-identity-mcp`, `agentic-identity-cli`)
+- `agentic-time`: `0.1.0` (`agentic-time`, `agentic-time-ffi`, `agentic-time-mcp`, `agentic-time-cli`)
 
 Quick install commands for the public CLIs:
 
@@ -64,6 +69,7 @@ cargo install agentic-memory-cli && amem --help
 cargo install agentic-vision-cli && avis --version
 cargo install agentic-codebase-cli && acb --version
 cargo install agentic-identity-cli && aid --version
+cargo install agentic-time-cli && atime --version
 ```
 
 ## Quick Start
@@ -119,99 +125,3 @@ cargo run --bin agentra -- server preflight
 # add --strict in CI/automation once env is configured
 ```
 
-## UI Screenshot
-
-<p align="center">
-  <img src="docs/assets/agentra-ui-screenshot.svg" alt="Agentra UI screenshot placeholder" width="980">
-</p>
-
-## Sisters Runtime Screenshots
-
-Real runtime captures generated from live commands:
-
-<p align="center">
-  <img src="docs/assets/web-screenshots/codebase-query.png" alt="Agentic Codebase runtime output" width="980">
-</p>
-<p align="center">
-  <img src="docs/assets/web-screenshots/memory-add-search.png" alt="Agentic Memory runtime output" width="980">
-</p>
-<p align="center">
-  <img src="docs/assets/web-screenshots/vision-runtime.png" alt="Agentic Vision runtime output" width="980">
-</p>
-<p align="center">
-  <img src="docs/assets/web-screenshots/agentra-status.png" alt="Agentra status runtime output" width="980">
-</p>
-<p align="center">
-  <img src="docs/assets/web-screenshots/install-progress.png" alt="Install progress runtime output" width="980">
-</p>
-<p align="center">
-  <img src="docs/assets/web-screenshots/integrated-workflow.png" alt="Integrated workflow runtime output" width="980">
-</p>
-
-See [How-To Guide](docs/how-to.md) for step-by-step usage.
-
-## Install Sisters (Local)
-
-```bash
-./install_all.sh
-```
-
-This script installs binaries from each sister repo using `cargo install --path ...` and shows progress.
-
-Dry-run test mode:
-
-```bash
-./install_all.sh --test-mode
-```
-
-Install with explicit environment profile:
-
-```bash
-./install_all.sh --profile=desktop
-./install_all.sh --profile=terminal
-./install_all.sh --profile=server
-```
-
-Help:
-
-```bash
-./install_all.sh --help
-```
-
-## Sync Artifacts For Server Runtime
-
-```bash
-./sync_artifacts.sh --target=/srv/agentra/artifacts
-./sync_artifacts.sh --target=user@server:/srv/agentra/artifacts --dry-run
-```
-
-## Local AI Smoke Test
-
-```bash
-./local_ai_test.sh
-```
-
-Requires:
-
-- `ollama` available in `PATH`
-- model `llama3` available locally
-
-## Build and Package
-
-Build orchestrator:
-
-```bash
-cargo build --release -p agentra-cli
-```
-
-Package orchestrator crate:
-
-```bash
-cargo package -p agentra-cli
-```
-
-## Project Policy
-
-- The orchestrator must not force a monolithic install.
-- Missing tools should be reported as `MISSING` with actionable hints.
-- Sister repos stay versioned and released independently.
