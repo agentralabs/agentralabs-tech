@@ -439,6 +439,11 @@ NAV_LINKS=(
   '#benchmarks'
   '#install'
 )
+# Additional nav elements checked by text presence (not href)
+NAV_TEXT_LINKS=(
+  '>Papers</a>'
+  '>API</a>'
+)
 
 for sister in "${SISTERS[@]}"; do
   readme="${WORKSPACE}/${sister}/README.md"
@@ -449,6 +454,12 @@ for sister in "${SISTERS[@]}"; do
   for link in "${NAV_LINKS[@]}"; do
     if ! grep -qF "href=\"${link}\"" "$readme"; then
       fail "${sister}: README nav bar missing link: ${link}"
+      missing=1
+    fi
+  done
+  for textlink in "${NAV_TEXT_LINKS[@]}"; do
+    if ! grep -qF "$textlink" "$readme"; then
+      fail "${sister}: README nav bar missing text link: ${textlink}"
       missing=1
     fi
   done
@@ -975,6 +986,7 @@ README_BADGES=(
   'cargo_install'
   'MCP_Server'
   'License-MIT'
+  'Research-Paper_I'        # must link to paper-i
   'format-.'               # .amem, .atime, .acb, .avis, .aid
 )
 
@@ -1075,6 +1087,199 @@ for sister in "${SISTERS[@]}"; do
     pass "${sister}: all root governance files present"
   fi
 done
+
+# ── 35. Web content: every sister name must appear in critical web pages ──────
+
+section "Web sister name parity in critical pages"
+
+WEB_ROOT="${WORKSPACE}/agentralabs-tech-web"
+SISTER_DISPLAY_NAMES=(AgenticMemory AgenticVision AgenticCodebase AgenticIdentity AgenticTime)
+
+# These files MUST mention ALL sister display names. If a new sister is added
+# and these files are not updated, the guardrail will FAIL.
+WEB_CRITICAL_FILES=(
+  "app/page.tsx"
+  "app/layout.tsx"
+  "components/footer.tsx"
+  "components/pricing-section.tsx"
+  "lib/site.ts"
+  "app/opengraph-image.tsx"
+  "app/projects/page.tsx"
+  "app/projects/head.tsx"
+)
+
+if [ ! -d "$WEB_ROOT" ]; then
+  pass "Skipping web sister name parity (web repo not available)"
+else
+  for webfile in "${WEB_CRITICAL_FILES[@]}"; do
+    filepath="${WEB_ROOT}/${webfile}"
+    if [ ! -f "$filepath" ]; then
+      fail "Web critical file missing: ${webfile}"
+      continue
+    fi
+    missing_names=()
+    for name in "${SISTER_DISPLAY_NAMES[@]}"; do
+      if ! grep -qF "$name" "$filepath"; then
+        missing_names+=("$name")
+      fi
+    done
+    if [ ${#missing_names[@]} -gt 0 ]; then
+      fail "Web ${webfile} missing sister names: ${missing_names[*]}"
+    else
+      pass "Web ${webfile}: all 5 sister names present"
+    fi
+  done
+fi
+
+# ── 36. Web content: file format strings must appear on home page ─────────────
+
+section "Web home page file format completeness"
+
+HOME_PAGE="${WEB_ROOT}/app/page.tsx"
+HERO_SECTION="${WEB_ROOT}/components/hero-section.tsx"
+FILE_FORMATS=(.amem .avis .acb .aid .atime)
+
+if [ ! -d "$WEB_ROOT" ]; then
+  pass "Skipping web file format check (web repo not available)"
+else
+  for target in "$HOME_PAGE" "$HERO_SECTION"; do
+    if [ ! -f "$target" ]; then
+      continue
+    fi
+    basename="$(basename "$(dirname "$target")")/$(basename "$target")"
+    missing_fmt=()
+    for fmt in "${FILE_FORMATS[@]}"; do
+      if ! grep -qF "$fmt" "$target"; then
+        missing_fmt+=("$fmt")
+      fi
+    done
+    if [ ${#missing_fmt[@]} -gt 0 ]; then
+      fail "Web ${basename} missing file formats: ${missing_fmt[*]}"
+    else
+      pass "Web ${basename}: all 5 file formats present"
+    fi
+  done
+fi
+
+# ── 37. Web content: no stale "Four" count (must say "Five") ──────────────────
+
+section "Web stale sister count detection"
+
+# Any file saying "Four open-source" or "Four independent" or "Four file formats"
+# is stale and must be updated to "Five".
+STALE_COUNT_PATTERNS=(
+  "Four open-source"
+  "Four file format"
+  "Four independent"
+  "Four sisters"
+)
+
+if [ ! -d "$WEB_ROOT" ]; then
+  pass "Skipping stale count detection (web repo not available)"
+else
+  stale_found=0
+  for pattern in "${STALE_COUNT_PATTERNS[@]}"; do
+    matches="$(grep -rl "$pattern" "$WEB_ROOT" --include='*.tsx' --include='*.ts' --include='*.md' 2>/dev/null || true)"
+    if [ -n "$matches" ]; then
+      while IFS= read -r match; do
+        relative="${match#"${WEB_ROOT}/"}"
+        # Skip node_modules and .next
+        case "$relative" in
+          node_modules/*|.next/*) continue ;;
+        esac
+        fail "Web ${relative} contains stale count: '${pattern}' (should be Five)"
+        stale_found=1
+      done <<< "$matches"
+    fi
+  done
+  if [ "$stale_found" -eq 0 ]; then
+    pass "Web: no stale 'Four' sister counts found"
+  fi
+fi
+
+# ── 38. Web flyer pages: all sisters in social media OG images ────────────────
+
+section "Web social media flyer sister parity"
+
+WEB_FLYER_FILES=(
+  "app/flyers/twitter-post/route.tsx"
+  "app/flyers/linkedin-post/route.tsx"
+  "app/twitter-image.tsx"
+)
+
+# These files must reference all sister short names (MEMORY, VISION, etc.)
+# OR their full display names (AgenticMemory, etc.)
+SISTER_SHORT_NAMES=(MEMORY VISION CODEBASE IDENTITY TIME)
+
+if [ ! -d "$WEB_ROOT" ]; then
+  pass "Skipping flyer parity (web repo not available)"
+else
+  for flyer in "${WEB_FLYER_FILES[@]}"; do
+    filepath="${WEB_ROOT}/${flyer}"
+    if [ ! -f "$filepath" ]; then
+      fail "Web flyer missing: ${flyer}"
+      continue
+    fi
+    missing_short=()
+    for sname in "${SISTER_SHORT_NAMES[@]}"; do
+      # Check for short name OR full name (case insensitive)
+      if ! grep -qi "$sname" "$filepath"; then
+        missing_short+=("$sname")
+      fi
+    done
+    if [ ${#missing_short[@]} -gt 0 ]; then
+      fail "Web ${flyer} missing sisters: ${missing_short[*]}"
+    else
+      pass "Web ${flyer}: all 5 sisters present"
+    fi
+  done
+fi
+
+# ── 39. Web about section: all sisters mentioned in description ───────────────
+
+section "Web about section sister completeness"
+
+ABOUT_SECTION="${WEB_ROOT}/components/about-section.tsx"
+if [ ! -f "$ABOUT_SECTION" ]; then
+  pass "Skipping about section check (file not available)"
+else
+  missing_about=()
+  for name in "${SISTER_DISPLAY_NAMES[@]}"; do
+    if ! grep -qF "$name" "$ABOUT_SECTION"; then
+      missing_about+=("$name")
+    fi
+  done
+  if [ ${#missing_about[@]} -gt 0 ]; then
+    fail "Web about-section.tsx missing sister names: ${missing_about[*]}"
+  else
+    pass "Web about-section.tsx: all 5 sister names present"
+  fi
+fi
+
+# ── 40. Web scenario data + component: every sister has scenario integration ──
+
+section "Web scenario integration completeness"
+
+SCENARIO_COMPONENT="${WEB_ROOT}/components/scenario-cards-section.tsx"
+SCENARIO_PAGE="${WEB_ROOT}/components/scenario-page.tsx"
+
+if [ ! -d "$WEB_ROOT" ]; then
+  pass "Skipping scenario integration check (web repo not available)"
+else
+  # Already checked data files in section 17, now check components reference all
+  for component in "$SCENARIO_COMPONENT" "$SCENARIO_PAGE"; do
+    if [ ! -f "$component" ]; then
+      continue
+    fi
+    basename="$(basename "$component")"
+    for key in memory vision codebase identity time; do
+      if ! grep -qi "$key" "$component"; then
+        fail "Web ${basename} missing scenario reference for: ${key}"
+      fi
+    done
+    pass "Web ${basename}: all 5 sister scenarios referenced"
+  done
+fi
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
