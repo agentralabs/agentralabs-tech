@@ -29,9 +29,11 @@ section() {
 
 # ── Tool extraction ────────────────────────────────────────────────────────
 #
-# Extracts MCP tool names from Rust dispatch code. Two patterns are matched:
-#   1. Match arms:     "tool_name" => ...::execute  or  self.tool_
-#   2. If-guarded:     tool_name == "tool_name"
+# Extracts MCP tool names from Rust dispatch code. Four patterns are matched:
+#   A. Match arms:     "tool_name" => ...::execute
+#   B. Monolithic:     "tool_name" => self.tool_*(...)
+#   C. If-guarded:     tool_name == "tool_name"
+#   D. Block-match:    "tool_name" => {  (standalone match arms)
 #
 # This filters out MCP protocol names and enum variant matches automatically.
 
@@ -57,6 +59,14 @@ extract_tools_strict() {
       | grep -oE '"[a-z_]+"' \
       | tr -d '"' \
       || true
+
+    # Pattern D: Block-match dispatch — "tool_name" => { (e.g., agentic-time tools.rs)
+    #   Restricted to ≤10 leading spaces to avoid inner match arms (e.g.,
+    #   decay_type match at 16+ spaces inside a tool handler).
+    grep -E '^[[:space:]]{1,10}"[a-z_]+" => \{' "$src" 2>/dev/null \
+      | grep -oE '"[a-z_]+"' \
+      | tr -d '"' \
+      || true
   } | sort -u
 }
 
@@ -70,6 +80,7 @@ SISTERS=(
   agentic-vision
   agentic-codebase
   agentic-identity
+  agentic-time
 )
 
 TOOL_SRCS=(
@@ -77,6 +88,7 @@ TOOL_SRCS=(
   "${WORKSPACE}/agentic-vision/crates/agentic-vision-mcp/src/tools/registry.rs"
   "${WORKSPACE}/agentic-codebase/src/mcp/server.rs"
   "${WORKSPACE}/agentic-identity/crates/agentic-identity-mcp/src/main.rs"
+  "${WORKSPACE}/agentic-time/crates/agentic-time-mcp/src/tools.rs"
 )
 
 DOC_PATHS=(
@@ -84,6 +96,7 @@ DOC_PATHS=(
   "${WORKSPACE}/agentic-vision/docs/public/command-surface.md"
   "${WORKSPACE}/agentic-codebase/docs/public/command-surface.md"
   "${WORKSPACE}/agentic-identity/docs/public/command-surface.md"
+  "${WORKSPACE}/agentic-time/docs/public/command-surface.md"
 )
 
 # ── Main check loop ───────────────────────────────────────────────────────
