@@ -9,7 +9,8 @@ agentra-config.json
 PYPI-BACKFILL-VISION-CODEBASE.md
 SISTER-VISION-20-YEAR.md
 
-# Goals — local-only planning docs (validation, hydra, new-sisters, vision)
+# Internal docs — local-only, read by Claude Code and guardrails
+CLAUDE.md
 goals/
 
 # Contracts crate — local-only, updated as needed, will publish to crates.io later

@@ -1366,7 +1366,7 @@ for key in "${SISTER_KEYS[@]}"; do
     # Count tool-level descriptions with trailing periods (.",)
     trailing=$(grep -c '"description":.*\."' "$desc_file" 2>/dev/null) || trailing=0
     if [ "$trailing" -gt 0 ]; then
-      fail "${key}: ${trailing} tool description(s) have trailing periods (see docs/MCP-QUALITY-STANDARD.md)"
+      fail "${key}: ${trailing} tool description(s) have trailing periods (see goals/MCP-QUALITY-STANDARD.md)"
     else
       pass "${key}: no trailing periods in tool descriptions"
     fi
@@ -1482,7 +1482,7 @@ for key in "${SISTER_KEYS[@]}"; do
   if [ "$has_two_tier" = true ]; then
     pass "${key}: has two-tier error handling (isError:true for tool errors)"
   else
-    fail "${key}: missing two-tier error handling — tool errors must use isError:true, not JSON-RPC errors (see docs/MCP-QUALITY-STANDARD.md)"
+    fail "${key}: missing two-tier error handling — tool errors must use isError:true, not JSON-RPC errors (see goals/MCP-QUALITY-STANDARD.md)"
   fi
 done
 
