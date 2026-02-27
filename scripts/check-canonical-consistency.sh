@@ -752,6 +752,25 @@ else
   if [ "$missing" -eq 0 ]; then
     pass "goals/ has all 4 groups with all required documents"
   fi
+
+  # Hydra gradual planning: every sister should have a section
+  HYDRA_PLANNING="${GOALS_DIR}/hydra/HYDRA-GRADUAL-PLANNING.md"
+  if [ -f "$HYDRA_PLANNING" ]; then
+    hydra_missing=()
+    for key in "${SISTER_KEYS[@]}"; do
+      # Check for the sister's section header (case-insensitive)
+      if ! grep -qi "From ${key}" "$HYDRA_PLANNING"; then
+        hydra_missing+=("$key")
+      fi
+    done
+    if [ ${#hydra_missing[@]} -gt 0 ]; then
+      # Soft warning — does not increment ERRORS (not a CI blocker)
+      echo "  WARN: HYDRA-GRADUAL-PLANNING.md missing sections for: ${hydra_missing[*]}"
+      echo "        Add lessons learned from these sisters to goals/hydra/HYDRA-GRADUAL-PLANNING.md"
+    else
+      pass "HYDRA-GRADUAL-PLANNING.md has sections for all ${#SISTER_KEYS[@]} sisters"
+    fi
+  fi
 fi
 
 # ── 27. Local agentic-contracts/ crate (gitignored but must exist) ──────────
@@ -1273,6 +1292,8 @@ else
     "scripts/check-canonical-consistency.sh"
     "scripts/check-command-surface.sh"
     "scripts/install-mcp-servers.sh"
+    "install_all.sh"
+    "sync_artifacts.sh"
   )
   for script in "${REGISTRY_CONSUMERS[@]}"; do
     if [ -f "${WORKSPACE}/${script}" ]; then

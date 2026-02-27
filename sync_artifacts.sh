@@ -7,11 +7,30 @@ TARGET=""
 DRY_RUN=0
 INCLUDE_HOME_BRAIN=1
 
+# Read file extensions from single-source registry
+REGISTRY="${ROOT_DIR}/docs/sisters-registry.json"
+if [ -f "$REGISTRY" ] && command -v jq >/dev/null 2>&1; then
+  ARTIFACT_EXTS=($(jq -r '.sisters[].fileExtension' "$REGISTRY"))
+else
+  echo "Warning: sisters-registry.json not found or jq missing, using fallback" >&2
+  ARTIFACT_EXTS=(.amem .avis .acb .aid .atime)
+fi
+
+# Build display string and find name args from registry
+ARTIFACT_EXT_DISPLAY="$(IFS=', '; echo "${ARTIFACT_EXTS[*]}")"
+FIND_NAME_ARGS=()
+for ext in "${ARTIFACT_EXTS[@]}"; do
+  if [ ${#FIND_NAME_ARGS[@]} -gt 0 ]; then
+    FIND_NAME_ARGS+=("-o")
+  fi
+  FIND_NAME_ARGS+=("-name" "*${ext}")
+done
+
 usage() {
-  cat <<'EOF'
+  cat <<EOF
 Usage: ./sync_artifacts.sh --target=<path-or-rsync-target> [options]
 
-Syncs sister artifacts (.acb, .aid, .amem, .atime, .avis) to a local or remote target.
+Syncs sister artifacts (${ARTIFACT_EXT_DISPLAY}) to a local or remote target.
 
 Options:
   --target=<value>          Required. Example local path: /srv/agentra/artifacts
@@ -91,7 +110,7 @@ while IFS= read -r abs_path; do
 done < <(
   find "$SOURCE_DIR" \
     \( -path '*/.git/*' -o -path '*/target/*' -o -path '*/node_modules/*' -o -path '*/tests/fixtures/*' \) -prune \
-    -o -type f \( -name '*.acb' -o -name '*.aid' -o -name '*.amem' -o -name '*.atime' -o -name '*.avis' \) -print
+    -o -type f \( "${FIND_NAME_ARGS[@]}" \) -print
 )
 
 artifact_count="$(wc -l <"$manifest_file" | tr -d '[:space:]')"

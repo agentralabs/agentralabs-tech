@@ -5,15 +5,23 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 TEST_MODE=0
 
+# Read sisters from single-source registry
+REGISTRY="${ROOT_DIR}/docs/sisters-registry.json"
+if [ ! -f "$REGISTRY" ]; then
+  echo "Error: sisters-registry.json not found at $REGISTRY" >&2
+  exit 1
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: jq is required but not installed" >&2
+  exit 1
+fi
+
 usage() {
   cat <<'EOF'
 Usage: ./install_all.sh [--test-mode] [--profile=desktop|terminal|server] [--help]
 
-Installs all sister tools from local paths:
-  - agentic-memory-cli + agentic-memory-mcp
-  - agentic-vision-cli + agentic-vision-mcp
-  - agentic-codebase-cli + agentic-codebase-mcp
-  - agentic-identity-cli + agentic-identity-mcp
+Installs all sister CLI + MCP tools from local paths.
+Sisters are read from docs/sisters-registry.json.
 
 Options:
   --test-mode   Print planned install commands without executing.
@@ -54,16 +62,27 @@ case "$PROFILE" in
     ;;
 esac
 
-INSTALL_TARGETS=(
-  "agentic-memory-cli|$ROOT_DIR/agentic-memory/crates/agentic-memory-cli"
-  "agentic-memory-mcp|$ROOT_DIR/agentic-memory/crates/agentic-memory-mcp"
-  "agentic-vision-cli|$ROOT_DIR/agentic-vision/crates/agentic-vision-cli"
-  "agentic-vision-mcp|$ROOT_DIR/agentic-vision/crates/agentic-vision-mcp"
-  "agentic-codebase-cli|$ROOT_DIR/agentic-codebase/crates/agentic-codebase-cli"
-  "agentic-codebase-mcp|$ROOT_DIR/agentic-codebase/crates/agentic-codebase-mcp"
-  "agentic-identity-cli|$ROOT_DIR/agentic-identity/crates/agentic-identity-cli"
-  "agentic-identity-mcp|$ROOT_DIR/agentic-identity/crates/agentic-identity-mcp"
-)
+# Build install targets dynamically from registry
+INSTALL_TARGETS=()
+SISTER_COUNT=$(jq '.sisters | length' "$REGISTRY")
+for i in $(seq 0 $((SISTER_COUNT - 1))); do
+  repo=$(jq -r ".sisters[$i].repo" "$REGISTRY")
+  cli_crate=$(jq -r ".sisters[$i].packages.cliCrate" "$REGISTRY")
+  mcp_crate=$(jq -r ".sisters[$i].packages.mcpCrate" "$REGISTRY")
+  mcp_crate_path=$(jq -r ".sisters[$i].mcp.cratePath" "$REGISTRY")
+
+  # CLI crate — standard path convention: <repo>/crates/<cli-crate>
+  cli_path="$ROOT_DIR/$repo/crates/$cli_crate"
+  if [ -d "$cli_path" ]; then
+    INSTALL_TARGETS+=("${cli_crate}|${cli_path}")
+  fi
+
+  # MCP crate — uses cratePath from registry
+  mcp_path="$ROOT_DIR/$repo/$mcp_crate_path"
+  if [ -d "$mcp_path" ]; then
+    INSTALL_TARGETS+=("${mcp_crate}|${mcp_path}")
+  fi
+done
 
 draw_progress() {
   local done_count="$1"
