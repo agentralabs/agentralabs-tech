@@ -21,6 +21,17 @@ This is not a separate task. It's part of finishing the work. When you solve a h
 
 The file lives in `goals/hydra/` (gitignored, private). If it doesn't exist locally, skip silently.
 
+## MCP Quality Standard
+
+All MCP servers must comply with `docs/MCP-QUALITY-STANDARD.md`. Key rules:
+
+- **Tool descriptions:** verb-first imperative, no trailing periods
+- **Error handling:** tool execution errors → `isError: true`; protocol errors → JSON-RPC error
+- **Unknown tool:** error code `-32803` (TOOL_NOT_FOUND), never `-32601` or `-32602`
+- **Gold standard:** copy MCP types from `agentic-memory/crates/agentic-memory-mcp/src/types/`
+
+When building or modifying any sister's MCP server, reference the standard. Guardrail Sections 42-45 catch violations automatically.
+
 ## Commit Style
 
 - Never add "Co-Authored-By: Claude" to commits

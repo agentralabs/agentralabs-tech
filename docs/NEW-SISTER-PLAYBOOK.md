@@ -114,7 +114,45 @@ agentic-<key>/
 │           └── lib.rs
 ```
 
-### 2.2 Root governance files (required)
+### 2.2 MCP server quality (mandatory — see `docs/MCP-QUALITY-STANDARD.md`)
+
+The MCP crate (`agentic-<key>-mcp`) must comply with `docs/MCP-QUALITY-STANDARD.md`. **Copy the MCP types from `agentic-memory`** as the gold-standard implementation:
+
+**Files to copy and adapt from `agentic-memory/crates/agentic-memory-mcp/src/`:**
+
+| Source file | What it provides |
+|-------------|-----------------|
+| `types/error.rs` | `McpError` enum with `is_protocol_error()` method, correct error codes including `-32803` (TOOL_NOT_FOUND) |
+| `types/response.rs` | `ToolCallResult` with `error()` constructor that sets `isError: true` |
+| `types/message.rs` | JSON-RPC message types (`JsonRpcRequest`, `JsonRpcResponse`, `JsonRpcError`) |
+| `protocol/handler.rs` | Request dispatcher with two-tier error handling pattern |
+
+**Critical MCP quality rules:**
+
+1. **Two-tier error handling** — In `handle_tools_call()`, classify errors from `ToolRegistry::call()`:
+   ```rust
+   let result = match ToolRegistry::call(&name, args, &session).await {
+       Ok(r) => r,
+       Err(e) if e.is_protocol_error() => return Err(e),  // JSON-RPC error
+       Err(e) => ToolCallResult::error(e.to_string()),     // isError: true
+   };
+   ```
+   - Protocol errors (ToolNotFound, InvalidRequest, Unauthorized) → JSON-RPC error response
+   - Tool execution errors (domain-specific failures) → `ToolCallResult::error()` with `isError: true`
+
+2. **Unknown tool → `-32803`** (TOOL_NOT_FOUND), never `-32601` or `-32602`
+
+3. **Tool descriptions** — Verb-first imperative, no trailing periods:
+   - ✅ `"Find semantically similar memories using vector similarity"`
+   - ❌ `"Finds similar memories."` (third person, trailing period)
+
+4. **Parameter descriptions** — Include behavioral hints (defaults, valid ranges):
+   - ✅ `"Maximum results to return (default: 20, min: 1)"`
+   - ❌ `"Max results"`
+
+The guardrail (Sections 42-43 of `check-canonical-consistency.sh`) will catch violations automatically after the sister is registered.
+
+### 2.3 Root governance files (required)
 
 These files are **mandatory** and checked by Section 34 of the canonical consistency guardrail:
 
@@ -126,7 +164,7 @@ Makefile             # copy from agentic-memory, update crate names
 CHANGELOG.md         # start with initial entry
 ```
 
-### 2.3 Required docs (checked by guardrails)
+### 2.4 Required docs (checked by guardrails)
 
 ```
 docs/
@@ -150,7 +188,7 @@ docs/
 
 **Critical:** `docs/ecosystem/CANONICAL_SISTER_KIT.md` must be a **byte-identical copy** of the one in agentic-memory. The guardrail (Section 1) compares SHA256 hashes.
 
-### 2.4 Required assets (checked by Sections 21 + 29)
+### 2.5 Required assets (checked by Sections 21 + 29)
 
 ```
 assets/
@@ -167,7 +205,7 @@ assets/
 - Font: `JetBrains Mono`
 - **Forbidden:** `linearGradient` (no dark themes), `system-ui` (no system fonts)
 
-### 2.5 Required paper directory (Section 28)
+### 2.6 Required paper directory (Section 28)
 
 ```
 paper/
@@ -176,7 +214,7 @@ paper/
     └── references.bib
 ```
 
-### 2.6 Required installer (Section 33 + Canonical Sister Kit)
+### 2.7 Required installer (Section 33 + Canonical Sister Kit)
 
 ```
 installer/
@@ -189,7 +227,7 @@ scripts/
 
 The installer must support 3 profiles: `desktop`, `terminal`, `server`.
 
-### 2.7 Required CI workflows
+### 2.8 Required CI workflows
 
 ```
 .github/workflows/
@@ -198,7 +236,7 @@ The installer must support 3 profiles: `desktop`, `terminal`, `server`.
 └── ci.yml                           # standard cargo test + clippy
 ```
 
-### 2.8 README structure (Sections 5, 30-33)
+### 2.9 README structure (Sections 5, 30-33)
 
 The README must follow the canonical layout and include all required sections:
 
@@ -233,7 +271,7 @@ install/<key>/terminal
 install/<key>/server
 ```
 
-### 2.9 MCP context-capture tool (20-Year Clock pattern)
+### 2.10 MCP context-capture tool (20-Year Clock pattern)
 
 Every sister must have a context-capture tool that records **why** operations happen:
 
@@ -249,7 +287,7 @@ The tool takes an `intent` field (why the action is happening) and optionally a 
 
 ---
 
-## Phase 2.10: Update Hydra Gradual Planning (private, gitignored)
+## Phase 2.11: Update Hydra Gradual Planning (private, gitignored)
 
 If `goals/hydra/HYDRA-GRADUAL-PLANNING.md` exists locally, add a new section for the sister:
 
@@ -377,6 +415,7 @@ Registry & Automation (monorepo):
 
 Sister Repo:
   [ ] Crate structure: core, cli, mcp, ffi
+  [ ] MCP quality: isError:true error handling, -32803, verb-first descriptions (see MCP-QUALITY-STANDARD.md)
   [ ] Root files: LICENSE, CONTRIBUTING.md, SECURITY.md, Makefile, CHANGELOG.md
   [ ] docs/ecosystem/CANONICAL_SISTER_KIT.md (byte-identical)
   [ ] docs/public/command-surface.md (all MCP tools)
@@ -418,7 +457,7 @@ Web Repo:
 | MCP server install | Yes | Reads from registry |
 | Artifact sync | Yes | Reads extensions from registry |
 | Local install (CLI+MCP) | Yes | Reads from registry |
-| Canonical consistency checks | Yes | All 41 sections use registry arrays |
+| Canonical consistency checks | Yes | All 43 sections use registry arrays (incl. MCP quality §42-43) |
 | Command surface checks | Yes | Reads tool source path from registry |
 | Docs sync to web | Yes | Copies registry + reads it |
 | Sister repo structure | Manual | Crates, docs, assets, paper, installer |
