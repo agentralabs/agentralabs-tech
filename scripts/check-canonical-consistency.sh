@@ -1504,7 +1504,9 @@ if [ -d "$CONTRACTS_DIR" ] && [ -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
   # Run cargo test in the contracts crate and capture output
   test_output=$(cd "$CONTRACTS_DIR" && cargo test 2>&1)
   if echo "$test_output" | grep -q "test result: ok"; then
-    test_count=$(echo "$test_output" | grep -o '[0-9]* passed' | head -1 | grep -o '[0-9]*' || echo "?")
+    # Sum all "N passed" lines (unit tests + integration tests + doc tests)
+    test_count=$(echo "$test_output" | grep -o '[0-9]* passed' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+    test_count=${test_count:-0}
     pass "agentic-contracts: cargo test passes (${test_count} tests)"
   else
     fail "agentic-contracts: cargo test FAILED — contracts are broken"
@@ -1523,6 +1525,46 @@ if [ -d "$CONTRACTS_DIR" ] && [ -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
 else
   pass "Skipping agentic-contracts cargo test (local-only, gitignored)"
 fi
+
+# ── Section 47: Standard Reference Doc Pages ─────────────────────────────────
+#
+# Every sister MUST have 8 standard reference doc pages in docs/public/.
+# These pages provide consistent documentation coverage across the ecosystem.
+# See CANONICAL_SISTER_KIT.md Section 10 for details.
+
+section "Standard Reference Doc Pages (docs/public/)"
+
+STANDARD_DOC_PAGES=(
+  "architecture.md"
+  "cli-reference.md"
+  "configuration.md"
+  "ffi-reference.md"
+  "mcp-tools.md"
+  "mcp-resources.md"
+  "mcp-prompts.md"
+  "troubleshooting.md"
+)
+
+for sister in "${SISTERS[@]}"; do
+  docs_dir="${WORKSPACE}/${sister}/docs/public"
+  if [ ! -d "$docs_dir" ]; then
+    fail "${sister}: docs/public/ directory missing"
+    continue
+  fi
+  missing=0
+  missing_pages=()
+  for page in "${STANDARD_DOC_PAGES[@]}"; do
+    if [ ! -f "${docs_dir}/${page}" ]; then
+      missing_pages+=("$page")
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 1 ]; then
+    fail "${sister}: missing standard doc pages: ${missing_pages[*]}"
+  else
+    pass "${sister}: all 8 standard reference doc pages present"
+  fi
+done
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
