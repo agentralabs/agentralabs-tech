@@ -12,9 +12,9 @@ Key terms used across Agentra Labs projects.
 
 **MCP (Model Context Protocol)** — An open standard that lets AI applications discover and call tools exposed by external servers. All Agentra sisters expose their capabilities as MCP tools.
 
-**Sister** — One of the four Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, and AgenticIdentity. Each sister runs as an independent MCP server and produces its own artifact.
+**Sister** — One of the five Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, AgenticIdentity, and AgenticTime. Each sister runs as an independent MCP server and produces its own artifact.
 
-**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity).
+**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity), `.atime` (time).
 
 **Workspace** — The parent directory containing the web repo and all sister repos. The docs sync script reads from this workspace to build the documentation site.
 
@@ -91,3 +91,19 @@ Key terms used across Agentra Labs projects.
 **Derived key** — A child signing key generated from the root key using HKDF-SHA256 with a context-specific path. Types: session keys, capability keys, device keys. Compromising a derived key does not expose the root key.
 
 **.aid** — The AgenticIdentity artifact file. A JSON document containing encrypted private key material (ChaCha20-Poly1305) and plaintext public identity metadata. The public document can be read without the passphrase.
+
+## AgenticTime
+
+**Temporal event** — The atomic unit in a time artifact. Each event has a type (deadline, schedule, reminder, decay, constraint), timestamp, and associated metadata.
+
+**Deadline** — A temporal constraint with a fixed end time and optional escalation policy. Deadlines can be chained and can trigger actions on expiry.
+
+**Decay model** — A mathematical function that reduces the relevance or priority of an item over time. Common models: linear, exponential, step-function.
+
+**Schedule** — A recurring temporal pattern defined by intervals, cron expressions, or calendar rules. Schedules produce temporal events at each occurrence.
+
+**Temporal constraint** — A rule that bounds when an action can or must occur. Constraints can be absolute (before/after a timestamp) or relative (within N hours of another event).
+
+**Temporal reasoning** — The ability to evaluate deadlines, detect scheduling conflicts, compute time-to-expiry, and prioritize actions based on temporal urgency.
+
+**.atime** — The AgenticTime artifact file. Stores temporal events, schedules, decay models, and constraint graphs in a structured binary format.
