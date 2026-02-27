@@ -18,7 +18,8 @@
         "cliCrate": "agentic-memory-cli"
       },
       "paths": {
-        "mcpToolSource": "crates/agentic-memory-mcp/src/tools/registry.rs"
+        "mcpToolSource": "crates/agentic-memory-mcp/src/tools/registry.rs",
+        "edgeCaseInventionsTest": "crates/agentic-memory-mcp/tests/edge_cases_inventions.rs"
       },
       "mcp": {
         "binary": "agentic-memory-mcp",
@@ -48,7 +49,8 @@
         "cliCrate": "agentic-vision-cli"
       },
       "paths": {
-        "mcpToolSource": "crates/agentic-vision-mcp/src/tools/registry.rs"
+        "mcpToolSource": "crates/agentic-vision-mcp/src/tools/registry.rs",
+        "edgeCaseInventionsTest": "crates/agentic-vision-mcp/tests/edge_cases_inventions.rs"
       },
       "mcp": {
         "binary": "agentic-vision-mcp",
@@ -78,7 +80,8 @@
         "cliCrate": "agentic-codebase-cli"
       },
       "paths": {
-        "mcpToolSource": "src/mcp/server.rs"
+        "mcpToolSource": "src/mcp/server.rs",
+        "edgeCaseInventionsTest": "tests/edge_cases_inventions.rs"
       },
       "mcp": {
         "binary": "agentic-codebase-mcp",
@@ -108,7 +111,8 @@
         "cliCrate": "agentic-identity-cli"
       },
       "paths": {
-        "mcpToolSource": "crates/agentic-identity-mcp/src/main.rs"
+        "mcpToolSource": "crates/agentic-identity-mcp/src/main.rs",
+        "edgeCaseInventionsTest": "tests/stress/edge_cases_inventions.rs"
       },
       "mcp": {
         "binary": "agentic-identity-mcp",
@@ -138,7 +142,8 @@
         "cliCrate": "agentic-time-cli"
       },
       "paths": {
-        "mcpToolSource": "crates/agentic-time-mcp/src/tools.rs"
+        "mcpToolSource": "crates/agentic-time-mcp/src/tools.rs",
+        "edgeCaseInventionsTest": "crates/agentic-time-mcp/tests/edge_cases_inventions.rs"
       },
       "mcp": {
         "binary": "agentic-time-mcp",

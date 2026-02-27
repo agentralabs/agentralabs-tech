@@ -1320,6 +1320,172 @@ else
   done
 fi
 
+# ── Section 42: MCP Tool Description Quality ─────────────────────────────────
+
+section "MCP Tool Description Quality (no trailing periods)"
+
+for key in "${SISTER_KEYS[@]}"; do
+  repo=$(jq -r ".sisters[] | select(.key==\"$key\") | .repo" "$REGISTRY_FILE")
+  sister_dir="${WORKSPACE}/${repo}"
+
+  if [ ! -d "$sister_dir" ]; then
+    continue
+  fi
+
+  # Find the main MCP source file where tool descriptions live
+  desc_file=""
+  case "$key" in
+    identity)
+      desc_file="${sister_dir}/crates/agentic-identity-mcp/src/main.rs"
+      ;;
+    codebase)
+      desc_file="${sister_dir}/src/mcp/server.rs"
+      ;;
+    memory)
+      # Memory descriptions are in the tools/ directory via ToolDefinition structs
+      desc_file="${sister_dir}/crates/agentic-memory-mcp/src/tools/registry.rs"
+      ;;
+    vision)
+      desc_file="${sister_dir}/crates/agentic-vision-mcp/src/tools/registry.rs"
+      ;;
+    *)
+      # For future sisters, try common locations
+      for candidate in \
+        "${sister_dir}/crates/agentic-${key}-mcp/src/main.rs" \
+        "${sister_dir}/crates/agentic-${key}-mcp/src/tools/registry.rs" \
+        "${sister_dir}/src/mcp/server.rs"; do
+        if [ -f "$candidate" ]; then
+          desc_file="$candidate"
+          break
+        fi
+      done
+      ;;
+  esac
+
+  if [ -n "$desc_file" ] && [ -f "$desc_file" ]; then
+    # Count tool-level descriptions with trailing periods (.",)
+    trailing=$(grep -c '"description":.*\."' "$desc_file" 2>/dev/null) || trailing=0
+    if [ "$trailing" -gt 0 ]; then
+      fail "${key}: ${trailing} tool description(s) have trailing periods (see docs/MCP-QUALITY-STANDARD.md)"
+    else
+      pass "${key}: no trailing periods in tool descriptions"
+    fi
+  fi
+done
+
+# ── Section 43: MCP Unknown Tool Error Code (-32803) ─────────────────────────
+
+section "MCP Unknown Tool Error Code (-32803)"
+
+for key in "${SISTER_KEYS[@]}"; do
+  repo=$(jq -r ".sisters[] | select(.key==\"$key\") | .repo" "$REGISTRY_FILE")
+  sister_dir="${WORKSPACE}/${repo}"
+
+  if [ ! -d "$sister_dir" ]; then
+    continue
+  fi
+
+  # Check for wrong error codes used for unknown/not-found tools
+  # -32602 (INVALID_PARAMS) should NOT be used for unknown tools
+  # -32601 (METHOD_NOT_FOUND) should NOT be used for unknown tools
+  # Correct: -32803 (TOOL_NOT_FOUND)
+  wrong_code=false
+
+  # Search all Rust source files for unknown tool error patterns
+  if grep -rn "unknown tool.*-32602\|unknown tool.*32602\|-32602.*unknown tool" "$sister_dir/src" "$sister_dir/crates" 2>/dev/null | grep -qi "tool"; then
+    wrong_code=true
+  fi
+  if grep -rn 'method_not_found.*"Unknown tool\|method_not_found.*"Tool not found' "$sister_dir/src" "$sister_dir/crates" 2>/dev/null | grep -qi "tool"; then
+    wrong_code=true
+  fi
+
+  if [ "$wrong_code" = true ]; then
+    fail "${key}: uses wrong error code for unknown tools (should be -32803 TOOL_NOT_FOUND)"
+  else
+    pass "${key}: correct error code for unknown tools"
+  fi
+done
+
+# ── Section 44: Invention Edge Case Test Parity ─────────────────────────────
+
+section "Invention Edge Case Test Parity (edge_cases_inventions.rs)"
+
+for key in "${SISTER_KEYS[@]}"; do
+  repo=$(jq -r ".sisters[] | select(.key==\"$key\") | .repo" "$REGISTRY_FILE")
+  test_path=$(jq -r ".sisters[] | select(.key==\"$key\") | .paths.edgeCaseInventionsTest // empty" "$REGISTRY_FILE")
+  sister_dir="${WORKSPACE}/${repo}"
+
+  if [ ! -d "$sister_dir" ]; then
+    continue
+  fi
+
+  if [ -z "$test_path" ]; then
+    fail "${key}: missing paths.edgeCaseInventionsTest in sisters-registry.json"
+    continue
+  fi
+
+  full_path="${sister_dir}/${test_path}"
+  if [ -f "$full_path" ]; then
+    # Verify file has at least one test function
+    test_count=$(grep -c '#\[tokio::test\]\|#\[test\]' "$full_path" 2>/dev/null || echo 0)
+    if [ "$test_count" -gt 0 ]; then
+      pass "${key}: edge_cases_inventions.rs present with ${test_count} tests"
+    else
+      fail "${key}: edge_cases_inventions.rs exists but contains 0 test functions"
+    fi
+  else
+    fail "${key}: missing ${test_path}"
+  fi
+done
+
+# ── Section 45: MCP Two-Tier Error Handling (is_protocol_error) ──────────────
+
+section "MCP Two-Tier Error Handling (is_protocol_error)"
+
+for key in "${SISTER_KEYS[@]}"; do
+  repo=$(jq -r ".sisters[] | select(.key==\"$key\") | .repo" "$REGISTRY_FILE")
+  sister_dir="${WORKSPACE}/${repo}"
+
+  if [ ! -d "$sister_dir" ]; then
+    continue
+  fi
+
+  # Check if the sister has an MCP crate with error handling
+  has_mcp=false
+  for candidate in \
+    "${sister_dir}/crates/agentic-${key}-mcp/src/types/error.rs" \
+    "${sister_dir}/crates/agentic-${key}-mcp/src/main.rs" \
+    "${sister_dir}/src/mcp/protocol.rs"; do
+    if [ -f "$candidate" ]; then
+      has_mcp=true
+      break
+    fi
+  done
+
+  if [ "$has_mcp" = false ]; then
+    continue
+  fi
+
+  # Check for is_protocol_error method or equivalent two-tier pattern
+  has_two_tier=false
+
+  # Pattern 1: Explicit is_protocol_error() method (memory, vision)
+  if grep -rq "is_protocol_error" "$sister_dir/crates" "$sister_dir/src" 2>/dev/null; then
+    has_two_tier=true
+  fi
+
+  # Pattern 2: isError / ToolCallResult::error pattern in handler
+  if grep -rq "ToolCallResult::error\|is_error.*Some(true)\|isError.*true" "$sister_dir/crates" "$sister_dir/src" 2>/dev/null; then
+    has_two_tier=true
+  fi
+
+  if [ "$has_two_tier" = true ]; then
+    pass "${key}: has two-tier error handling (isError:true for tool errors)"
+  else
+    fail "${key}: missing two-tier error handling — tool errors must use isError:true, not JSON-RPC errors (see docs/MCP-QUALITY-STANDARD.md)"
+  fi
+done
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
