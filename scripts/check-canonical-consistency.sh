@@ -606,12 +606,12 @@ if [ -f "$CMD_SURFACE_SCRIPT" ]; then
   if bash "$CMD_SURFACE_SCRIPT" >/dev/null 2>&1; then
     pass "All MCP tools documented in command-surface.md (all sisters)"
   else
-    # Re-run to capture which tools are missing
-    bash "$CMD_SURFACE_SCRIPT" 2>&1 | grep '^FAIL:' | while IFS= read -r line; do
-      fail "$line"
-    done
-    # Count failures from the sub-script
-    sub_errors="$(bash "$CMD_SURFACE_SCRIPT" 2>&1 | grep -c '^FAIL:' || true)"
+    # Re-run to capture which tools are missing (|| true prevents set -e exit)
+    sub_output="$(bash "$CMD_SURFACE_SCRIPT" 2>&1 || true)"
+    sub_errors="$(echo "$sub_output" | grep -c '^FAIL:' || true)"
+    echo "$sub_output" | grep '^FAIL:' | while IFS= read -r line; do
+      echo "FAIL: $line"
+    done || true
     ERRORS=$((ERRORS + sub_errors))
   fi
 else
@@ -864,6 +864,215 @@ for sister in "${SISTERS[@]}"; do
     fail "${sister}: missing references.bib in $(basename "$paper_i")"
   else
     pass "${sister}: paper/paper-i-* with .tex + references.bib present"
+  fi
+done
+
+# ── 29. SVG design system conformance ────────────────────────────────────────
+#
+# All sister SVGs MUST use the canonical Agentra design system:
+#   Background: #f2f1ea (light parchment, NOT dark gradients)
+#   Grid: dotted pattern with #b8b6ae or #c8c5bb or #c9c6bb dots
+#   Text: #111111 primary ink
+#   Accent: #ea580c orange
+#   Font: JetBrains Mono (or IBM Plex Mono fallback)
+#
+# This prevents the exact problem that happened with agentic-time's initial
+# SVGs (dark gradient theme with system-ui fonts).
+
+section "SVG design system conformance (Agentra canonical)"
+
+SVG_DESIGN_TOKENS=(
+  "#f2f1ea"           # canonical background color
+  "#111111"           # canonical ink color
+  "#ea580c"           # canonical accent color
+  "JetBrains Mono"    # canonical font family
+)
+
+SVG_DARK_ANTI_TOKENS=(
+  "linearGradient"    # dark gradient backgrounds are NOT canonical
+  "system-ui"         # system fonts are NOT canonical
+)
+
+for sister in "${SISTERS[@]}"; do
+  missing=0
+  for svg in "${REQUIRED_SVGS[@]}"; do
+    svgfile="${WORKSPACE}/${sister}/${svg}"
+    if [ ! -f "$svgfile" ]; then
+      continue  # already flagged in section 21
+    fi
+
+    # Positive check: must contain design tokens
+    for token in "${SVG_DESIGN_TOKENS[@]}"; do
+      if ! grep -qF "$token" "$svgfile"; then
+        fail "${sister}: ${svg} missing design token: ${token}"
+        missing=1
+      fi
+    done
+
+    # Negative check: must NOT contain anti-tokens
+    for antitoken in "${SVG_DARK_ANTI_TOKENS[@]}"; do
+      if grep -qF "$antitoken" "$svgfile"; then
+        fail "${sister}: ${svg} has non-canonical token: ${antitoken} (use Agentra design system)"
+        missing=1
+      fi
+    done
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: all SVGs conform to Agentra design system"
+  fi
+done
+
+# ── 30. README full canonical structure ──────────────────────────────────────
+#
+# Beyond basic section presence (section 5), enforce the complete README
+# structure that all sisters must have. This catches stripped-down READMEs
+# that have Install/Quickstart but miss MCP, Benchmarks, or other sections.
+
+section "README full canonical structure"
+
+README_FULL_SECTIONS=(
+  '## Problems Solved'
+  '## MCP'                      # MCP Tools or MCP Server
+  '## Benchmarks'
+  '## Why'
+  '## Install'
+  '## Quickstart'
+  '## How It Works'
+  '## Common Workflows'
+  '## Validation'
+  '## Repository Structure'
+  '## Contributing'
+  '## Privacy and Security'
+  'Built by'                    # footer
+)
+
+for sister in "${SISTERS[@]}"; do
+  readme="${WORKSPACE}/${sister}/README.md"
+  if [ ! -f "$readme" ]; then
+    continue  # already flagged above
+  fi
+  missing=0
+  for sec in "${README_FULL_SECTIONS[@]}"; do
+    if ! grep -qF "$sec" "$readme"; then
+      fail "${sister}: README missing canonical section/element: ${sec}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: README has all canonical structure elements"
+  fi
+done
+
+# ── 31. README canonical badges ──────────────────────────────────────────────
+#
+# All sisters must have the standard badge rows: pip install, cargo install,
+# MCP Server, MIT License, and format badge.
+
+section "README canonical badges"
+
+README_BADGES=(
+  'pip_install'
+  'cargo_install'
+  'MCP_Server'
+  'License-MIT'
+  'format-.'               # .amem, .atime, .acb, .avis, .aid
+)
+
+for sister in "${SISTERS[@]}"; do
+  readme="${WORKSPACE}/${sister}/README.md"
+  if [ ! -f "$readme" ]; then
+    continue
+  fi
+  missing=0
+  for badge in "${README_BADGES[@]}"; do
+    if ! grep -qF "$badge" "$readme"; then
+      fail "${sister}: README missing canonical badge: ${badge}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: README has all canonical badges"
+  fi
+done
+
+# ── 32. README deployment model section ──────────────────────────────────────
+
+section "README Deployment Model + MCP Server configuration"
+
+README_DEPLOY_ELEMENTS=(
+  '## Deployment Model'
+  '## MCP Server'
+  'claude_desktop_config.json'
+  '.vscode/settings.json'
+  'Standalone'
+)
+
+for sister in "${SISTERS[@]}"; do
+  readme="${WORKSPACE}/${sister}/README.md"
+  if [ ! -f "$readme" ]; then
+    continue
+  fi
+  missing=0
+  for elem in "${README_DEPLOY_ELEMENTS[@]}"; do
+    if ! grep -qF "$elem" "$readme"; then
+      fail "${sister}: README missing deployment element: ${elem}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: README has deployment model + MCP server config"
+  fi
+done
+
+# ── 33. README install profiles (desktop/terminal/server) ──────────────────
+
+section "README install profiles"
+
+for sister in "${SISTERS[@]}"; do
+  readme="${WORKSPACE}/${sister}/README.md"
+  if [ ! -f "$readme" ]; then
+    continue
+  fi
+  missing=0
+  for profile in desktop terminal server; do
+    if ! grep -qF "install/${profile}" "$readme" 2>/dev/null; then
+      # Try alternate pattern with sister key
+      key="${sister#agentic-}"
+      if ! grep -qF "${key}/${profile}" "$readme" 2>/dev/null; then
+        fail "${sister}: README missing install profile: ${profile}"
+        missing=1
+      fi
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: README has all 3 install profiles"
+  fi
+done
+
+# ── 34. Root governance files ────────────────────────────────────────────────
+#
+# Every sister MUST have these root files for a professional, complete repo.
+
+section "Root governance files"
+
+ROOT_FILES=(
+  LICENSE
+  CONTRIBUTING.md
+  SECURITY.md
+  Makefile
+  CHANGELOG.md
+)
+
+for sister in "${SISTERS[@]}"; do
+  missing=0
+  for rf in "${ROOT_FILES[@]}"; do
+    if [ ! -f "${WORKSPACE}/${sister}/${rf}" ]; then
+      fail "${sister}: missing root file ${rf}"
+      missing=1
+    fi
+  done
+  if [ "$missing" -eq 0 ]; then
+    pass "${sister}: all root governance files present"
   fi
 done
 
