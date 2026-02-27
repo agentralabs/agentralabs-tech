@@ -1566,6 +1566,66 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
+# ── Section 48: agentic-contracts Trait Implementations ───────────────────────
+#
+# Every sister MUST implement agentic-contracts v0.2.0 traits.
+# Checks: contracts.rs exists, module declared in lib.rs, dep in Cargo.toml.
+
+section "agentic-contracts Trait Implementations"
+
+for i in "${!SISTERS[@]}"; do
+  sister="${SISTERS[$i]}"
+  core_crate="${CORE_CRATES[$i]}"
+  sister_dir="${WORKSPACE}/${sister}"
+
+  if [ ! -d "$sister_dir" ]; then
+    pass "Skipping ${sister} (not cloned locally)"
+    continue
+  fi
+
+  # Resolve the core crate source directory
+  # Codebase uses flat structure (src/), others use crates/<core>/src/
+  if [ -d "${sister_dir}/crates/${core_crate}/src" ]; then
+    src_dir="${sister_dir}/crates/${core_crate}/src"
+    cargo_toml="${sister_dir}/crates/${core_crate}/Cargo.toml"
+  elif [ -d "${sister_dir}/src" ]; then
+    src_dir="${sister_dir}/src"
+    cargo_toml="${sister_dir}/Cargo.toml"
+  else
+    fail "${sister}: cannot locate core crate source directory"
+    continue
+  fi
+
+  # 1. contracts.rs exists
+  if [ -f "${src_dir}/contracts.rs" ]; then
+    pass "${sister}: contracts.rs exists"
+  else
+    fail "${sister}: contracts.rs missing in ${src_dir}"
+  fi
+
+  # 2. contracts module declared in lib.rs
+  if [ -f "${src_dir}/lib.rs" ]; then
+    if grep -qE '(pub\s+)?mod\s+contracts' "${src_dir}/lib.rs"; then
+      pass "${sister}: contracts module declared in lib.rs"
+    else
+      fail "${sister}: contracts module NOT declared in lib.rs"
+    fi
+  else
+    fail "${sister}: lib.rs not found in ${src_dir}"
+  fi
+
+  # 3. agentic-contracts dependency in Cargo.toml
+  if [ -f "$cargo_toml" ]; then
+    if grep -q 'agentic.contracts' "$cargo_toml"; then
+      pass "${sister}: agentic-contracts dependency present"
+    else
+      fail "${sister}: agentic-contracts dependency MISSING in ${cargo_toml}"
+    fi
+  else
+    fail "${sister}: Cargo.toml not found at ${cargo_toml}"
+  fi
+done
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
