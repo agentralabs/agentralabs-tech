@@ -1,127 +1,89 @@
-# AgentraLabs Tech Workspace
+<p align="center">
+  <img src="assets/github-hero-pane.svg" alt="Agentra workspace hero pane" width="980">
+</p>
 
-This repository is the top-level UX/orchestration workspace for the five core sister projects:
+<p align="center">
+  <a href="https://github.com/agentralabs/agentic-memory"><img src="https://img.shields.io/badge/Memory-0.3.2-111111?style=for-the-badge" alt="Memory"></a>
+  <a href="https://github.com/agentralabs/agentic-vision"><img src="https://img.shields.io/badge/Vision-0.2.2-111111?style=for-the-badge" alt="Vision"></a>
+  <a href="https://github.com/agentralabs/agentic-codebase"><img src="https://img.shields.io/badge/Codebase-0.2.2-111111?style=for-the-badge" alt="Codebase"></a>
+  <a href="https://github.com/agentralabs/agentic-identity"><img src="https://img.shields.io/badge/Identity-0.2.3-111111?style=for-the-badge" alt="Identity"></a>
+  <a href="https://github.com/agentralabs/agentic-time"><img src="https://img.shields.io/badge/Time-0.1.0-ea580c?style=for-the-badge" alt="Time"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
+</p>
 
-- `agentic-memory`
-- `agentic-vision`
-- `agentic-codebase`
-- `agentic-identity`
-- `agentic-time`
+<p align="center">
+  <strong>Workspace orchestrator for the five Agentra sisters.</strong>
+</p>
 
-The sisters remain independently installable and independently runnable. This workspace adds a unified operator CLI (`agentra`) so users can quickly validate local setup and launch an interactive dashboard.
+<p align="center">
+  <a href="#sisters">Sisters</a> · <a href="#quick-start">Quick Start</a> · <a href="#install">Install</a> · <a href="#layout">Layout</a> · <a href="https://agentralab-tech-web.vercel.app">Docs</a>
+</p>
 
-## What This Project Does
+---
 
-- Provides one workspace entrypoint for the Agentra sister ecosystem.
-- Keeps each sister independently installable and runnable.
-- Adds a fast operator UX (`agentra status` and `agentra ui`) to verify local readiness.
-- Adds local install/test scripts for repeatable setup.
+<a name="sisters"></a>
 
-## Workspace Flow
+## Sisters
 
-```mermaid
-flowchart TD
-    A["User in agentralabs-tech"] --> B["Run ./install_all.sh"]
-    B --> C["Install agentic-memory"]
-    B --> D["Install agentic-vision"]
-    B --> E["Install agentic-codebase"]
-    B --> F2["Install agentic-identity"]
-    B --> F3["Install agentic-time"]
-    C --> F["Run cargo run --bin agentra -- status"]
-    D --> F
-    E --> F
-    F2 --> F
-    F3 --> F
-    F --> G["Run cargo run --bin agentra -- ui"]
-    G --> H["Detect MCP/CLI tools and show hints"]
-```
+| Sister | Artifact | What it does |
+|--------|----------|-------------|
+| [**AgenticMemory**](https://github.com/agentralabs/agentic-memory) | `.amem` | Persistent cognitive graph memory — facts, decisions, corrections, reasoning chains |
+| [**AgenticVision**](https://github.com/agentralabs/agentic-vision) | `.avis` | Persistent visual memory — CLIP embeddings, similarity search, visual diff |
+| [**AgenticCodebase**](https://github.com/agentralabs/agentic-codebase) | `.acb` | Semantic code intelligence — concept graphs, impact analysis, coupling detection |
+| [**AgenticIdentity**](https://github.com/agentralabs/agentic-identity) | `.aid` | Cryptographic agent identity — Ed25519 anchors, signed receipts, trust delegation |
+| [**AgenticTime**](https://github.com/agentralabs/agentic-time) | `.atime` | Temporal reasoning — deadlines, schedules, PERT estimation, decay models |
 
-## Goals
+Each sister is an independent MCP server. Install one or all. Any model. Any client.
 
-- Keep each sister project standalone.
-- Provide a consistent top-level UX.
-- Make setup/validation fast for local AI workflows.
-
-## Layout
-
-- `agentra-cli/` — unified orchestrator CLI (`agentra`)
-- `agentic-memory/` — persistent graph memory tooling
-- `agentic-vision/` — visual memory tooling
-- `agentic-codebase/` — code graph + query tooling
-- `agentic-identity/` — cryptographic agent identity tooling
-- `agentic-time/` — temporal reasoning tooling (deadlines, schedules, decay)
-- `install_all.sh` — install sisters from local paths
-- `sync_artifacts.sh` — sync `.amem/.avis/.acb/.aid/.atime` artifacts to server paths
-- `local_ai_test.sh` — simple local Ollama integration smoke script
-
-## Current Published State (2026-02-25)
-
-- `agentic-memory`: `0.3.2` (`agentic-memory`, `agentic-memory-ffi`, `agentic-memory-mcp`, `agentic-memory-cli`)
-- `agentic-vision`: `0.2.2` (`agentic-vision`, `agentic-vision-ffi`, `agentic-vision-mcp`, `agentic-vision-cli`)
-- `agentic-codebase`: `0.2.2` (`agentic-codebase`, `agentic-codebase-ffi`, `agentic-codebase-mcp`, `agentic-codebase-cli`)
-- `agentic-identity`: `0.2.3` (`agentic-identity`, `agentic-identity-ffi`, `agentic-identity-mcp`, `agentic-identity-cli`)
-- `agentic-time`: `0.1.0` (`agentic-time`, `agentic-time-ffi`, `agentic-time-mcp`, `agentic-time-cli`)
-
-Quick install commands for the public CLIs:
-
-```bash
-cargo install agentic-memory-cli && amem --help
-cargo install agentic-vision-cli && avis --version
-cargo install agentic-codebase-cli && acb --version
-cargo install agentic-identity-cli && aid --version
-cargo install agentic-time-cli && atime --version
-```
+<a name="quick-start"></a>
 
 ## Quick Start
 
-From this directory:
-
 ```bash
-cargo run --bin agentra -- status
-cargo run --bin agentra -- status --session
-cargo run --bin agentra -- ui
-cargo run --bin agentra -- toggle codebase off
-cargo run --bin agentra -- toggle codebase on
-cargo run --bin agentra -- control on
+cargo install agentic-memory-cli    # amem
+cargo install agentic-vision-cli    # avis
+cargo install agentic-codebase-cli  # acb
+cargo install agentic-identity-cli  # aid
+cargo install agentic-time-cli      # atime
 ```
 
-UI controls:
-
-- `r` refresh detection
-- `h` show start hints
-- `q` quit
-
-`agentra status` reports each tool as:
-
-- `OK`
-- `DISABLED`
-- `MISSING`
-
-Health + repair:
+Or use the orchestrator:
 
 ```bash
-cargo run --bin agentra -- doctor
-cargo run --bin agentra -- doctor --fix
+cargo run --bin agentra -- status          # check what's installed
+cargo run --bin agentra -- doctor          # health check + repair
+cargo run --bin agentra -- doctor --fix    # auto-fix issues
 ```
 
-Backup and restore:
+<a name="install"></a>
+
+## Install
 
 ```bash
-cargo run --bin agentra -- backup run
-cargo run --bin agentra -- backup list
-cargo run --bin agentra -- backup verify
+./install_all.sh                    # install all sisters locally
+./install_all.sh --profile=desktop  # desktop MCP client profile
+./install_all.sh --profile=server   # server runtime profile
 ```
 
-Server takeover notes and preflight:
+<a name="layout"></a>
 
-- Set `AGENTRA_RUNTIME_MODE=server` for server runtime.
-- Server takeover requires `AGENTIC_TOKEN` or `AGENTIC_TOKEN_FILE`.
-- To scan local artifact paths from server runtime, set `AGENTRA_ARTIFACT_DIRS=/path/a:/path/b`.
-- Generate a token with `openssl rand -hex 32`.
-- Cloud runtimes cannot read laptop files directly; sync artifacts first with `./sync_artifacts.sh`.
+## Layout
 
-```bash
-cargo run --bin agentra -- server preflight
-# add --strict in CI/automation once env is configured
+```
+agentralabs-tech/
+├── agentra-cli/       orchestrator CLI (agentra)
+├── agentic-memory/    persistent graph memory
+├── agentic-vision/    visual memory
+├── agentic-codebase/  code graph + query engine
+├── agentic-identity/  cryptographic agent identity
+├── agentic-time/      temporal reasoning
+├── install_all.sh     install sisters from local paths
+├── sync_artifacts.sh  sync artifacts to server paths
+└── scripts/           guardrail + consistency checks
 ```
 
+---
+
+<p align="center">
+  Built by <a href="https://agentralab-tech-web.vercel.app">Agentra Labs</a>
+</p>
