@@ -1268,17 +1268,18 @@ else
   done
   pass "All registry sisters have required fields"
 
-  # Verify key scripts source from registry (not hardcoded)
+  # Verify key scripts reference the registry (not hardcoded)
   REGISTRY_CONSUMERS=(
     "scripts/check-canonical-consistency.sh"
     "scripts/check-command-surface.sh"
+    "scripts/install-mcp-servers.sh"
   )
   for script in "${REGISTRY_CONSUMERS[@]}"; do
     if [ -f "${WORKSPACE}/${script}" ]; then
-      if grep -qF "load-sisters.sh" "${WORKSPACE}/${script}"; then
-        pass "${script} sources from registry via load-sisters.sh"
+      if grep -qF "load-sisters.sh" "${WORKSPACE}/${script}" || grep -qF "sisters-registry.json" "${WORKSPACE}/${script}"; then
+        pass "${script} reads from registry"
       else
-        fail "${script} does not source load-sisters.sh (may have hardcoded sister list)"
+        fail "${script} does not reference registry (may have hardcoded sister list)"
       fi
     fi
   done

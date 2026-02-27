@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# install-mcp-servers.sh — Build and install all 5 agentic sister MCP servers
+# install-mcp-servers.sh — Build and install all agentic sister MCP servers
 # and configure ~/.claude/mcp.json to use the stable cargo-installed paths.
 #
 # Usage: bash scripts/install-mcp-servers.sh
+#
+# Sister definitions are read from docs/sisters-registry.json (single source
+# of truth). To add a new sister, edit the registry — not this file.
 #
 # This script is idempotent — safe to re-run after code changes.
 
@@ -11,6 +14,7 @@ set -euo pipefail
 WORKSPACE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CARGO_BIN="${CARGO_HOME:-$HOME/.cargo}/bin"
 CLAUDE_MCP_CONFIG="$HOME/.claude/mcp.json"
+REGISTRY="${WORKSPACE_ROOT}/docs/sisters-registry.json"
 
 # Colors
 RED='\033[0;31m'
@@ -24,46 +28,25 @@ ok()    { echo -e "${GREEN}[ok]${NC}    $*"; }
 warn()  { echo -e "${YELLOW}[warn]${NC}  $*"; }
 fail()  { echo -e "${RED}[fail]${NC}  $*"; exit 1; }
 
-# ── Sister definitions ─────────────────────────────────────────────
-declare -a SISTERS=(
-  "agentic-memory"
-  "agentic-vision"
-  "agentic-codebase"
-  "agentic-identity"
-  "agentic-time"
-)
+if [ ! -f "$REGISTRY" ]; then
+  fail "sisters-registry.json not found at $REGISTRY"
+fi
 
-declare -A MCP_CRATE_PATH=(
-  [agentic-memory]="agentic-memory/crates/agentic-memory-mcp"
-  [agentic-vision]="agentic-vision/crates/agentic-vision-mcp"
-  [agentic-codebase]="agentic-codebase/crates/agentic-codebase-mcp"
-  [agentic-identity]="agentic-identity/crates/agentic-identity-mcp"
-  [agentic-time]="agentic-time/crates/agentic-time-mcp"
-)
+if ! command -v jq >/dev/null 2>&1; then
+  fail "jq is required but not installed"
+fi
 
-declare -A MCP_BIN_NAME=(
-  [agentic-memory]="agentic-memory-mcp"
-  [agentic-vision]="agentic-vision-mcp"
-  [agentic-codebase]="agentic-codebase-mcp"
-  [agentic-identity]="agentic-identity-mcp"
-  [agentic-time]="agentic-time-mcp"
-)
-
-declare -A MCP_ARGS=(
-  [agentic-memory]='["serve"]'
-  [agentic-vision]='["--log-level", "error", "serve"]'
-  [agentic-codebase]='[]'
-  [agentic-identity]='[]'
-  [agentic-time]='[]'
-)
+SISTER_COUNT=$(jq '.sisters | length' "$REGISTRY")
 
 # ── Step 1: Build and install all MCP binaries ─────────────────────
 info "Building and installing MCP server binaries..."
 FAILED=0
 
-for sister in "${SISTERS[@]}"; do
-  crate_path="${WORKSPACE_ROOT}/${MCP_CRATE_PATH[$sister]}"
-  bin_name="${MCP_BIN_NAME[$sister]}"
+for i in $(seq 0 $((SISTER_COUNT - 1))); do
+  sister=$(jq -r ".sisters[$i].repo" "$REGISTRY")
+  bin_name=$(jq -r ".sisters[$i].mcp.binary" "$REGISTRY")
+  crate_rel=$(jq -r ".sisters[$i].mcp.cratePath" "$REGISTRY")
+  crate_path="${WORKSPACE_ROOT}/${sister}/${crate_rel}"
 
   if [ ! -d "$crate_path" ]; then
     warn "Skipping $sister — crate path not found: $crate_path"
@@ -96,34 +79,20 @@ info "Updating $CLAUDE_MCP_CONFIG ..."
 
 mkdir -p "$(dirname "$CLAUDE_MCP_CONFIG")"
 
-# Build JSON manually to avoid jq dependency
-cat > "$CLAUDE_MCP_CONFIG" << MCPJSON
-{
-  "mcpServers": {
-    "agentic-memory": {
-      "command": "$CARGO_BIN/agentic-memory-mcp",
-      "args": ["serve"]
-    },
-    "agentic-vision": {
-      "command": "$CARGO_BIN/agentic-vision-mcp",
-      "args": ["--log-level", "error", "serve"]
-    },
-    "agentic-codebase": {
-      "command": "$CARGO_BIN/agentic-codebase-mcp",
-      "args": []
-    },
-    "agentic-identity": {
-      "command": "$CARGO_BIN/agentic-identity-mcp",
-      "args": [],
-      "env": {}
-    },
-    "agentic-time": {
-      "command": "$CARGO_BIN/agentic-time-mcp",
-      "args": []
-    }
+# Build MCP config dynamically from registry
+jq -n --arg cargo_bin "$CARGO_BIN" --slurpfile reg "$REGISTRY" '
+  {
+    mcpServers: (
+      $reg[0].sisters | map({
+        key: .repo,
+        value: {
+          command: ($cargo_bin + "/" + .mcp.binary),
+          args: .mcp.args
+        }
+      }) | from_entries
+    )
   }
-}
-MCPJSON
+' > "$CLAUDE_MCP_CONFIG"
 
 ok "MCP config written to $CLAUDE_MCP_CONFIG"
 
@@ -131,8 +100,8 @@ ok "MCP config written to $CLAUDE_MCP_CONFIG"
 info "Verifying installed binaries..."
 ALL_OK=true
 
-for sister in "${SISTERS[@]}"; do
-  bin_name="${MCP_BIN_NAME[$sister]}"
+for i in $(seq 0 $((SISTER_COUNT - 1))); do
+  bin_name=$(jq -r ".sisters[$i].mcp.binary" "$REGISTRY")
   bin_path="$CARGO_BIN/$bin_name"
   if [ -x "$bin_path" ]; then
     ok "$bin_name ✓"
@@ -144,7 +113,7 @@ done
 
 if $ALL_OK; then
   echo ""
-  ok "All 5 sister MCP servers installed and configured."
+  ok "All $SISTER_COUNT sister MCP servers installed and configured."
   info "Restart Claude Code to pick up the new binaries."
 else
   echo ""
