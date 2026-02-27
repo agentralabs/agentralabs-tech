@@ -13,8 +13,8 @@ SISTER-VISION-20-YEAR.md
 CLAUDE.md
 goals/
 
-# Contracts crate — local-only, updated as needed, will publish to crates.io later
-agentic-contracts/
+# SDK crate — local-only, updated as needed, will publish to crates.io later
+agentic-sdk/
 
 # Nested repos managed independently
 .github-org-profile/

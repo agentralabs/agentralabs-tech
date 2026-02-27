@@ -668,7 +668,7 @@ done
 #
 # WHEN BUILDING A NEW SISTER:
 #   cat goals/new-sisters/SISTER-V2-PATTERNS.md
-#   cp -r agentic-contracts/ ../new-sister/deps/
+#   cp -r agentic-sdk/ ../new-sister/deps/
 #
 # WHEN BUILDING HYDRA:
 #   ls goals/hydra/   # 13 specification documents
@@ -773,30 +773,30 @@ else
   fi
 fi
 
-# ── 27. Local agentic-contracts/ crate (gitignored but must exist) ──────────
+# ── 27. Local agentic-sdk/ crate (gitignored but must exist) ──────────
 #
 # Single source of truth for Rust traits all sisters implement.
 # Will be published to crates.io when ready.
 #
 # WHEN VALIDATING A SISTER:
-#   cd agentic-contracts && cargo test
+#   cd agentic-sdk && cargo test
 #   cat docs/SISTER-COMPLIANCE-VERIFICATION.md
 #
 # WHEN BUILDING A NEW SISTER:
 #   # Add to new sister's Cargo.toml:
-#   # agentic-contracts = { path = "../agentic-contracts" }
+#   # agentic-sdk = { path = "../agentic-sdk" }
 #
 
-section "Local agentic-contracts/ crate"
+section "Local agentic-sdk/ crate"
 
-CONTRACTS_DIR="${WORKSPACE}/agentic-contracts"
+CONTRACTS_DIR="${WORKSPACE}/agentic-sdk"
 if [ ! -d "$CONTRACTS_DIR" ]; then
-  pass "Skipping agentic-contracts/ check (gitignored, local-only)"
+  pass "Skipping agentic-sdk/ check (gitignored, local-only)"
 else
   missing=0
 
   if [ ! -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
-    fail "agentic-contracts/Cargo.toml missing"
+    fail "agentic-sdk/Cargo.toml missing"
     missing=1
   fi
 
@@ -815,26 +815,26 @@ else
   )
   for src in "${REQUIRED_SOURCES[@]}"; do
     if [ ! -f "${CONTRACTS_DIR}/${src}" ]; then
-      fail "agentic-contracts/${src} missing"
+      fail "agentic-sdk/${src} missing"
       missing=1
     fi
   done
 
   if [ ! -f "${CONTRACTS_DIR}/docs/SISTER-COMPLIANCE-VERIFICATION.md" ]; then
-    fail "agentic-contracts/docs/SISTER-COMPLIANCE-VERIFICATION.md missing"
+    fail "agentic-sdk/docs/SISTER-COMPLIANCE-VERIFICATION.md missing"
     missing=1
   fi
 
   # v0.2.0: Verify key traits exist in source
   for trait_name in "SessionManagement" "WorkspaceManagement" "Grounding" "HydraBridge" "ExecutionGate" "ProtocolError"; do
     if ! grep -rq "$trait_name" "${CONTRACTS_DIR}/src/"; then
-      fail "agentic-contracts missing required trait/type: $trait_name"
+      fail "agentic-sdk missing required trait/type: $trait_name"
       missing=1
     fi
   done
 
   if [ "$missing" -eq 0 ]; then
-    pass "agentic-contracts/ crate structure complete (11 source files + v0.2.0 traits)"
+    pass "agentic-sdk/ crate structure complete (11 source files + v0.2.0 traits)"
   fi
 fi
 
@@ -1495,11 +1495,11 @@ for key in "${SISTER_KEYS[@]}"; do
   fi
 done
 
-# ── Section 46: agentic-contracts cargo test ──────────────────────────────────
+# ── Section 46: agentic-sdk cargo test ──────────────────────────────────
 
-section "agentic-contracts cargo test"
+section "agentic-sdk cargo test"
 
-CONTRACTS_DIR="${WORKSPACE}/agentic-contracts"
+CONTRACTS_DIR="${WORKSPACE}/agentic-sdk"
 if [ -d "$CONTRACTS_DIR" ] && [ -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
   # Run cargo test in the contracts crate and capture output
   test_output=$(cd "$CONTRACTS_DIR" && cargo test 2>&1)
@@ -1507,23 +1507,23 @@ if [ -d "$CONTRACTS_DIR" ] && [ -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
     # Sum all "N passed" lines (unit tests + integration tests + doc tests)
     test_count=$(echo "$test_output" | grep -o '[0-9]* passed' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
     test_count=${test_count:-0}
-    pass "agentic-contracts: cargo test passes (${test_count} tests)"
+    pass "agentic-sdk: cargo test passes (${test_count} tests)"
   else
-    fail "agentic-contracts: cargo test FAILED — contracts are broken"
+    fail "agentic-sdk: cargo test FAILED — contracts are broken"
   fi
 
   # Verify version is >= 0.2.0
   contracts_version=$(grep '^version' "${CONTRACTS_DIR}/Cargo.toml" | head -1 | grep -o '"[^"]*"' | tr -d '"')
   case "$contracts_version" in
     0.1.*)
-      fail "agentic-contracts version ${contracts_version} is pre-validation — must be >= 0.2.0"
+      fail "agentic-sdk version ${contracts_version} is pre-validation — must be >= 0.2.0"
       ;;
     *)
-      pass "agentic-contracts version ${contracts_version}"
+      pass "agentic-sdk version ${contracts_version}"
       ;;
   esac
 else
-  pass "Skipping agentic-contracts cargo test (local-only, gitignored)"
+  pass "Skipping agentic-sdk cargo test (local-only, gitignored)"
 fi
 
 # ── Section 47: Standard Reference Doc Pages ─────────────────────────────────
@@ -1566,12 +1566,12 @@ for sister in "${SISTERS[@]}"; do
   fi
 done
 
-# ── Section 48: agentic-contracts Trait Implementations ───────────────────────
+# ── Section 48: agentic-sdk Trait Implementations ───────────────────────
 #
-# Every sister MUST implement agentic-contracts v0.2.0 traits.
+# Every sister MUST implement agentic-sdk v0.2.0 traits.
 # Checks: contracts.rs exists, module declared in lib.rs, dep in Cargo.toml.
 
-section "agentic-contracts Trait Implementations"
+section "agentic-sdk Trait Implementations"
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -1614,12 +1614,12 @@ for i in "${!SISTERS[@]}"; do
     fail "${sister}: lib.rs not found in ${src_dir}"
   fi
 
-  # 3. agentic-contracts dependency in Cargo.toml
+  # 3. agentic-sdk dependency in Cargo.toml
   if [ -f "$cargo_toml" ]; then
-    if grep -q 'agentic.contracts' "$cargo_toml"; then
-      pass "${sister}: agentic-contracts dependency present"
+    if grep -q 'agentic.sdk' "$cargo_toml"; then
+      pass "${sister}: agentic-sdk dependency present"
     else
-      fail "${sister}: agentic-contracts dependency MISSING in ${cargo_toml}"
+      fail "${sister}: agentic-sdk dependency MISSING in ${cargo_toml}"
     fi
   else
     fail "${sister}: Cargo.toml not found at ${cargo_toml}"
