@@ -811,6 +811,7 @@ else
     src/query.rs
     src/receipts.rs
     src/file_format.rs
+    src/hydra.rs
   )
   for src in "${REQUIRED_SOURCES[@]}"; do
     if [ ! -f "${CONTRACTS_DIR}/${src}" ]; then
@@ -824,8 +825,16 @@ else
     missing=1
   fi
 
+  # v0.2.0: Verify key traits exist in source
+  for trait_name in "SessionManagement" "WorkspaceManagement" "Grounding" "HydraBridge" "ExecutionGate" "ProtocolError"; do
+    if ! grep -rq "$trait_name" "${CONTRACTS_DIR}/src/"; then
+      fail "agentic-contracts missing required trait/type: $trait_name"
+      missing=1
+    fi
+  done
+
   if [ "$missing" -eq 0 ]; then
-    pass "agentic-contracts/ crate structure complete (10 source files + compliance doc)"
+    pass "agentic-contracts/ crate structure complete (11 source files + v0.2.0 traits)"
   fi
 fi
 
@@ -1485,6 +1494,35 @@ for key in "${SISTER_KEYS[@]}"; do
     fail "${key}: missing two-tier error handling — tool errors must use isError:true, not JSON-RPC errors (see goals/MCP-QUALITY-STANDARD.md)"
   fi
 done
+
+# ── Section 46: agentic-contracts cargo test ──────────────────────────────────
+
+section "agentic-contracts cargo test"
+
+CONTRACTS_DIR="${WORKSPACE}/agentic-contracts"
+if [ -d "$CONTRACTS_DIR" ] && [ -f "${CONTRACTS_DIR}/Cargo.toml" ]; then
+  # Run cargo test in the contracts crate and capture output
+  test_output=$(cd "$CONTRACTS_DIR" && cargo test 2>&1)
+  if echo "$test_output" | grep -q "test result: ok"; then
+    test_count=$(echo "$test_output" | grep -o '[0-9]* passed' | head -1 | grep -o '[0-9]*' || echo "?")
+    pass "agentic-contracts: cargo test passes (${test_count} tests)"
+  else
+    fail "agentic-contracts: cargo test FAILED — contracts are broken"
+  fi
+
+  # Verify version is >= 0.2.0
+  contracts_version=$(grep '^version' "${CONTRACTS_DIR}/Cargo.toml" | head -1 | grep -o '"[^"]*"' | tr -d '"')
+  case "$contracts_version" in
+    0.1.*)
+      fail "agentic-contracts version ${contracts_version} is pre-validation — must be >= 0.2.0"
+      ;;
+    *)
+      pass "agentic-contracts version ${contracts_version}"
+      ;;
+  esac
+else
+  pass "Skipping agentic-contracts cargo test (local-only, gitignored)"
+fi
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
