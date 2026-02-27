@@ -11,7 +11,7 @@ usage() {
   cat <<'EOF'
 Usage: ./sync_artifacts.sh --target=<path-or-rsync-target> [options]
 
-Syncs sister artifacts (.acb, .amem, .avis) to a local or remote target.
+Syncs sister artifacts (.acb, .aid, .amem, .atime, .avis) to a local or remote target.
 
 Options:
   --target=<value>          Required. Example local path: /srv/agentra/artifacts
@@ -91,7 +91,7 @@ while IFS= read -r abs_path; do
 done < <(
   find "$SOURCE_DIR" \
     \( -path '*/.git/*' -o -path '*/target/*' -o -path '*/node_modules/*' -o -path '*/tests/fixtures/*' \) -prune \
-    -o -type f \( -name '*.acb' -o -name '*.amem' -o -name '*.avis' \) -print
+    -o -type f \( -name '*.acb' -o -name '*.aid' -o -name '*.amem' -o -name '*.atime' -o -name '*.avis' \) -print
 )
 
 artifact_count="$(wc -l <"$manifest_file" | tr -d '[:space:]')"

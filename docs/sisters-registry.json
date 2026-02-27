@@ -1,0 +1,154 @@
+{
+  "sisters": [
+    {
+      "key": "memory",
+      "name": "AgenticMemory",
+      "repo": "agentic-memory",
+      "shortName": "MEMORY",
+      "enabled": true,
+      "order": 10,
+      "fileExtension": ".amem",
+      "cliBinary": "amem",
+      "packages": {
+        "npm": "@agenticamem/memory",
+        "pypi": "agentic-brain",
+        "coreCrate": "agentic-memory",
+        "ffiCrate": "agentic-memory-ffi",
+        "mcpCrate": "agentic-memory-mcp",
+        "cliCrate": "agentic-memory-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-memory-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-memory-mcp",
+        "args": ["serve"],
+        "cratePath": "crates/agentic-memory-mcp"
+      },
+      "docs": {
+        "landingSlug": "memory-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "vision",
+      "name": "AgenticVision",
+      "repo": "agentic-vision",
+      "shortName": "VISION",
+      "enabled": true,
+      "order": 20,
+      "fileExtension": ".avis",
+      "cliBinary": "avis",
+      "packages": {
+        "npm": "@agenticamem/vision",
+        "pypi": "agentic-vision",
+        "coreCrate": "agentic-vision",
+        "ffiCrate": "agentic-vision-ffi",
+        "mcpCrate": "agentic-vision-mcp",
+        "cliCrate": "agentic-vision-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-vision-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-vision-mcp",
+        "args": ["--log-level", "error", "serve"],
+        "cratePath": "crates/agentic-vision-mcp"
+      },
+      "docs": {
+        "landingSlug": "vision-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "codebase",
+      "name": "AgenticCodebase",
+      "repo": "agentic-codebase",
+      "shortName": "CODEBASE",
+      "enabled": true,
+      "order": 30,
+      "fileExtension": ".acb",
+      "cliBinary": "acb",
+      "packages": {
+        "npm": "@agenticamem/codebase",
+        "pypi": "agentic-codebase",
+        "coreCrate": "agentic-codebase",
+        "ffiCrate": "agentic-codebase-ffi",
+        "mcpCrate": "agentic-codebase-mcp",
+        "cliCrate": "agentic-codebase-cli"
+      },
+      "paths": {
+        "mcpToolSource": "src/mcp/server.rs"
+      },
+      "mcp": {
+        "binary": "agentic-codebase-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-codebase-mcp"
+      },
+      "docs": {
+        "landingSlug": "codebase-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "identity",
+      "name": "AgenticIdentity",
+      "repo": "agentic-identity",
+      "shortName": "IDENTITY",
+      "enabled": true,
+      "order": 40,
+      "fileExtension": ".aid",
+      "cliBinary": "aid",
+      "packages": {
+        "npm": "@agenticamem/identity",
+        "pypi": "agentic-identity",
+        "coreCrate": "agentic-identity",
+        "ffiCrate": "agentic-identity-ffi",
+        "mcpCrate": "agentic-identity-mcp",
+        "cliCrate": "agentic-identity-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-identity-mcp/src/main.rs"
+      },
+      "mcp": {
+        "binary": "agentic-identity-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-identity-mcp"
+      },
+      "docs": {
+        "landingSlug": "identity-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "time",
+      "name": "AgenticTime",
+      "repo": "agentic-time",
+      "shortName": "TIME",
+      "enabled": true,
+      "order": 50,
+      "fileExtension": ".atime",
+      "cliBinary": "atime",
+      "packages": {
+        "npm": "@agenticamem/time",
+        "pypi": "agentic-time",
+        "coreCrate": "agentic-time",
+        "ffiCrate": "agentic-time-ffi",
+        "mcpCrate": "agentic-time-mcp",
+        "cliCrate": "agentic-time-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-time-mcp/src/tools.rs"
+      },
+      "mcp": {
+        "binary": "agentic-time-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-time-mcp"
+      },
+      "docs": {
+        "landingSlug": "time-docs",
+        "includeLanding": true
+      }
+    }
+  ]
+}

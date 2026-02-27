@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install-mcp-servers.sh — Build and install all 4 agentic sister MCP servers
+# install-mcp-servers.sh — Build and install all 5 agentic sister MCP servers
 # and configure ~/.claude/mcp.json to use the stable cargo-installed paths.
 #
 # Usage: bash scripts/install-mcp-servers.sh
@@ -30,6 +30,7 @@ declare -a SISTERS=(
   "agentic-vision"
   "agentic-codebase"
   "agentic-identity"
+  "agentic-time"
 )
 
 declare -A MCP_CRATE_PATH=(
@@ -37,6 +38,7 @@ declare -A MCP_CRATE_PATH=(
   [agentic-vision]="agentic-vision/crates/agentic-vision-mcp"
   [agentic-codebase]="agentic-codebase/crates/agentic-codebase-mcp"
   [agentic-identity]="agentic-identity/crates/agentic-identity-mcp"
+  [agentic-time]="agentic-time/crates/agentic-time-mcp"
 )
 
 declare -A MCP_BIN_NAME=(
@@ -44,6 +46,7 @@ declare -A MCP_BIN_NAME=(
   [agentic-vision]="agentic-vision-mcp"
   [agentic-codebase]="agentic-codebase-mcp"
   [agentic-identity]="agentic-identity-mcp"
+  [agentic-time]="agentic-time-mcp"
 )
 
 declare -A MCP_ARGS=(
@@ -51,6 +54,7 @@ declare -A MCP_ARGS=(
   [agentic-vision]='["--log-level", "error", "serve"]'
   [agentic-codebase]='[]'
   [agentic-identity]='[]'
+  [agentic-time]='[]'
 )
 
 # ── Step 1: Build and install all MCP binaries ─────────────────────
@@ -112,6 +116,10 @@ cat > "$CLAUDE_MCP_CONFIG" << MCPJSON
       "command": "$CARGO_BIN/agentic-identity-mcp",
       "args": [],
       "env": {}
+    },
+    "agentic-time": {
+      "command": "$CARGO_BIN/agentic-time-mcp",
+      "args": []
     }
   }
 }
@@ -136,7 +144,7 @@ done
 
 if $ALL_OK; then
   echo ""
-  ok "All 4 sister MCP servers installed and configured."
+  ok "All 5 sister MCP servers installed and configured."
   info "Restart Claude Code to pick up the new binaries."
 else
   echo ""

@@ -6,6 +6,7 @@ on:
     paths:
       - "scripts/check-canonical-consistency.sh"
       - "scripts/check-command-surface.sh"
+      - "scripts/lib/**"
       - "README.md"
       - "docs/**"
       - "agentic-memory/**"
@@ -20,6 +21,7 @@ on:
     paths:
       - "scripts/check-canonical-consistency.sh"
       - "scripts/check-command-surface.sh"
+      - "scripts/lib/**"
       - "README.md"
       - "docs/**"
       - "agentic-memory/**"
@@ -36,10 +38,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checkout sister repos
+      - name: Checkout sister repos (from registry)
         run: |
-          for repo in agentic-memory agentic-vision agentic-codebase agentic-identity agentic-time; do
-            git clone --depth 1 https://github.com/agentralabs/${repo}.git ${repo}
+          for repo in $(jq -r '.sisters[].repo' docs/sisters-registry.json); do
+            git clone --depth 1 "https://github.com/agentralabs/${repo}.git" "${repo}"
           done
 
       - name: Checkout web repo

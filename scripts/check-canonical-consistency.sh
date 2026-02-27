@@ -7,7 +7,10 @@
 set -euo pipefail
 
 WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
-SISTERS=(agentic-memory agentic-vision agentic-codebase agentic-identity agentic-time)
+
+# Load sister data from single-source registry
+source "$(dirname "$0")/lib/load-sisters.sh"
+
 ERRORS=0
 
 fail() {
@@ -94,9 +97,6 @@ done
 # ── 3. Sister manifest presence and structure ───────────────────────────────
 
 section "Sister manifest validation"
-
-EXPECTED_KEYS=(memory vision codebase identity time)
-EXPECTED_NAMES=(AgenticMemory AgenticVision AgenticCodebase AgenticIdentity AgenticTime)
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -218,38 +218,6 @@ done
 
 section "Release workflow publish parity (core + ffi + mcp + cli)"
 
-CORE_CRATES=(
-  "agentic-memory"
-  "agentic-vision"
-  "agentic-codebase"
-  "agentic-identity"
-  "agentic-time"
-)
-
-FFI_CRATES=(
-  "agentic-memory-ffi"
-  "agentic-vision-ffi"
-  "agentic-codebase-ffi"
-  "agentic-identity-ffi"
-  "agentic-time-ffi"
-)
-
-MCP_CRATES=(
-  "agentic-memory-mcp"
-  "agentic-vision-mcp"
-  "agentic-codebase-mcp"
-  "agentic-identity-mcp"
-  "agentic-time-mcp"
-)
-
-CLI_CRATES=(
-  "agentic-memory-cli"
-  "agentic-vision-cli"
-  "agentic-codebase-cli"
-  "agentic-identity-cli"
-  "agentic-time-cli"
-)
-
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
   release_wf="${WORKSPACE}/${sister}/.github/workflows/release.yml"
@@ -318,7 +286,7 @@ ROUTE_FILE="${WORKSPACE}/agentralabs-tech-web/app/install/[target]/[profile]/rou
 if [ ! -f "$ROUTE_FILE" ]; then
   pass "Skipping web install route check (web repo not available)"
 else
-  for key in memory vision codebase identity time; do
+  for key in "${SISTER_KEYS[@]}"; do
     if ! grep -qF "\"${key}\"" "$ROUTE_FILE"; then
       fail "Web route missing target: ${key}"
     else
@@ -390,7 +358,7 @@ NAV_CONTRACT="${WORKSPACE}/agentralabs-tech-web/docs/ecosystem/navigation-contra
 if [ ! -f "$NAV_CONTRACT" ]; then
   pass "Skipping navigation contract check (web repo not available)"
 else
-  for key in memory vision codebase identity time; do
+  for key in "${SISTER_KEYS[@]}"; do
     if ! grep -qF "\"key\": \"${key}\"" "$NAV_CONTRACT"; then
       fail "navigation-contract.json missing sister key: ${key}"
     else
@@ -494,7 +462,7 @@ WEB_DATA_DIR="${WORKSPACE}/agentralabs-tech-web/data"
 if [ ! -d "$WEB_DATA_DIR" ]; then
   pass "Skipping web scenario data check (web repo not available)"
 else
-  for key in memory vision codebase identity time; do
+  for key in "${SISTER_KEYS[@]}"; do
     datafile="${WEB_DATA_DIR}/scenarios-${key}.ts"
     if [ ! -f "$datafile" ]; then
       fail "Web missing data/scenarios-${key}.ts"
@@ -524,14 +492,6 @@ fi
 # ── 19. README npm install rows ──────────────────────────────────────────────
 
 section "README npm install rows"
-
-NPM_PACKAGES=(
-  "@agenticamem/memory"
-  "@agenticamem/vision"
-  "@agenticamem/codebase"
-  "@agenticamem/identity"
-  "@agenticamem/time"
-)
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -632,8 +592,6 @@ fi
 # ── 24. 4-crate structure + language bindings per sister ──────────────────────
 
 section "4-crate structure + language bindings"
-
-SISTER_KEYS=(memory vision codebase identity time)
 
 for i in "${!SISTERS[@]}"; do
   sister="${SISTERS[$i]}"
@@ -1093,7 +1051,6 @@ done
 section "Web sister name parity in critical pages"
 
 WEB_ROOT="${WORKSPACE}/agentralabs-tech-web"
-SISTER_DISPLAY_NAMES=(AgenticMemory AgenticVision AgenticCodebase AgenticIdentity AgenticTime)
 
 # These files MUST mention ALL sister display names. If a new sister is added
 # and these files are not updated, the guardrail will FAIL.
@@ -1137,7 +1094,6 @@ section "Web home page file format completeness"
 
 HOME_PAGE="${WEB_ROOT}/app/page.tsx"
 HERO_SECTION="${WEB_ROOT}/components/hero-section.tsx"
-FILE_FORMATS=(.amem .avis .acb .aid .atime)
 
 if [ ! -d "$WEB_ROOT" ]; then
   pass "Skipping web file format check (web repo not available)"
@@ -1209,7 +1165,6 @@ WEB_FLYER_FILES=(
 
 # These files must reference all sister short names (MEMORY, VISION, etc.)
 # OR their full display names (AgenticMemory, etc.)
-SISTER_SHORT_NAMES=(MEMORY VISION CODEBASE IDENTITY TIME)
 
 if [ ! -d "$WEB_ROOT" ]; then
   pass "Skipping flyer parity (web repo not available)"
@@ -1272,12 +1227,74 @@ else
       continue
     fi
     basename="$(basename "$component")"
-    for key in memory vision codebase identity time; do
+    for key in "${SISTER_KEYS[@]}"; do
       if ! grep -qi "$key" "$component"; then
         fail "Web ${basename} missing scenario reference for: ${key}"
       fi
     done
     pass "Web ${basename}: all 5 sister scenarios referenced"
+  done
+fi
+
+# ── 41. Sister registry integrity ────────────────────────────────────────────
+#
+# Validates that docs/sisters-registry.json is present and consistent with
+# the SISTERS array loaded from it. Also checks that key scripts and CI
+# workflows reference the registry (not hardcoded lists).
+
+section "Sister registry integrity"
+
+REGISTRY_FILE="${WORKSPACE}/docs/sisters-registry.json"
+if [ ! -f "$REGISTRY_FILE" ]; then
+  fail "docs/sisters-registry.json not found"
+else
+  REGISTRY_COUNT=$(jq '.sisters | length' "$REGISTRY_FILE")
+  SCRIPT_COUNT=${#SISTERS[@]}
+  if [ "$REGISTRY_COUNT" -ne "$SCRIPT_COUNT" ]; then
+    fail "Registry has $REGISTRY_COUNT sisters but script loaded $SCRIPT_COUNT"
+  else
+    pass "Registry count ($REGISTRY_COUNT) matches loaded SISTERS array"
+  fi
+
+  # Validate all registry sisters have required fields
+  for i in $(seq 0 $((REGISTRY_COUNT - 1))); do
+    key=$(jq -r ".sisters[$i].key" "$REGISTRY_FILE")
+    for field in name repo shortName fileExtension cliBinary; do
+      val=$(jq -r ".sisters[$i].${field}" "$REGISTRY_FILE")
+      if [ "$val" = "null" ] || [ -z "$val" ]; then
+        fail "Registry sister[$i] ($key) missing required field: $field"
+      fi
+    done
+  done
+  pass "All registry sisters have required fields"
+
+  # Verify key scripts source from registry (not hardcoded)
+  REGISTRY_CONSUMERS=(
+    "scripts/check-canonical-consistency.sh"
+    "scripts/check-command-surface.sh"
+  )
+  for script in "${REGISTRY_CONSUMERS[@]}"; do
+    if [ -f "${WORKSPACE}/${script}" ]; then
+      if grep -qF "load-sisters.sh" "${WORKSPACE}/${script}"; then
+        pass "${script} sources from registry via load-sisters.sh"
+      else
+        fail "${script} does not source load-sisters.sh (may have hardcoded sister list)"
+      fi
+    fi
+  done
+
+  # Verify CI workflows reference the registry
+  CI_CONSUMERS=(
+    ".github/workflows/canonical-consistency.yml"
+  )
+  for wf in "${CI_CONSUMERS[@]}"; do
+    if [ -f "${WORKSPACE}/${wf}" ]; then
+      if grep -qF "sisters-registry.json" "${WORKSPACE}/${wf}"; then
+        pass "${wf} references sisters-registry.json"
+      else
+        fail "${wf} does not reference sisters-registry.json (may have hardcoded sister list)"
+      fi
+    fi
   done
 fi
 

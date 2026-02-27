@@ -11,6 +11,10 @@
 set -euo pipefail
 
 WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Load sister data from single-source registry
+source "$(dirname "$0")/lib/load-sisters.sh"
+
 ERRORS=0
 
 fail() {
@@ -72,32 +76,15 @@ extract_tools_strict() {
 
 # ── Sister configuration ──────────────────────────────────────────────────
 #
-# Parallel arrays: SISTERS[i] → TOOL_SRCS[i] + DOC_PATHS[i]
-# To add a new sister, append entries to all three arrays.
+# SISTERS and MCP_TOOL_SOURCES are loaded from docs/sisters-registry.json
+# via load-sisters.sh. To add a new sister, edit the registry — not this file.
 
-SISTERS=(
-  agentic-memory
-  agentic-vision
-  agentic-codebase
-  agentic-identity
-  agentic-time
-)
-
-TOOL_SRCS=(
-  "${WORKSPACE}/agentic-memory/crates/agentic-memory-mcp/src/tools/registry.rs"
-  "${WORKSPACE}/agentic-vision/crates/agentic-vision-mcp/src/tools/registry.rs"
-  "${WORKSPACE}/agentic-codebase/src/mcp/server.rs"
-  "${WORKSPACE}/agentic-identity/crates/agentic-identity-mcp/src/main.rs"
-  "${WORKSPACE}/agentic-time/crates/agentic-time-mcp/src/tools.rs"
-)
-
-DOC_PATHS=(
-  "${WORKSPACE}/agentic-memory/docs/public/command-surface.md"
-  "${WORKSPACE}/agentic-vision/docs/public/command-surface.md"
-  "${WORKSPACE}/agentic-codebase/docs/public/command-surface.md"
-  "${WORKSPACE}/agentic-identity/docs/public/command-surface.md"
-  "${WORKSPACE}/agentic-time/docs/public/command-surface.md"
-)
+TOOL_SRCS=()
+DOC_PATHS=()
+for i in "${!SISTERS[@]}"; do
+  TOOL_SRCS+=("${WORKSPACE}/${SISTERS[$i]}/${MCP_TOOL_SOURCES[$i]}")
+  DOC_PATHS+=("${WORKSPACE}/${SISTERS[$i]}/docs/public/command-surface.md")
+done
 
 # ── Main check loop ───────────────────────────────────────────────────────
 
