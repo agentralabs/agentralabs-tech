@@ -12,9 +12,9 @@ Key terms used across Agentra Labs projects.
 
 **MCP (Model Context Protocol)** — An open standard that lets AI applications discover and call tools exposed by external servers. All Agentra sisters expose their capabilities as MCP tools.
 
-**Sister** — One of the five Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, AgenticIdentity, and AgenticTime. Each sister runs as an independent MCP server and produces its own artifact.
+**Sister** — One of the six Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, AgenticIdentity, AgenticTime, and AgenticContract. Each sister runs as an independent MCP server and produces its own artifact.
 
-**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity), `.atime` (time).
+**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity), `.atime` (time), `.acon` (contract).
 
 **Workspace** — The parent directory containing the web repo and all sister repos. The docs sync script reads from this workspace to build the documentation site.
 
@@ -107,3 +107,19 @@ Key terms used across Agentra Labs projects.
 **Temporal reasoning** — The ability to evaluate deadlines, detect scheduling conflicts, compute time-to-expiry, and prioritize actions based on temporal urgency.
 
 **.atime** — The AgenticTime artifact file. Stores temporal events, schedules, decay models, and constraint graphs in a structured binary format.
+
+## AgenticContract
+
+**Policy** — A named governance rule with an action (allow or deny) and scope (global, session, or task). Policies are checked against incoming actions in microseconds.
+
+**Risk limit** — A quantitative constraint on agent behavior: rate limits, budget caps, or threshold bounds. Limits track current usage and enforce maximums.
+
+**Approval gate** — A workflow rule that routes sensitive actions through a configurable approval process. Gates match action patterns and require explicit approval before proceeding.
+
+**Obligation** — A time-bound compliance requirement with a deadline. Obligations track fulfillment status and can trigger escalation on expiry.
+
+**Violation** — A recorded policy breach with severity level and actor attribution. Violations provide an immutable audit trail of governance failures.
+
+**Condition** — A boolean expression that gates policy activation. Conditions can reference runtime state, time, or external signals.
+
+**.acon** — The AgenticContract artifact file. Stores policies, risk limits, approval rules, obligations, violations, and audit history in a single binary format.
