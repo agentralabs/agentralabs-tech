@@ -55,10 +55,24 @@ Use this page when a new sister is being prepared for public release. It follows
 3. Public docs lint and sync checks green.
 4. Install + runtime smoke tests pass on macOS/Linux/Windows.
 
-## 7. Coming soon
+## 7. Operational depth parity gate (required for 100%)
 
-The following are planned, not yet mandatory:
+If the sister targets full ecosystem parity, all three tiers are required:
 
-1. Auto-generated starter doc set for new sisters.
-2. Automatic screenshot evidence bundle for release notes.
-3. One-command sister scaffold with prewired manifest and guardrails.
+1. Tier A baseline runtime capability:
+   1. CLI parity (`init`, `info`, `query`, `export`, `ground`, `evidence`, `suggest`, workspace verbs)
+   2. MCP parity (`*ground`, `*evidence`, `*suggest`, workspace tools)
+2. Tier B session lifecycle parity:
+   1. `session_start`
+   2. `session_end`
+   3. `*_session_resume`
+3. Tier C memory-depth runtime controls:
+   1. `runtime-sync` workflow
+   2. `AUTO_CAPTURE_*` controls
+   3. `STORAGE_BUDGET_*` controls
+
+Guardrail:
+
+```bash
+./scripts/check-operational-depth-parity.sh
+```

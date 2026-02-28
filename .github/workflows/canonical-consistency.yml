@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/check-canonical-consistency.sh"
+      - "scripts/check-operational-depth-parity.sh"
       - "scripts/check-command-surface.sh"
       - "scripts/lib/**"
       - "README.md"
@@ -14,12 +15,15 @@ on:
       - "agentic-codebase/**"
       - "agentic-identity/**"
       - "agentic-time/**"
+      - "agentic-contract/**"
+      - "agentic-comm/**"
       - "agentralabs-tech-web/**"
       - ".github/workflows/canonical-consistency.yml"
   pull_request:
     branches: [main]
     paths:
       - "scripts/check-canonical-consistency.sh"
+      - "scripts/check-operational-depth-parity.sh"
       - "scripts/check-command-surface.sh"
       - "scripts/lib/**"
       - "README.md"
@@ -29,6 +33,8 @@ on:
       - "agentic-codebase/**"
       - "agentic-identity/**"
       - "agentic-time/**"
+      - "agentic-contract/**"
+      - "agentic-comm/**"
       - "agentralabs-tech-web/**"
       - ".github/workflows/canonical-consistency.yml"
 

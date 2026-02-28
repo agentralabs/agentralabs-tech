@@ -1770,6 +1770,16 @@ for sister in "${SISTERS[@]}"; do
   done <<< "$paper_dirs"
 done
 
+# ── 51. Operational Depth Parity (Tier A/B/C) ──────────────────────────────
+
+section "Operational Depth Parity (Tier A/B/C)"
+
+if "${WORKSPACE}/scripts/check-operational-depth-parity.sh"; then
+  pass "Operational depth parity guardrail passed"
+else
+  fail "Operational depth parity guardrail failed (see output above)"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
