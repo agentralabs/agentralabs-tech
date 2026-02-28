@@ -89,6 +89,23 @@ It is also called by:
 ./scripts/check-canonical-consistency.sh
 ```
 
+## Tier D (MCP Consolidation Format) — Required for every sister
+
+MCP tool surfaces must also pass the consolidation contract:
+
+1. Compact facade tools are canonical and declared in:
+   `docs/mcp-consolidation-contract.json`
+2. Every compact facade routes by `operation`
+3. Compact facade tools are documented in `docs/public/command-surface.md`
+4. Tool count stays within the contract limit (default 12; explicit exceptions allowed)
+
+Use:
+
+```bash
+./scripts/check-mcp-consolidation.sh
+```
+
 ## Release Rule
 
-A release is blocked if either canonical or operational parity fails.
+A release is blocked if canonical parity, operational parity, or MCP
+consolidation parity fails.

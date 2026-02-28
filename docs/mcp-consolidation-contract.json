@@ -1,0 +1,144 @@
+{
+  "status": "stable",
+  "description": "Canonical MCP consolidation contract. Every sister must expose these compact facade tools and route via operation-based dispatch.",
+  "default": {
+    "maxFacadeTools": 12,
+    "requireCompactDocSection": true,
+    "requireCompactEnvToggle": true
+  },
+  "sisters": [
+    {
+      "repo": "agentic-memory",
+      "prefix": "memory_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["AMEM_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "memory_core",
+        "memory_grounding",
+        "memory_workspace",
+        "memory_session",
+        "memory_infinite",
+        "memory_prophetic",
+        "memory_collective",
+        "memory_resurrection",
+        "memory_metamemory",
+        "memory_transcendent"
+      ]
+    },
+    {
+      "repo": "agentic-vision",
+      "prefix": "vision_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["AVIS_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "vision_core",
+        "vision_grounding",
+        "vision_workspace",
+        "vision_session",
+        "vision_temporal",
+        "vision_prediction",
+        "vision_cognition",
+        "vision_synthesis",
+        "vision_forensics"
+      ]
+    },
+    {
+      "repo": "agentic-codebase",
+      "prefix": "codebase_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["ACB_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "codebase_core",
+        "codebase_grounding",
+        "codebase_workspace",
+        "codebase_session",
+        "codebase_conceptual",
+        "codebase_translation",
+        "codebase_archaeology",
+        "codebase_patterns",
+        "codebase_collective",
+        "codebase_intelligence"
+      ]
+    },
+    {
+      "repo": "agentic-identity",
+      "prefix": "identity_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["AID_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "identity_core",
+        "identity_actions",
+        "identity_trust",
+        "identity_continuity",
+        "identity_spawn",
+        "identity_competence",
+        "identity_negative",
+        "identity_grounding",
+        "identity_workspace",
+        "identity_inventions"
+      ]
+    },
+    {
+      "repo": "agentic-time",
+      "prefix": "time_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["ATIME_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "time_deadline",
+        "time_schedule",
+        "time_sequence",
+        "time_decay",
+        "time_duration",
+        "time_core",
+        "time_workspace",
+        "time_exploration",
+        "time_protection",
+        "time_management"
+      ]
+    },
+    {
+      "repo": "agentic-contract",
+      "prefix": "contract_",
+      "maxFacadeTools": 12,
+      "compactEnvVars": ["ACON_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "contract_main",
+        "contract_policy",
+        "contract_risk",
+        "contract_approval",
+        "contract_enforcement",
+        "contract_workspace",
+        "contract_visibility",
+        "contract_generation",
+        "contract_governance",
+        "contract_resilience"
+      ]
+    },
+    {
+      "repo": "agentic-comm",
+      "prefix": "comm_",
+      "maxFacadeTools": 20,
+      "requireCompactDocSection": false,
+      "requireCompactEnvToggle": false,
+      "compactTools": [
+        "comm_channel",
+        "comm_message",
+        "comm_semantic",
+        "comm_affect",
+        "comm_hive",
+        "comm_consent",
+        "comm_trust",
+        "comm_keys",
+        "comm_federation",
+        "comm_temporal",
+        "comm_query",
+        "comm_forensics",
+        "comm_collaboration",
+        "comm_workspace",
+        "comm_session",
+        "comm_agent",
+        "comm_store"
+      ]
+    }
+  ]
+}

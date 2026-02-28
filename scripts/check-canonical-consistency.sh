@@ -1780,6 +1780,16 @@ else
   fail "Operational depth parity guardrail failed (see output above)"
 fi
 
+# ── 52. MCP Consolidation Guardrail ─────────────────────────────────────────
+
+section "MCP Consolidation Guardrail"
+
+if "${WORKSPACE}/scripts/check-mcp-consolidation.sh"; then
+  pass "MCP consolidation guardrail passed"
+else
+  fail "MCP consolidation guardrail failed (see output above)"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────────────
 
 echo ""
