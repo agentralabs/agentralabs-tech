@@ -8,11 +8,12 @@
   <a href="https://github.com/agentralabs/agentic-codebase"><img src="https://img.shields.io/badge/Codebase-0.2.2-111111?style=for-the-badge" alt="Codebase"></a>
   <a href="https://github.com/agentralabs/agentic-identity"><img src="https://img.shields.io/badge/Identity-0.2.3-111111?style=for-the-badge" alt="Identity"></a>
   <a href="https://github.com/agentralabs/agentic-time"><img src="https://img.shields.io/badge/Time-0.1.0-ea580c?style=for-the-badge" alt="Time"></a>
+  <a href="https://github.com/agentralabs/agentic-contract"><img src="https://img.shields.io/badge/Contract-0.1.0-ea580c?style=for-the-badge" alt="Contract"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <strong>Workspace orchestrator for the five Agentra sisters.</strong>
+  <strong>Workspace orchestrator for the six Agentra sisters.</strong>
 </p>
 
 <p align="center">
@@ -32,6 +33,7 @@
 | [**AgenticCodebase**](https://github.com/agentralabs/agentic-codebase) | `.acb` | Semantic code intelligence — concept graphs, impact analysis, coupling detection |
 | [**AgenticIdentity**](https://github.com/agentralabs/agentic-identity) | `.aid` | Cryptographic agent identity — Ed25519 anchors, signed receipts, trust delegation |
 | [**AgenticTime**](https://github.com/agentralabs/agentic-time) | `.atime` | Temporal reasoning — deadlines, schedules, PERT estimation, decay models |
+| [**AgenticContract**](https://github.com/agentralabs/agentic-contract) | `.acon` | Policy engine — governance rules, risk limits, approvals, obligations, violations |
 
 Each sister is an independent MCP server. Install one or all. Any model. Any client.
 
@@ -45,6 +47,7 @@ cargo install agentic-vision-cli    # avis
 cargo install agentic-codebase-cli  # acb
 cargo install agentic-identity-cli  # aid
 cargo install agentic-time-cli      # atime
+cargo install agentic-contract-cli  # acon
 ```
 
 Or use the orchestrator:
@@ -77,6 +80,7 @@ agentralabs-tech/
 ├── agentic-codebase/  code graph + query engine
 ├── agentic-identity/  cryptographic agent identity
 ├── agentic-time/      temporal reasoning
+├── agentic-contract/  policy engine + governance
 ├── install_all.sh     install sisters from local paths
 ├── sync_artifacts.sh  sync artifacts to server paths
 └── scripts/           guardrail + consistency checks

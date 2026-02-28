@@ -19,6 +19,7 @@ agentic-sdk/
 # Nested repos managed independently
 .github-org-profile/
 agentic-codebase/
+agentic-contract/
 agentic-identity/
 agentic-memory/
 agentic-vision/

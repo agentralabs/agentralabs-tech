@@ -154,6 +154,37 @@
         "landingSlug": "time-docs",
         "includeLanding": true
       }
+    },
+    {
+      "key": "contract",
+      "name": "AgenticContract",
+      "repo": "agentic-contract",
+      "shortName": "CONTRACT",
+      "enabled": true,
+      "order": 60,
+      "fileExtension": ".acon",
+      "cliBinary": "acon",
+      "packages": {
+        "npm": "@agenticamem/contract",
+        "pypi": "agentic-contract",
+        "coreCrate": "agentic-contract",
+        "ffiCrate": "agentic-contract-ffi",
+        "mcpCrate": "agentic-contract-mcp",
+        "cliCrate": "agentic-contract-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-contract-mcp/src/tools.rs",
+        "edgeCaseInventionsTest": "crates/agentic-contract-mcp/tests/edge_cases_inventions.rs"
+      },
+      "mcp": {
+        "binary": "agentic-contract-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-contract-mcp"
+      },
+      "docs": {
+        "landingSlug": "contract-docs",
+        "includeLanding": true
+      }
     }
   ]
 }

@@ -857,10 +857,10 @@ for sister in "${SISTERS[@]}"; do
 
   if ! ls "$paper_i"/*.tex >/dev/null 2>&1; then
     fail "${sister}: missing .tex file in $(basename "$paper_i")"
-  elif [ ! -f "$paper_i/references.bib" ]; then
-    fail "${sister}: missing references.bib in $(basename "$paper_i")"
+  elif ! ls "$paper_i"/*.bib >/dev/null 2>&1; then
+    fail "${sister}: missing .bib file in $(basename "$paper_i")"
   else
-    pass "${sister}: paper/paper-i-* with .tex + references.bib present"
+    pass "${sister}: paper/paper-i-* with .tex + .bib present"
   fi
 done
 
@@ -1624,6 +1624,150 @@ for i in "${!SISTERS[@]}"; do
   else
     fail "${sister}: Cargo.toml not found at ${cargo_toml}"
   fi
+done
+
+# ── Section 49: Content Depth Validation ─────────────────────────────────────
+#
+# Validates that documentation files have real content, not stubs.
+# Minimum thresholds are set at 40% of agentic-memory's line counts.
+# This prevents sisters from passing guardrails with placeholder files.
+
+section "Content Depth Validation (docs, paper, scripts)"
+
+# Doc depth thresholds: "filename:minimum_lines" pairs
+# Derived from agentic-memory at 40% floor — below this is a stub
+DOC_DEPTH_RULES="
+architecture.md:50
+concepts.md:100
+benchmarks.md:100
+api-reference.md:100
+file-format.md:90
+installation.md:45
+integration-guide.md:70
+mcp-tools.md:65
+mcp-resources.md:35
+mcp-prompts.md:50
+quickstart.md:40
+cli-reference.md:100
+troubleshooting.md:80
+faq.md:55
+configuration.md:50
+command-surface.md:75
+experience-with-vs-without.md:30
+primary-problem-coverage.md:25
+initial-problem-coverage.md:25
+playbooks-agent-integration.md:60
+runtime-install-sync.md:50
+"
+
+# Paper depth: each paper-i-* .tex must be at least 300 lines (real paper, not outline)
+PAPER_MIN_LINES=300
+
+# README depth: minimum 400 lines
+README_MIN_LINES=400
+
+for sister in "${SISTERS[@]}"; do
+  sister_dir="${WORKSPACE}/${sister}"
+  if [ ! -d "$sister_dir" ]; then
+    continue
+  fi
+
+  # Check doc depth
+  doc_failures=0
+  while IFS=: read -r doc_name min_lines; do
+    [ -z "$doc_name" ] && continue
+    doc_file="${sister_dir}/docs/public/${doc_name}"
+    if [ -f "$doc_file" ]; then
+      actual_lines="$(wc -l < "$doc_file")"
+      if [ "$actual_lines" -lt "$min_lines" ]; then
+        fail "${sister}: docs/public/${doc_name} has ${actual_lines} lines (minimum: ${min_lines}). Content is too thin — expand to canonical depth."
+        doc_failures=$((doc_failures + 1))
+      fi
+    fi
+  done <<< "$DOC_DEPTH_RULES"
+  if [ "$doc_failures" -eq 0 ]; then
+    pass "${sister}: all docs meet minimum content depth thresholds"
+  fi
+
+  # Check paper depth
+  paper_dir="${sister_dir}/paper"
+  if [ -d "$paper_dir" ]; then
+    paper_failures=0
+    for paper_subdir in "${paper_dir}"/paper-i-*; do
+      if [ ! -d "$paper_subdir" ]; then
+        continue
+      fi
+      paper_name="$(basename "$paper_subdir")"
+      tex_file="$(find "$paper_subdir" -name "*.tex" -maxdepth 1 2>/dev/null | head -1)"
+      if [ -n "$tex_file" ] && [ -f "$tex_file" ]; then
+        actual_lines="$(wc -l < "$tex_file")"
+        if [ "$actual_lines" -lt "$PAPER_MIN_LINES" ]; then
+          fail "${sister}: ${paper_name}/$(basename "$tex_file") has ${actual_lines} lines (minimum: ${PAPER_MIN_LINES}). Paper must be based on real benchmarks and test data, not an outline."
+          paper_failures=$((paper_failures + 1))
+        fi
+      fi
+    done
+    if [ "$paper_failures" -eq 0 ]; then
+      pass "${sister}: research papers meet minimum depth threshold (${PAPER_MIN_LINES}+ lines)"
+    fi
+  fi
+
+  # Check README depth
+  readme_file="${sister_dir}/README.md"
+  if [ -f "$readme_file" ]; then
+    actual_lines="$(wc -l < "$readme_file")"
+    if [ "$actual_lines" -lt "$README_MIN_LINES" ]; then
+      fail "${sister}: README.md has ${actual_lines} lines (minimum: ${README_MIN_LINES}). README must have canonical depth."
+    else
+      pass "${sister}: README.md meets minimum depth threshold (${actual_lines} lines)"
+    fi
+  fi
+done
+
+# ── 50. Paper Compilation Verification (PDF must exist alongside .tex) ────
+
+section "Paper Compilation Verification (PDF must exist alongside .tex)"
+
+for sister in "${SISTERS[@]}"; do
+  sister_dir="${WORKSPACE}/${sister}"
+  [ -d "$sister_dir" ] || continue
+
+  paper_dirs="$(find "$sister_dir/paper" -maxdepth 1 -type d -name 'paper-*' 2>/dev/null || true)"
+  if [ -z "$paper_dirs" ]; then
+    continue
+  fi
+
+  while IFS= read -r pdir; do
+    [ -z "$pdir" ] && continue
+    tex_files="$(find "$pdir" -maxdepth 1 -name '*.tex' 2>/dev/null || true)"
+    if [ -z "$tex_files" ]; then
+      continue
+    fi
+
+    pdf_files="$(find "$pdir" -maxdepth 1 -name '*.pdf' 2>/dev/null || true)"
+    if [ -z "$pdf_files" ]; then
+      fail "${sister}: $(basename "$pdir") has .tex source but no compiled .pdf — run pdflatex"
+    else
+      # Check .aux exists (produced by every pdflatex run)
+      aux_files="$(find "$pdir" -maxdepth 1 -name '*.aux' 2>/dev/null || true)"
+      if [ -z "$aux_files" ]; then
+        fail "${sister}: $(basename "$pdir") has .pdf but missing .aux — recompile with pdflatex"
+      else
+        # Only require .bbl if a .bib file exists (external bibliography)
+        bib_files="$(find "$pdir" -maxdepth 1 -name '*.bib' 2>/dev/null || true)"
+        if [ -n "$bib_files" ]; then
+          bbl_files="$(find "$pdir" -maxdepth 1 -name '*.bbl' 2>/dev/null || true)"
+          if [ -z "$bbl_files" ]; then
+            fail "${sister}: $(basename "$pdir") has .bib but no .bbl — run bibtex"
+          else
+            pass "${sister}: $(basename "$pdir") paper fully compiled (PDF + bib artifacts present)"
+          fi
+        else
+          pass "${sister}: $(basename "$pdir") paper compiled (PDF + aux present, no external bibliography)"
+        fi
+      fi
+    fi
+  done <<< "$paper_dirs"
 done
 
 # ── Summary ─────────────────────────────────────────────────────────────────
