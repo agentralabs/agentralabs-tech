@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# check-command-surface.sh — Verify every MCP tool in Rust source is documented
+# check-command-surface.sh — Verify MCP command surface docs are canonical
 #
-# Generic guardrail: extracts MCP tool names from each sister's Rust dispatch
-# code and verifies they appear in docs/public/command-surface.md. Fails if
-# any published tool is undocumented.
-#
-# This ensures that when a developer adds a new MCP tool to a sister, the
-# command-surface doc must be updated before the check passes.
+# Canonical behavior:
+# - If docs/mcp-consolidation-contract.json has a sister entry, enforce that
+#   all contract compactTools are documented in docs/public/command-surface.md
+# - Otherwise, fall back to legacy extraction from Rust dispatch and enforce
+#   full tool-name documentation coverage
 #
 set -euo pipefail
 
 WORKSPACE="$(cd "$(dirname "$0")/.." && pwd)"
+CONTRACT_FILE="${WORKSPACE}/docs/mcp-consolidation-contract.json"
 
 # Load sister data from single-source registry
 source "$(dirname "$0")/lib/load-sisters.sh"
@@ -29,6 +29,18 @@ pass() {
 section() {
   echo ""
   echo "── $* ──"
+}
+
+contract_has_sister() {
+  local sister="$1"
+  [ -f "$CONTRACT_FILE" ] || return 1
+  jq -e --arg repo "$sister" '.sisters[] | select(.repo == $repo)' "$CONTRACT_FILE" >/dev/null 2>&1
+}
+
+read_contract_tools() {
+  local sister="$1"
+  [ -f "$CONTRACT_FILE" ] || return 0
+  jq -r --arg repo "$sister" '.sisters[] | select(.repo == $repo) | .compactTools[]?' "$CONTRACT_FILE"
 }
 
 # ── Tool extraction ────────────────────────────────────────────────────────
@@ -104,31 +116,58 @@ for i in "${!SISTERS[@]}"; do
     continue
   fi
 
-  # Extract tool names from Rust dispatch code
-  tools="$(extract_tools_strict "$src")"
-  tool_count="$(echo "$tools" | wc -l | tr -d ' ')"
-
-  if [ -z "$tools" ] || [ "$tool_count" -eq 0 ]; then
-    fail "${sister}: no MCP tools extracted from source (extraction bug?)"
-    continue
-  fi
-
-  # Check each tool is documented
-  missing=0
-  missing_names=""
-  while IFS= read -r tool; do
-    if ! grep -qF "$tool" "$doc"; then
-      fail "${sister}: MCP tool '${tool}' missing from command-surface.md"
-      missing=$((missing + 1))
-      missing_names="${missing_names} ${tool}"
+  if contract_has_sister "$sister"; then
+    # In consolidated mode, docs are canonicalized to compact facade tools.
+    compact_tools="$(read_contract_tools "$sister")"
+    compact_count="$(echo "$compact_tools" | sed '/^$/d' | wc -l | tr -d ' ')"
+    if [ -z "$compact_tools" ] || [ "$compact_count" -eq 0 ]; then
+      fail "${sister}: contract entry exists but compactTools is empty"
+      continue
     fi
-  done <<< "$tools"
 
-  if [ "$missing" -eq 0 ]; then
-    pass "${sister}: all ${tool_count} MCP tools documented in command-surface.md"
+    missing=0
+    missing_names=""
+    while IFS= read -r tool; do
+      [ -z "$tool" ] && continue
+      if ! grep -qF "$tool" "$doc"; then
+        fail "${sister}: compact MCP tool '${tool}' missing from command-surface.md"
+        missing=$((missing + 1))
+        missing_names="${missing_names} ${tool}"
+      fi
+    done <<< "$compact_tools"
+
+    if [ "$missing" -eq 0 ]; then
+      pass "${sister}: all ${compact_count} compact MCP tools documented in command-surface.md"
+    else
+      echo "  HINT: Add the following compact tools to ${sister}/docs/public/command-surface.md:"
+      echo "       ${missing_names}"
+    fi
   else
-    echo "  HINT: Add the following tools to ${sister}/docs/public/command-surface.md:"
-    echo "       ${missing_names}"
+    # Legacy fallback: enforce full extracted tool documentation.
+    tools="$(extract_tools_strict "$src")"
+    tool_count="$(echo "$tools" | wc -l | tr -d ' ')"
+
+    if [ -z "$tools" ] || [ "$tool_count" -eq 0 ]; then
+      fail "${sister}: no MCP tools extracted from source (extraction bug?)"
+      continue
+    fi
+
+    missing=0
+    missing_names=""
+    while IFS= read -r tool; do
+      if ! grep -qF "$tool" "$doc"; then
+        fail "${sister}: MCP tool '${tool}' missing from command-surface.md"
+        missing=$((missing + 1))
+        missing_names="${missing_names} ${tool}"
+      fi
+    done <<< "$tools"
+
+    if [ "$missing" -eq 0 ]; then
+      pass "${sister}: all ${tool_count} MCP tools documented in command-surface.md"
+    else
+      echo "  HINT: Add the following tools to ${sister}/docs/public/command-surface.md:"
+      echo "       ${missing_names}"
+    fi
   fi
 done
 
