@@ -65,6 +65,93 @@ tools_has() {
   echo "$tools" | grep -Eq "$pattern"
 }
 
+compact_group_for_capability() {
+  local key="$1"
+  local capability="$2"
+
+  case "${key}:${capability}" in
+    memory:ground|memory:evidence|memory:suggest) echo "memory_grounding" ;;
+    vision:ground|vision:evidence|vision:suggest) echo "vision_grounding" ;;
+    codebase:ground|codebase:evidence|codebase:suggest) echo "codebase_grounding" ;;
+    identity:ground|identity:evidence|identity:suggest) echo "identity_grounding" ;;
+    time:ground|time:evidence|time:suggest) echo "time_core" ;;
+    contract:ground|contract:evidence|contract:suggest) echo "contract_main" ;;
+    comm:ground|comm:evidence|comm:suggest) echo "comm_store" ;;
+
+    memory:workspace_create|memory:workspace_add|memory:workspace_list|memory:workspace_query|memory:workspace_compare|memory:workspace_xref) echo "memory_workspace" ;;
+    vision:workspace_create|vision:workspace_add|vision:workspace_list|vision:workspace_query|vision:workspace_compare|vision:workspace_xref) echo "vision_workspace" ;;
+    codebase:workspace_create|codebase:workspace_add|codebase:workspace_list|codebase:workspace_query|codebase:workspace_compare|codebase:workspace_xref) echo "codebase_workspace" ;;
+    identity:workspace_create|identity:workspace_add|identity:workspace_list|identity:workspace_query|identity:workspace_compare|identity:workspace_xref) echo "identity_workspace" ;;
+    time:workspace_create|time:workspace_add|time:workspace_list|time:workspace_query|time:workspace_compare|time:workspace_xref) echo "time_workspace" ;;
+    contract:workspace_create|contract:workspace_add|contract:workspace_list|contract:workspace_query|contract:workspace_compare|contract:workspace_xref) echo "contract_workspace" ;;
+    comm:workspace_create|comm:workspace_add|comm:workspace_list|comm:workspace_query|comm:workspace_compare|comm:workspace_xref) echo "comm_workspace" ;;
+
+    memory:session_start|memory:session_end|memory:session_resume) echo "memory_session" ;;
+    vision:session_start|vision:session_end|vision:session_resume) echo "vision_session" ;;
+    codebase:session_start|codebase:session_end|codebase:session_resume) echo "codebase_session" ;;
+    identity:session_start|identity:session_end|identity:session_resume) echo "identity_actions" ;;
+    time:session_start|time:session_end|time:session_resume) echo "time_workspace" ;;
+    contract:session_start|contract:session_end|contract:session_resume) echo "contract_workspace" ;;
+    comm:session_start|comm:session_end|comm:session_resume) echo "comm_session" ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+mcp_has_capability() {
+  local key="$1"
+  local capability="$2"
+  local tools="$3"
+  local compact_group
+
+  case "$capability" in
+    ground)
+      tools_has '(^|.*_)ground$' "$tools" && return 0
+      ;;
+    evidence)
+      tools_has '(^|.*_)evidence$' "$tools" && return 0
+      ;;
+    suggest)
+      tools_has '(^|.*_)suggest$' "$tools" && return 0
+      ;;
+    workspace_create)
+      tools_has '(^|.*_)workspace_create$' "$tools" && return 0
+      ;;
+    workspace_add)
+      tools_has '(^|.*_)workspace_add$' "$tools" && return 0
+      ;;
+    workspace_list)
+      tools_has '(^|.*_)workspace_list$' "$tools" && return 0
+      ;;
+    workspace_query)
+      tools_has '(^|.*_)workspace_query$' "$tools" && return 0
+      ;;
+    workspace_compare)
+      tools_has '(^|.*_)workspace_compare$' "$tools" && return 0
+      ;;
+    workspace_xref)
+      tools_has '(^|.*_)workspace_xref$' "$tools" && return 0
+      ;;
+    session_start)
+      tools_has '^session_start$' "$tools" && return 0
+      ;;
+    session_end)
+      tools_has '^session_end$' "$tools" && return 0
+      ;;
+    session_resume)
+      tools_has '(^|.*_)session_resume$' "$tools" && return 0
+      ;;
+  esac
+
+  compact_group="$(compact_group_for_capability "$key" "$capability")"
+  if [ -n "$compact_group" ] && tools_has "^${compact_group}$" "$tools"; then
+    return 0
+  fi
+
+  return 1
+}
+
 cli_has() {
   local pattern="$1"
   local sister_dir="$2"
@@ -137,21 +224,21 @@ for i in "${!SISTERS[@]}"; do
     if cli_has 'workspace.*xref|Workspace.*Xref|workspace_xref' "$sister_dir" "$cli_crate"; then pass "${sister}: CLI workspace xref"; else fail "${sister}: missing Tier A workspace command 'xref'"; fi
 
     # Tier A MCP tools.
-    if tools_has '(^|.*_)ground$' "$tools"; then pass "${sister}: MCP *ground"; else fail "${sister}: missing Tier A MCP tool '*ground'"; fi
-    if tools_has '(^|.*_)evidence$' "$tools"; then pass "${sister}: MCP *evidence"; else fail "${sister}: missing Tier A MCP tool '*evidence'"; fi
-    if tools_has '(^|.*_)suggest$' "$tools"; then pass "${sister}: MCP *suggest"; else fail "${sister}: missing Tier A MCP tool '*suggest'"; fi
-    if tools_has '(^|.*_)workspace_create$' "$tools"; then pass "${sister}: MCP *workspace_create"; else fail "${sister}: missing Tier A MCP tool '*workspace_create'"; fi
-    if tools_has '(^|.*_)workspace_add$' "$tools"; then pass "${sister}: MCP *workspace_add"; else fail "${sister}: missing Tier A MCP tool '*workspace_add'"; fi
-    if tools_has '(^|.*_)workspace_list$' "$tools"; then pass "${sister}: MCP *workspace_list"; else fail "${sister}: missing Tier A MCP tool '*workspace_list'"; fi
-    if tools_has '(^|.*_)workspace_query$' "$tools"; then pass "${sister}: MCP *workspace_query"; else fail "${sister}: missing Tier A MCP tool '*workspace_query'"; fi
-    if tools_has '(^|.*_)workspace_compare$' "$tools"; then pass "${sister}: MCP *workspace_compare"; else fail "${sister}: missing Tier A MCP tool '*workspace_compare'"; fi
-    if tools_has '(^|.*_)workspace_xref$' "$tools"; then pass "${sister}: MCP *workspace_xref"; else fail "${sister}: missing Tier A MCP tool '*workspace_xref'"; fi
+    if mcp_has_capability "$key" "ground" "$tools"; then pass "${sister}: MCP *ground"; else fail "${sister}: missing Tier A MCP tool '*ground' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "evidence" "$tools"; then pass "${sister}: MCP *evidence"; else fail "${sister}: missing Tier A MCP tool '*evidence' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "suggest" "$tools"; then pass "${sister}: MCP *suggest"; else fail "${sister}: missing Tier A MCP tool '*suggest' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_create" "$tools"; then pass "${sister}: MCP *workspace_create"; else fail "${sister}: missing Tier A MCP tool '*workspace_create' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_add" "$tools"; then pass "${sister}: MCP *workspace_add"; else fail "${sister}: missing Tier A MCP tool '*workspace_add' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_list" "$tools"; then pass "${sister}: MCP *workspace_list"; else fail "${sister}: missing Tier A MCP tool '*workspace_list' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_query" "$tools"; then pass "${sister}: MCP *workspace_query"; else fail "${sister}: missing Tier A MCP tool '*workspace_query' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_compare" "$tools"; then pass "${sister}: MCP *workspace_compare"; else fail "${sister}: missing Tier A MCP tool '*workspace_compare' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "workspace_xref" "$tools"; then pass "${sister}: MCP *workspace_xref"; else fail "${sister}: missing Tier A MCP tool '*workspace_xref' (or compact equivalent)"; fi
   fi
 
   if has_tier "B"; then
-    if tools_has '^session_start$' "$tools"; then pass "${sister}: MCP session_start"; else fail "${sister}: missing Tier B MCP tool 'session_start'"; fi
-    if tools_has '^session_end$' "$tools"; then pass "${sister}: MCP session_end"; else fail "${sister}: missing Tier B MCP tool 'session_end'"; fi
-    if tools_has '(^|.*_)session_resume$' "$tools"; then pass "${sister}: MCP *session_resume"; else fail "${sister}: missing Tier B MCP tool '*session_resume'"; fi
+    if mcp_has_capability "$key" "session_start" "$tools"; then pass "${sister}: MCP session_start"; else fail "${sister}: missing Tier B MCP tool 'session_start' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "session_end" "$tools"; then pass "${sister}: MCP session_end"; else fail "${sister}: missing Tier B MCP tool 'session_end' (or compact equivalent)"; fi
+    if mcp_has_capability "$key" "session_resume" "$tools"; then pass "${sister}: MCP *session_resume"; else fail "${sister}: missing Tier B MCP tool '*session_resume' (or compact equivalent)"; fi
   fi
 
   if has_tier "C"; then

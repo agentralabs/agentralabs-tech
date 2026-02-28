@@ -49,6 +49,9 @@ MCP tool surface must include these capabilities:
 8. `*workspace_compare`
 9. `*workspace_xref`
 
+Note: operation-based compact facades are accepted as canonical equivalents
+when they route these capabilities through a consolidated tool group.
+
 ### Tier B (Session Lifecycle) — Required for every sister
 
 MCP tool surface must include:
@@ -56,6 +59,9 @@ MCP tool surface must include:
 1. `session_start`
 2. `session_end`
 3. `*_session_resume` (or equivalent explicit session resume tool)
+
+Note: consolidated session facades (for example `*_session` groups) satisfy
+Tier B when they expose start/end/resume operations.
 
 ### Tier C (Memory-Depth Runtime Controls) — Required for every sister
 
