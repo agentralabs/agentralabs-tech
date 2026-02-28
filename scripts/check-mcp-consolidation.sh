@@ -30,6 +30,24 @@ section() {
   echo "── $* ──"
 }
 
+sorted_unique_join() {
+  tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ $//'
+}
+
+extract_compact_doc_tools() {
+  local doc="$1"
+  local prefix="$2"
+  awk '
+    /^### Compact Facade Tools/ { in_section=1; next }
+    /^Compact list mode:/ && in_section { in_section=0 }
+    /^## / && in_section { in_section=0 }
+    in_section { print }
+  ' "$doc" \
+    | grep -oE "\`${prefix}[a-z_]+\`" \
+    | tr -d '`' \
+    | sort -u
+}
+
 if ! command -v jq >/dev/null 2>&1; then
   echo "FATAL: jq is required but not installed" >&2
   exit 1
@@ -161,6 +179,18 @@ for i in "${!SISTERS[@]}"; do
       fail "${sister}: compact tool '${tool}' not found in Rust MCP source"
     fi
   done
+
+  if [ "$require_doc_section" = "true" ]; then
+    contract_set="$(printf '%s\n' "${compact_tools[@]}" | sort -u | tr '\n' ' ' | sed 's/ $//')"
+    doc_set="$(extract_compact_doc_tools "$command_surface" "$prefix" | tr '\n' ' ' | sed 's/ $//')"
+    if [ "$contract_set" = "$doc_set" ]; then
+      pass "${sister}: compact section tool list exactly matches contract"
+    else
+      fail "${sister}: compact section tool list drift from contract"
+      echo "  contract: ${contract_set}" >&2
+      echo "  docs:     ${doc_set}" >&2
+    fi
+  fi
 
   if rg -q 'get\("operation"\)|operation.*Unknown|Unknown .* operation|"operation"' "$sister_dir" \
     -g '*.rs' \
