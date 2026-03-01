@@ -5,6 +5,8 @@
       "name": "AgenticMemory",
       "repo": "agentic-memory",
       "shortName": "MEMORY",
+      "description": "Persistent, graph-based memory for AI agents with temporal chaining and anti-hallucination grounding",
+      "topic": "Memory",
       "enabled": true,
       "order": 10,
       "fileExtension": ".amem",
@@ -36,6 +38,8 @@
       "name": "AgenticVision",
       "repo": "agentic-vision",
       "shortName": "VISION",
+      "description": "Visual state capture, comparison, and tracking for AI agents with temporal awareness",
+      "topic": "Vision",
       "enabled": true,
       "order": 20,
       "fileExtension": ".avis",
@@ -67,6 +71,8 @@
       "name": "AgenticCodebase",
       "repo": "agentic-codebase",
       "shortName": "CODEBASE",
+      "description": "Code graph analysis, semantic search, and impact prediction for AI agents",
+      "topic": "Codebase",
       "enabled": true,
       "order": 30,
       "fileExtension": ".acb",
@@ -98,6 +104,8 @@
       "name": "AgenticIdentity",
       "repo": "agentic-identity",
       "shortName": "IDENTITY",
+      "description": "Cryptographic identity, trust management, and verifiable action receipts for AI agents",
+      "topic": "Identity",
       "enabled": true,
       "order": 40,
       "fileExtension": ".aid",
@@ -129,6 +137,8 @@
       "name": "AgenticTime",
       "repo": "agentic-time",
       "shortName": "TIME",
+      "description": "Temporal reasoning, scheduling, and time-aware planning for AI agents",
+      "topic": "Time",
       "enabled": true,
       "order": 50,
       "fileExtension": ".atime",
@@ -160,6 +170,8 @@
       "name": "AgenticContract",
       "repo": "agentic-contract",
       "shortName": "CONTRACT",
+      "description": "Enforceable contracts, SLA policies, and governance for multi-agent systems",
+      "topic": "Contract",
       "enabled": true,
       "order": 60,
       "fileExtension": ".acon",
@@ -183,6 +195,39 @@
       },
       "docs": {
         "landingSlug": "contract-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "comm",
+      "name": "AgenticComm",
+      "repo": "agentic-comm",
+      "shortName": "COMM",
+      "description": "Structured agent-to-agent and agent-to-human communication with channels, pub/sub, and message routing",
+      "topic": "Communication",
+      "enabled": true,
+      "order": 70,
+      "fileExtension": ".acomm",
+      "cliBinary": "acomm",
+      "packages": {
+        "npm": "@agenticamem/comm",
+        "pypi": "agentic-comm",
+        "coreCrate": "agentic-comm",
+        "ffiCrate": "agentic-comm-ffi",
+        "mcpCrate": "agentic-comm-mcp",
+        "cliCrate": "agentic-comm-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-comm-mcp/src/tools/registry.rs",
+        "edgeCaseInventionsTest": "crates/agentic-comm-mcp/tests/edge_cases_inventions.rs"
+      },
+      "mcp": {
+        "binary": "agentic-comm-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-comm-mcp"
+      },
+      "docs": {
+        "landingSlug": "comm-docs",
         "includeLanding": true
       }
     }
