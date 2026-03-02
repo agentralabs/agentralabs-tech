@@ -1759,23 +1759,18 @@ for sister in "${SISTERS[@]}"; do
     if [ -z "$pdf_files" ]; then
       fail "${sister}: $(basename "$pdir") has .tex source but no compiled .pdf — run pdflatex"
     else
-      # Check .aux exists (produced by every pdflatex run)
-      aux_files="$(find "$pdir" -maxdepth 1 -name '*.aux' 2>/dev/null || true)"
-      if [ -z "$aux_files" ]; then
-        fail "${sister}: $(basename "$pdir") has .pdf but missing .aux — recompile with pdflatex"
-      else
-        # Only require .bbl if a .bib file exists (external bibliography)
-        bib_files="$(find "$pdir" -maxdepth 1 -name '*.bib' 2>/dev/null || true)"
-        if [ -n "$bib_files" ]; then
-          bbl_files="$(find "$pdir" -maxdepth 1 -name '*.bbl' 2>/dev/null || true)"
-          if [ -z "$bbl_files" ]; then
-            fail "${sister}: $(basename "$pdir") has .bib but no .bbl — run bibtex"
-          else
-            pass "${sister}: $(basename "$pdir") paper fully compiled (PDF + bib artifacts present)"
-          fi
+      # .aux files are transient build artifacts and are often intentionally not committed.
+      # Guardrail should validate durable, repo-tracked compilation evidence.
+      bib_files="$(find "$pdir" -maxdepth 1 -name '*.bib' 2>/dev/null || true)"
+      if [ -n "$bib_files" ]; then
+        bbl_files="$(find "$pdir" -maxdepth 1 -name '*.bbl' 2>/dev/null || true)"
+        if [ -z "$bbl_files" ]; then
+          fail "${sister}: $(basename "$pdir") has .bib but no .bbl — run bibtex"
         else
-          pass "${sister}: $(basename "$pdir") paper compiled (PDF + aux present, no external bibliography)"
+          pass "${sister}: $(basename "$pdir") paper fully compiled (PDF + bib artifacts present)"
         fi
+      else
+        pass "${sister}: $(basename "$pdir") paper compiled (PDF present, no external bibliography)"
       fi
     fi
   done <<< "$paper_dirs"
