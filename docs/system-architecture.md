@@ -4,7 +4,7 @@ status: stable
 
 # System Architecture
 
-This page shows how Agentra orchestration and the six sisters operate together across local and server runtime environments.
+This page shows how Agentra orchestration and the eight sisters operate together across local and server runtime environments.
 
 ## Architecture overview flowchart
 
@@ -13,8 +13,8 @@ This page shows how Agentra orchestration and the six sisters operate together a
 The overview flow is:
 
 1. MCP client requests go through `agentra`.
-2. `agentra` coordinates sister runtimes (`acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, `agentic-identity-mcp`, `agentic-time-mcp`, `agentic-contract-mcp`).
-3. Sister runtimes produce and consume artifacts (`.acb`, `.amem`, `.avis`, `.aid`, `.atime`, `.acon`).
+2. `agentra` coordinates sister runtimes (`acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, `agentic-identity-mcp`, `agentic-time-mcp`, `agentic-contract-mcp`, `agentic-comm-mcp`, `agentic-planning-mcp`).
+3. Sister runtimes produce and consume artifacts (`.acb`, `.amem`, `.avis`, `.aid`, `.atime`, `.acon`, `.acomm`, `.aplan`).
 4. Runtime targets (desktop, terminal, server) execute under one contract.
 
 ## Local runtime flowchart (desktop and terminal)
@@ -40,8 +40,8 @@ Server mode adds two non-optional requirements:
 ## Layer model
 
 1. **Workspace orchestrator (`agentra`)**: detection, takeover state, doctor/preflight, backup and restore.
-2. **Sister runtimes**: `acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, `agentic-identity-mcp`, `agentic-time-mcp`, and `agentic-contract-mcp` expose MCP tools.
-3. **Artifacts**: `.acb` (code graph), `.amem` (memory graph), `.avis` (visual memory), `.aid` (identity anchor), `.atime` (temporal engine), `.acon` (governance contract).
+2. **Sister runtimes**: `acb-mcp`, `agentic-memory-mcp`, `agentic-vision-mcp`, `agentic-identity-mcp`, `agentic-time-mcp`, `agentic-contract-mcp`, `agentic-comm-mcp`, and `agentic-planning-mcp` expose MCP tools.
+3. **Artifacts**: `.acb` (code graph), `.amem` (memory graph), `.avis` (visual memory), `.aid` (identity anchor), `.atime` (temporal engine), `.acon` (governance contract), `.acomm` (communication), `.aplan` (planning).
 4. **MCP clients**: any compliant desktop, terminal, or server MCP client.
 
 ## Runtime modes

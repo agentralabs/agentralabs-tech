@@ -10,11 +10,12 @@
   <a href="https://github.com/agentralabs/agentic-time"><img src="https://img.shields.io/badge/Time-0.1.0-ea580c?style=for-the-badge" alt="Time"></a>
   <a href="https://github.com/agentralabs/agentic-contract"><img src="https://img.shields.io/badge/Contract-0.1.0-ea580c?style=for-the-badge" alt="Contract"></a>
   <a href="https://github.com/agentralabs/agentic-comm"><img src="https://img.shields.io/badge/Comm-0.1.0-ea580c?style=for-the-badge" alt="Comm"></a>
+  <a href="https://github.com/agentralabs/agentic-planning"><img src="https://img.shields.io/badge/Planning-0.1.0-ea580c?style=for-the-badge" alt="Planning"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <strong>Workspace orchestrator for the seven Agentra sisters.</strong>
+  <strong>Workspace orchestrator for the eight Agentra sisters.</strong>
 </p>
 
 <p align="center">
@@ -36,6 +37,7 @@
 | [**AgenticTime**](https://github.com/agentralabs/agentic-time) | `.atime` | Temporal reasoning — deadlines, schedules, PERT estimation, decay models |
 | [**AgenticContract**](https://github.com/agentralabs/agentic-contract) | `.acon` | Policy engine — governance rules, risk limits, approvals, obligations, violations |
 | [**AgenticComm**](https://github.com/agentralabs/agentic-comm) | `.acomm` | Structured agent communication — channels, pub/sub, message routing, encryption |
+| [**AgenticPlanning**](https://github.com/agentralabs/agentic-planning) | `.aplan` | Persistent goals, decisions, commitments, strategic reasoning |
 
 Each sister is an independent MCP server. Install one or all. Any model. Any client.
 
@@ -51,6 +53,7 @@ cargo install agentic-identity-cli  # aid
 cargo install agentic-time-cli      # atime
 cargo install agentic-contract-cli  # acon
 cargo install agentic-comm-cli      # acomm
+cargo install agentic-planning-cli  # aplan
 ```
 
 Or use the orchestrator:
@@ -85,6 +88,7 @@ agentralabs-tech/
 ├── agentic-time/      temporal reasoning
 ├── agentic-contract/  policy engine + governance
 ├── agentic-comm/      structured agent communication
+├── agentic-planning/  strategic planning + decisions
 ├── install_all.sh     install sisters from local paths
 ├── sync_artifacts.sh  sync artifacts to server paths
 └── scripts/           guardrail + consistency checks

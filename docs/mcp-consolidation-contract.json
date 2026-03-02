@@ -139,6 +139,27 @@
         "comm_agent",
         "comm_store"
       ]
+    },
+    {
+      "repo": "agentic-planning",
+      "prefix": "planning_",
+      "maxFacadeTools": 14,
+      "compactEnvVars": ["APLAN_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "planning_goal",
+        "planning_decision",
+        "planning_commitment",
+        "planning_progress",
+        "planning_singularity",
+        "planning_dream",
+        "planning_counterfactual",
+        "planning_chain",
+        "planning_consensus",
+        "planning_federate",
+        "planning_metamorphosis",
+        "planning_workspace",
+        "planning_context_log"
+      ]
     }
   ]
 }

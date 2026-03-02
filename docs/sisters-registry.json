@@ -230,6 +230,39 @@
         "landingSlug": "comm-docs",
         "includeLanding": true
       }
+    },
+    {
+      "key": "planning",
+      "name": "AgenticPlanning",
+      "repo": "agentic-planning",
+      "shortName": "PLANNING",
+      "description": "Persistent goals, decisions, commitments, and strategic reasoning for AI agents",
+      "topic": "Planning",
+      "enabled": true,
+      "order": 80,
+      "fileExtension": ".aplan",
+      "cliBinary": "aplan",
+      "packages": {
+        "npm": "@agenticamem/planning",
+        "pypi": "agentic-planning",
+        "coreCrate": "agentic-planning",
+        "ffiCrate": "agentic-planning-ffi",
+        "mcpCrate": "agentic-planning-mcp",
+        "cliCrate": "agentic-planning-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-planning-mcp/src/server.rs",
+        "edgeCaseInventionsTest": "crates/agentic-planning-mcp/tests/edge_cases_inventions.rs"
+      },
+      "mcp": {
+        "binary": "agentic-planning-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-planning-mcp"
+      },
+      "docs": {
+        "landingSlug": "planning-docs",
+        "includeLanding": true
+      }
     }
   ]
 }
