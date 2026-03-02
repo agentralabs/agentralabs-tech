@@ -43,7 +43,18 @@ print(' '.join(keys))
   if [ "$CONTRACT_KEYS" = "$SCRIPT_KEYS" ]; then
     pass "SISTERS array matches navigation-contract.json enabled sisters"
   else
-    fail "SISTERS array does not match navigation-contract.json. Script: [${SCRIPT_KEYS}] Contract: [${CONTRACT_KEYS}]. A new sister may have been added to the web contract but not to this script."
+    # Check if all registry sisters exist in contract (web superset is OK during promotion)
+    MISSING_FROM_CONTRACT=""
+    for sk in ${SCRIPT_KEYS}; do
+      if ! echo " $CONTRACT_KEYS " | grep -qF " $sk "; then
+        MISSING_FROM_CONTRACT="$MISSING_FROM_CONTRACT $sk"
+      fi
+    done
+    if [ -z "$MISSING_FROM_CONTRACT" ]; then
+      pass "SISTERS array is a subset of navigation-contract.json (web has extra sisters pending registry promotion)"
+    else
+      fail "SISTERS array does not match navigation-contract.json. Script: [${SCRIPT_KEYS}] Contract: [${CONTRACT_KEYS}]. Missing from contract:${MISSING_FROM_CONTRACT}"
+    fi
   fi
 else
   pass "Skipping navigation-contract cross-check (file or python3 not available)"

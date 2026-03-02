@@ -53,11 +53,6 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "FATAL: rg (ripgrep) is required but not installed" >&2
-  exit 1
-fi
-
 if [ ! -f "$CONTRACT_FILE" ]; then
   echo "FATAL: contract file missing: ${CONTRACT_FILE}" >&2
   exit 1
@@ -146,14 +141,14 @@ for i in "${!SISTERS[@]}"; do
   fi
 
   if [ "$require_doc_section" = "true" ]; then
-    if rg -q "Compact Facade Tools|consolidated" "$command_surface"; then
+    if grep -qE "Compact Facade Tools|consolidated" "$command_surface"; then
       pass "${sister}: compact section present in command-surface.md"
     else
       fail "${sister}: command-surface.md missing compact section"
     fi
   fi
 
-  if rg -q '`operation`|operation' "$command_surface"; then
+  if grep -qE 'operation' "$command_surface"; then
     pass "${sister}: docs mention operation-based routing"
   else
     fail "${sister}: command-surface.md must mention operation-based routing"
@@ -170,10 +165,7 @@ for i in "${!SISTERS[@]}"; do
       fail "${sister}: command-surface.md missing compact tool '${tool}'"
     fi
 
-    if rg -q --fixed-strings "\"${tool}\"" "$sister_dir" \
-      -g '*.rs' \
-      -g '!**/target/**' \
-      -g '!**/tests/**'; then
+    if grep -rqF "\"${tool}\"" "$sister_dir" --include='*.rs' --exclude-dir=target --exclude-dir=tests; then
       :
     else
       fail "${sister}: compact tool '${tool}' not found in Rust MCP source"
@@ -192,18 +184,13 @@ for i in "${!SISTERS[@]}"; do
     fi
   fi
 
-  if rg -q 'get\("operation"\)|operation.*Unknown|Unknown .* operation|"operation"' "$sister_dir" \
-    -g '*.rs' \
-    -g '!**/target/**' \
-    -g '!**/tests/**'; then
+  if grep -rqE 'get\("operation"\)|operation.*Unknown|Unknown .* operation|"operation"' "$sister_dir" --include='*.rs' --exclude-dir=target --exclude-dir=tests; then
     pass "${sister}: operation-based dispatch detected in source"
   else
     fail "${sister}: no operation-based dispatch pattern detected in source"
   fi
 
-  if rg -q 'test_.*compact|compact_.*test|MCP_TOOL_SURFACE' "$sister_dir" \
-    -g '*.rs' \
-    -g '!**/target/**'; then
+  if grep -rqE 'test_.*compact|compact_.*test|MCP_TOOL_SURFACE' "$sister_dir" --include='*.rs' --exclude-dir=target; then
     pass "${sister}: compact guard tests/signals present"
   else
     fail "${sister}: missing compact-surface test coverage/signals"
@@ -223,7 +210,7 @@ for i in "${!SISTERS[@]}"; do
       fail "${sister}: requireCompactEnvToggle=true but compactEnvVars is empty"
     else
       for env_var in "${env_vars[@]}"; do
-        if rg -q --fixed-strings "$env_var" "$sister_dir" -g '*.rs' -g '!**/target/**'; then
+        if grep -rqF "$env_var" "$sister_dir" --include='*.rs' --exclude-dir=target; then
           :
         else
           fail "${sister}: missing compact env toggle reference '${env_var}'"
@@ -233,7 +220,7 @@ for i in "${!SISTERS[@]}"; do
     fi
   fi
 
-  if rg -q --fixed-strings "tools/list" "$sister_dir" -g '*.rs' -g '!**/target/**'; then
+  if grep -rqF "tools/list" "$sister_dir" --include='*.rs' --exclude-dir=target; then
     pass "${sister}: tools/list handling present"
   else
     fail "${sister}: tools/list handler not detected"

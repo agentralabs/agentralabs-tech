@@ -165,7 +165,7 @@ cli_has() {
   )
 
   for c in "${candidates[@]}"; do
-    if [ -d "$c" ] && rg -qi "$pattern" "$c" -g '*.rs'; then
+    if [ -d "$c" ] && grep -rqiE "$pattern" "$c" --include='*.rs'; then
       return 0
     fi
   done
@@ -242,14 +242,14 @@ for i in "${!SISTERS[@]}"; do
   fi
 
   if has_tier "C"; then
-    if rg -q -e "runtime-sync" -e "runtime_sync" "$sister_dir" -g '!target'; then pass "${sister}: runtime-sync present"; else fail "${sister}: missing Tier C runtime-sync workflow"; fi
-    if rg -q --fixed-strings "AUTO_CAPTURE_MODE" "$sister_dir" -g '!target'; then pass "${sister}: AUTO_CAPTURE_MODE"; else fail "${sister}: missing Tier C AUTO_CAPTURE_MODE"; fi
-    if rg -q --fixed-strings "AUTO_CAPTURE_REDACT" "$sister_dir" -g '!target'; then pass "${sister}: AUTO_CAPTURE_REDACT"; else fail "${sister}: missing Tier C AUTO_CAPTURE_REDACT"; fi
-    if rg -q --fixed-strings "AUTO_CAPTURE_MAX_CHARS" "$sister_dir" -g '!target'; then pass "${sister}: AUTO_CAPTURE_MAX_CHARS"; else fail "${sister}: missing Tier C AUTO_CAPTURE_MAX_CHARS"; fi
-    if rg -q --fixed-strings "STORAGE_BUDGET_MODE" "$sister_dir" -g '!target'; then pass "${sister}: STORAGE_BUDGET_MODE"; else fail "${sister}: missing Tier C STORAGE_BUDGET_MODE"; fi
-    if rg -q --fixed-strings "STORAGE_BUDGET_BYTES" "$sister_dir" -g '!target'; then pass "${sister}: STORAGE_BUDGET_BYTES"; else fail "${sister}: missing Tier C STORAGE_BUDGET_BYTES"; fi
-    if rg -q --fixed-strings "STORAGE_BUDGET_HORIZON_YEARS" "$sister_dir" -g '!target'; then pass "${sister}: STORAGE_BUDGET_HORIZON_YEARS"; else fail "${sister}: missing Tier C STORAGE_BUDGET_HORIZON_YEARS"; fi
-    if rg -q --fixed-strings "STORAGE_BUDGET_TARGET_FRACTION" "$sister_dir" -g '!target'; then pass "${sister}: STORAGE_BUDGET_TARGET_FRACTION"; else fail "${sister}: missing Tier C STORAGE_BUDGET_TARGET_FRACTION"; fi
+    if grep -rq -e "runtime-sync" -e "runtime_sync" "$sister_dir" --exclude-dir=target; then pass "${sister}: runtime-sync present"; else fail "${sister}: missing Tier C runtime-sync workflow"; fi
+    if grep -rqF "AUTO_CAPTURE_MODE" "$sister_dir" --exclude-dir=target; then pass "${sister}: AUTO_CAPTURE_MODE"; else fail "${sister}: missing Tier C AUTO_CAPTURE_MODE"; fi
+    if grep -rqF "AUTO_CAPTURE_REDACT" "$sister_dir" --exclude-dir=target; then pass "${sister}: AUTO_CAPTURE_REDACT"; else fail "${sister}: missing Tier C AUTO_CAPTURE_REDACT"; fi
+    if grep -rqF "AUTO_CAPTURE_MAX_CHARS" "$sister_dir" --exclude-dir=target; then pass "${sister}: AUTO_CAPTURE_MAX_CHARS"; else fail "${sister}: missing Tier C AUTO_CAPTURE_MAX_CHARS"; fi
+    if grep -rqF "STORAGE_BUDGET_MODE" "$sister_dir" --exclude-dir=target; then pass "${sister}: STORAGE_BUDGET_MODE"; else fail "${sister}: missing Tier C STORAGE_BUDGET_MODE"; fi
+    if grep -rqF "STORAGE_BUDGET_BYTES" "$sister_dir" --exclude-dir=target; then pass "${sister}: STORAGE_BUDGET_BYTES"; else fail "${sister}: missing Tier C STORAGE_BUDGET_BYTES"; fi
+    if grep -rqF "STORAGE_BUDGET_HORIZON_YEARS" "$sister_dir" --exclude-dir=target; then pass "${sister}: STORAGE_BUDGET_HORIZON_YEARS"; else fail "${sister}: missing Tier C STORAGE_BUDGET_HORIZON_YEARS"; fi
+    if grep -rqF "STORAGE_BUDGET_TARGET_FRACTION" "$sister_dir" --exclude-dir=target; then pass "${sister}: STORAGE_BUDGET_TARGET_FRACTION"; else fail "${sister}: missing Tier C STORAGE_BUDGET_TARGET_FRACTION"; fi
   fi
 done
 
