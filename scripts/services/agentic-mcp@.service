@@ -1,0 +1,40 @@
+# Systemd service template for Agentra MCP servers (Linux).
+#
+# Usage:
+#   sudo cp agentic-mcp@.service /etc/systemd/system/
+#   sudo systemctl enable --now agentic-mcp@memory
+#   sudo systemctl enable --now agentic-mcp@planning
+#   sudo systemctl status agentic-mcp@memory
+#
+# The %i parameter is the sister key (memory, vision, codebase, identity,
+# time, contract, comm, planning).
+
+[Unit]
+Description=Agentra %i MCP Server
+After=network.target
+Documentation=https://github.com/agentralabs/agentic-%i
+
+[Service]
+Type=simple
+User=%i
+Group=%i
+ExecStart=%h/.local/bin/agentic-%i-mcp serve
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agentic-%i-mcp
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ReadWritePaths=%h/.local/share/agentic-%i
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

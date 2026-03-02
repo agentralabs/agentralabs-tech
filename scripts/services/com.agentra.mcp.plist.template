@@ -1,0 +1,55 @@
+<!--
+  launchd plist template for Agentra MCP servers (macOS).
+
+  Usage:
+    1. Copy and rename, replacing SISTER with the sister key:
+         cp com.agentra.mcp.plist.template ~/Library/LaunchAgents/com.agentra.mcp.SISTER.plist
+    2. Edit the copied plist — replace __SISTER__ with the actual key (memory, planning, etc.)
+    3. Load:
+         launchctl load ~/Library/LaunchAgents/com.agentra.mcp.SISTER.plist
+    4. Check status:
+         launchctl list | grep agentra
+
+  Or use: scripts/install-services.sh which does this automatically.
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.agentra.mcp.__SISTER__</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__HOME__/.local/bin/agentic-__SISTER__-mcp</string>
+        <string>serve</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>__HOME__/Library/Logs/agentic-__SISTER__-mcp.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__HOME__/Library/Logs/agentic-__SISTER__-mcp.err</string>
+
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>65536</integer>
+    </dict>
+</dict>
+</plist>
