@@ -37,7 +37,9 @@ fn test_empty_model_prediction() {
 fn test_empty_model_simulation() {
     let (_w, mid, d) = setup();
     let q = query_for(&d);
-    let sim = q.simulate_decision(&mid, "test", &["A".into(), "B".into()]).unwrap();
+    let sim = q
+        .simulate_decision(&mid, "test", &["A".into(), "B".into()])
+        .unwrap();
     assert_eq!(sim.options.len(), 2);
 }
 
@@ -53,8 +55,12 @@ fn test_empty_model_future_projection() {
 fn test_belief_at_boundaries() {
     let (w, mid, d) = setup();
     // Confidence at exact boundaries
-    let _ = w.add_belief(&mid, "Zero confidence".into(), BeliefDomain::Other, 0.0).unwrap();
-    let _ = w.add_belief(&mid, "Full confidence".into(), BeliefDomain::Other, 1.0).unwrap();
+    let _ = w
+        .add_belief(&mid, "Zero confidence".into(), BeliefDomain::Other, 0.0)
+        .unwrap();
+    let _ = w
+        .add_belief(&mid, "Full confidence".into(), BeliefDomain::Other, 1.0)
+        .unwrap();
     let q = query_for(&d);
     let beliefs = q.list_beliefs(&mid).unwrap();
     assert_eq!(beliefs.len(), 2);
@@ -63,14 +69,20 @@ fn test_belief_at_boundaries() {
 #[test]
 fn test_belief_invalid_confidence() {
     let (w, mid, _d) = setup();
-    assert!(w.add_belief(&mid, "Too high".into(), BeliefDomain::Other, 1.1).is_err());
-    assert!(w.add_belief(&mid, "Negative".into(), BeliefDomain::Other, -0.1).is_err());
+    assert!(w
+        .add_belief(&mid, "Too high".into(), BeliefDomain::Other, 1.1)
+        .is_err());
+    assert!(w
+        .add_belief(&mid, "Negative".into(), BeliefDomain::Other, -0.1)
+        .is_err());
 }
 
 #[test]
 fn test_strengthen_beyond_one() {
     let (w, mid, _d) = setup();
-    let bid = w.add_belief(&mid, "test".into(), BeliefDomain::Values, 0.9).unwrap();
+    let bid = w
+        .add_belief(&mid, "test".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
     w.strengthen_belief(&mid, &bid, 0.5).unwrap();
     let file = w.store().get_model(&mid).unwrap();
     let b = file.belief_graph.get_belief(&bid).unwrap();
@@ -80,7 +92,9 @@ fn test_strengthen_beyond_one() {
 #[test]
 fn test_weaken_below_zero() {
     let (w, mid, _d) = setup();
-    let bid = w.add_belief(&mid, "test".into(), BeliefDomain::Values, 0.1).unwrap();
+    let bid = w
+        .add_belief(&mid, "test".into(), BeliefDomain::Values, 0.1)
+        .unwrap();
     w.weaken_belief(&mid, &bid, 0.5).unwrap();
     let file = w.store().get_model(&mid).unwrap();
     let b = file.belief_graph.get_belief(&bid).unwrap();
@@ -90,7 +104,9 @@ fn test_weaken_below_zero() {
 #[test]
 fn test_crystallize_then_weaken() {
     let (w, mid, _d) = setup();
-    let bid = w.add_belief(&mid, "test".into(), BeliefDomain::Values, 0.9).unwrap();
+    let bid = w
+        .add_belief(&mid, "test".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
     w.crystallize_belief(&mid, &bid).unwrap();
     w.weaken_belief(&mid, &bid, 0.1).unwrap();
     let file = w.store().get_model(&mid).unwrap();
@@ -101,11 +117,26 @@ fn test_crystallize_then_weaken() {
 #[test]
 fn test_collapse_cascade() {
     let (w, mid, _d) = setup();
-    let keystone = w.add_belief(&mid, "Foundation".into(), BeliefDomain::Values, 0.9).unwrap();
-    let dependent = w.add_belief(&mid, "Built on foundation".into(), BeliefDomain::Values, 0.8).unwrap();
-    w.connect_beliefs(&mid, dependent, keystone, ConnectionType::Requires, 0.9).unwrap();
+    let keystone = w
+        .add_belief(&mid, "Foundation".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
+    let dependent = w
+        .add_belief(
+            &mid,
+            "Built on foundation".into(),
+            BeliefDomain::Values,
+            0.8,
+        )
+        .unwrap();
+    w.connect_beliefs(&mid, dependent, keystone, ConnectionType::Requires, 0.9)
+        .unwrap();
 
-    w.collapse_belief(&mid, &keystone, agentic_cognition::types::drift::CollapseTrigger::DeliberateInvestigation).unwrap();
+    w.collapse_belief(
+        &mid,
+        &keystone,
+        agentic_cognition::types::drift::CollapseTrigger::DeliberateInvestigation,
+    )
+    .unwrap();
 
     let file = w.store().get_model(&mid).unwrap();
     let dep = file.belief_graph.get_belief(&dependent).unwrap();
@@ -117,7 +148,13 @@ fn test_large_model_performance() {
     let (w, mid, d) = setup();
     // Add 100 beliefs
     for i in 0..100 {
-        w.add_belief(&mid, format!("Belief {i}"), BeliefDomain::Values, 0.5 + (i as f64 * 0.004)).unwrap();
+        w.add_belief(
+            &mid,
+            format!("Belief {i}"),
+            BeliefDomain::Values,
+            0.5 + (i as f64 * 0.004),
+        )
+        .unwrap();
     }
     let q = query_for(&d);
     let beliefs = q.list_beliefs(&mid).unwrap();
@@ -132,13 +169,22 @@ fn test_large_model_performance() {
 fn test_all_domains_accepted() {
     let (w, mid, _d) = setup();
     let domains = [
-        BeliefDomain::Self_, BeliefDomain::Relationships, BeliefDomain::Work,
-        BeliefDomain::Politics, BeliefDomain::Religion, BeliefDomain::Science,
-        BeliefDomain::Values, BeliefDomain::WorldModel, BeliefDomain::Identity,
-        BeliefDomain::Capability, BeliefDomain::Worth, BeliefDomain::Other,
+        BeliefDomain::Self_,
+        BeliefDomain::Relationships,
+        BeliefDomain::Work,
+        BeliefDomain::Politics,
+        BeliefDomain::Religion,
+        BeliefDomain::Science,
+        BeliefDomain::Values,
+        BeliefDomain::WorldModel,
+        BeliefDomain::Identity,
+        BeliefDomain::Capability,
+        BeliefDomain::Worth,
+        BeliefDomain::Other,
     ];
     for domain in domains {
-        w.add_belief(&mid, format!("{domain:?} belief"), domain, 0.5).unwrap();
+        w.add_belief(&mid, format!("{domain:?} belief"), domain, 0.5)
+            .unwrap();
     }
     let file = w.store().get_model(&mid).unwrap();
     assert_eq!(file.belief_graph.beliefs.len(), 12);
@@ -147,8 +193,12 @@ fn test_all_domains_accepted() {
 #[test]
 fn test_self_connection_rejected() {
     let (w, mid, _d) = setup();
-    let bid = w.add_belief(&mid, "test".into(), BeliefDomain::Values, 0.5).unwrap();
-    assert!(w.connect_beliefs(&mid, bid, bid, ConnectionType::Supports, 0.5).is_err());
+    let bid = w
+        .add_belief(&mid, "test".into(), BeliefDomain::Values, 0.5)
+        .unwrap();
+    assert!(w
+        .connect_beliefs(&mid, bid, bid, ConnectionType::Supports, 0.5)
+        .is_err());
 }
 
 #[test]

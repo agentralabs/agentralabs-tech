@@ -1,6 +1,6 @@
 //! Strict validation — no silent fallbacks
 
-use crate::types::{CognitionError, CognitionResult, BeliefDomain, ModelLifecycleStage};
+use crate::types::{BeliefDomain, CognitionError, CognitionResult, ModelLifecycleStage};
 
 /// Validator for all input data
 pub struct Validator;
@@ -17,9 +17,9 @@ impl Validator {
     /// Validate a non-empty string
     pub fn validate_non_empty(field: &str, value: &str) -> CognitionResult<()> {
         if value.trim().is_empty() {
-            return Err(CognitionError::ValidationError(
-                format!("{field} cannot be empty"),
-            ));
+            return Err(CognitionError::ValidationError(format!(
+                "{field} cannot be empty"
+            )));
         }
         Ok(())
     }
@@ -53,16 +53,15 @@ impl Validator {
             "capability" => Ok(BeliefDomain::Capability),
             "worth" => Ok(BeliefDomain::Worth),
             "other" => Ok(BeliefDomain::Other),
-            _ => Err(CognitionError::ValidationError(
-                format!("Unknown domain: {domain}"),
-            )),
+            _ => Err(CognitionError::ValidationError(format!(
+                "Unknown domain: {domain}"
+            ))),
         }
     }
 
     /// Validate a model ID string
     pub fn validate_uuid(value: &str) -> CognitionResult<uuid::Uuid> {
-        uuid::Uuid::parse_str(value).map_err(|e| {
-            CognitionError::ValidationError(format!("Invalid UUID: {e}"))
-        })
+        uuid::Uuid::parse_str(value)
+            .map_err(|e| CognitionError::ValidationError(format!("Invalid UUID: {e}")))
     }
 }

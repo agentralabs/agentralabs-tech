@@ -1,10 +1,10 @@
 //! Living User Model — the breathing representation of a human
 
-use serde::{Deserialize, Serialize};
-use crate::types::ids::*;
-use crate::types::soul::*;
 use crate::types::consciousness::*;
+use crate::types::ids::*;
 use crate::types::self_concept::*;
+use crate::types::soul::*;
+use serde::{Deserialize, Serialize};
 
 /// The living user model — breathes, evolves, knows
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -12,16 +12,20 @@ impl SoulReflector {
         let now = Timestamp::now();
 
         // Analyze persistent traits from beliefs
-        let core_traits: Vec<ObservedTrait> = model.soul.essence.persistent_traits.iter().map(|t| {
-            ObservedTrait {
+        let core_traits: Vec<ObservedTrait> = model
+            .soul
+            .essence
+            .persistent_traits
+            .iter()
+            .map(|t| ObservedTrait {
                 trait_name: t.name.clone(),
                 strength: t.strength,
                 consistency: t.consistency,
                 evidence_count: t.evidence_count,
                 self_aware: true,
                 perception_gap: 0.0,
-            }
-        }).collect();
+            })
+            .collect();
 
         // Extract drives
         let drives = model.soul.drives.clone();

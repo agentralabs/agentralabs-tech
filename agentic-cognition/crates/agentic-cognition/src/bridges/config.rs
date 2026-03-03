@@ -4,8 +4,8 @@
 //! `BridgeRegistry` provides runtime discovery and connection management
 //! for multi-sister deployments.
 
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // ============================================================
 // BRIDGE CONFIG
@@ -248,10 +248,7 @@ impl BridgeRegistry {
 
     /// Check if a bridge is registered and connected.
     pub fn is_available(&self, name: &str) -> bool {
-        self.entries
-            .get(name)
-            .map(|e| e.connected)
-            .unwrap_or(false)
+        self.entries.get(name).map(|e| e.connected).unwrap_or(false)
     }
 
     /// Get all registered bridge names.

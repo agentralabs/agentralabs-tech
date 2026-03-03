@@ -1,10 +1,10 @@
 //! Atomic file operations — write to temp, then rename
 //! Prevents corruption from crashes during write.
 
+use crate::types::{CognitionError, CognitionResult};
 use std::fs::{self, File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use crate::types::{CognitionError, CognitionResult};
 
 /// Atomic writer — ensures file integrity via temp+rename pattern
 pub struct AtomicWriter {

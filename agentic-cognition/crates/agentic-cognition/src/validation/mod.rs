@@ -1,6 +1,6 @@
 //! Strict validation — no silent fallbacks (SPEC-14)
 
-use crate::types::{CognitionError, CognitionResult, BeliefDomain};
+use crate::types::{BeliefDomain, CognitionError, CognitionResult};
 
 /// Maximum lengths for validated fields
 pub const MAX_BELIEF_CONTENT_LENGTH: usize = 2000;
@@ -20,7 +20,9 @@ impl McpValidator {
         let id_str = params
             .get("model_id")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| CognitionError::ValidationError("Missing required parameter: model_id".into()))?;
+            .ok_or_else(|| {
+                CognitionError::ValidationError("Missing required parameter: model_id".into())
+            })?;
 
         let uuid = uuid::Uuid::parse_str(id_str)
             .map_err(|e| CognitionError::ValidationError(format!("Invalid model_id: {e}")))?;
@@ -30,10 +32,9 @@ impl McpValidator {
 
     /// Validate a confidence value from MCP input
     pub fn validate_confidence(params: &serde_json::Value, field: &str) -> CognitionResult<f64> {
-        let value = params
-            .get(field)
-            .and_then(|v| v.as_f64())
-            .ok_or_else(|| CognitionError::ValidationError(format!("Missing required parameter: {field}")))?;
+        let value = params.get(field).and_then(|v| v.as_f64()).ok_or_else(|| {
+            CognitionError::ValidationError(format!("Missing required parameter: {field}"))
+        })?;
 
         if !(0.0..=1.0).contains(&value) {
             return Err(CognitionError::InvalidConfidence(value));
@@ -44,13 +45,14 @@ impl McpValidator {
 
     /// Validate a required string parameter
     pub fn require_string(params: &serde_json::Value, field: &str) -> CognitionResult<String> {
-        let value = params
-            .get(field)
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| CognitionError::ValidationError(format!("Missing required parameter: {field}")))?;
+        let value = params.get(field).and_then(|v| v.as_str()).ok_or_else(|| {
+            CognitionError::ValidationError(format!("Missing required parameter: {field}"))
+        })?;
 
         if value.trim().is_empty() {
-            return Err(CognitionError::ValidationError(format!("{field} cannot be empty")));
+            return Err(CognitionError::ValidationError(format!(
+                "{field} cannot be empty"
+            )));
         }
 
         Ok(value.to_string())
@@ -58,13 +60,18 @@ impl McpValidator {
 
     /// Get an optional string parameter
     pub fn optional_string(params: &serde_json::Value, field: &str) -> Option<String> {
-        params.get(field).and_then(|v| v.as_str()).map(|s| s.to_string())
+        params
+            .get(field)
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
     }
 
     /// Validate belief content (length and content checks)
     pub fn validate_belief_content(content: &str) -> CognitionResult<()> {
         if content.trim().is_empty() {
-            return Err(CognitionError::ValidationError("Belief content cannot be empty".into()));
+            return Err(CognitionError::ValidationError(
+                "Belief content cannot be empty".into(),
+            ));
         }
         if content.len() > MAX_BELIEF_CONTENT_LENGTH {
             return Err(CognitionError::ValidationError(format!(
@@ -74,20 +81,31 @@ impl McpValidator {
             )));
         }
         // Check for control characters
-        if content.chars().any(|c| c.is_control() && c != '\n' && c != '\t') {
-            return Err(CognitionError::ValidationError("Belief content contains invalid control characters".into()));
+        if content
+            .chars()
+            .any(|c| c.is_control() && c != '\n' && c != '\t')
+        {
+            return Err(CognitionError::ValidationError(
+                "Belief content contains invalid control characters".into(),
+            ));
         }
         Ok(())
     }
 
     /// Validate a domain string
-    pub fn validate_domain(params: &serde_json::Value, field: &str) -> CognitionResult<BeliefDomain> {
+    pub fn validate_domain(
+        params: &serde_json::Value,
+        field: &str,
+    ) -> CognitionResult<BeliefDomain> {
         let domain_str = Self::require_string(params, field)?;
         crate::engine::validation::Validator::parse_domain(&domain_str)
     }
 
     /// Validate an operation name against allowed operations
-    pub fn validate_operation(params: &serde_json::Value, allowed: &[&str]) -> CognitionResult<String> {
+    pub fn validate_operation(
+        params: &serde_json::Value,
+        allowed: &[&str],
+    ) -> CognitionResult<String> {
         let op = Self::require_string(params, "operation")?;
         if !allowed.contains(&op.as_str()) {
             return Err(CognitionError::ValidationError(format!(
@@ -99,11 +117,15 @@ impl McpValidator {
     }
 
     /// Validate a prediction ID
-    pub fn validate_prediction_id(params: &serde_json::Value) -> CognitionResult<crate::types::PredictionId> {
+    pub fn validate_prediction_id(
+        params: &serde_json::Value,
+    ) -> CognitionResult<crate::types::PredictionId> {
         let id_str = params
             .get("prediction_id")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| CognitionError::ValidationError("Missing required parameter: prediction_id".into()))?;
+            .ok_or_else(|| {
+                CognitionError::ValidationError("Missing required parameter: prediction_id".into())
+            })?;
 
         let uuid = uuid::Uuid::parse_str(id_str)
             .map_err(|e| CognitionError::ValidationError(format!("Invalid prediction_id: {e}")))?;
@@ -154,7 +176,10 @@ mod tests {
     #[test]
     fn test_require_string() {
         let params = json!({"name": "hello"});
-        assert_eq!(McpValidator::require_string(&params, "name").unwrap(), "hello");
+        assert_eq!(
+            McpValidator::require_string(&params, "name").unwrap(),
+            "hello"
+        );
 
         let empty = json!({"name": ""});
         assert!(McpValidator::require_string(&empty, "name").is_err());

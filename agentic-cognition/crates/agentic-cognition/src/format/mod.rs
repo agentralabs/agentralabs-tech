@@ -5,7 +5,10 @@
 //! [HEADER_CHECKSUM: 32] [HEADER_DATA: variable]
 //! [BODY_CHECKSUM: 32] [BODY_DATA: variable]
 
-use crate::types::{CognitionError, CognitionResult, LivingUserModel, BeliefGraph, ShadowMap, BiasField, DriftTimeline, DecisionFingerprint};
+use crate::types::{
+    BeliefGraph, BiasField, CognitionError, CognitionResult, DecisionFingerprint, DriftTimeline,
+    LivingUserModel, ShadowMap,
+};
 use serde::{Deserialize, Serialize};
 use std::io::Write as _;
 use std::path::Path;
@@ -79,9 +82,9 @@ impl AcogFile {
         // Read version
         let version = u16::from_le_bytes([data[4], data[5]]);
         if version > VERSION {
-            return Err(CognitionError::FormatError(
-                format!("Unsupported version: {version}, max supported: {VERSION}")
-            ));
+            return Err(CognitionError::FormatError(format!(
+                "Unsupported version: {version}, max supported: {VERSION}"
+            )));
         }
 
         // Read header length

@@ -113,7 +113,8 @@ impl ToolRegistry {
             },
             ToolDef {
                 name: "cognition_self_topology".into(),
-                description: "Get self-concept topology with peaks, valleys, and blind canyons".into(),
+                description: "Get self-concept topology with peaks, valleys, and blind canyons"
+                    .into(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
@@ -124,7 +125,8 @@ impl ToolRegistry {
             },
             ToolDef {
                 name: "cognition_pattern_fingerprint".into(),
-                description: "Get decision fingerprint showing unique decision-making signature".into(),
+                description: "Get decision fingerprint showing unique decision-making signature"
+                    .into(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
@@ -135,7 +137,8 @@ impl ToolRegistry {
             },
             ToolDef {
                 name: "cognition_shadow_map".into(),
-                description: "Get shadow map of unconscious beliefs, projections, and blindspots".into(),
+                description: "Get shadow map of unconscious beliefs, projections, and blindspots"
+                    .into(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
@@ -146,7 +149,8 @@ impl ToolRegistry {
             },
             ToolDef {
                 name: "cognition_drift_track".into(),
-                description: "Track belief drift, value tectonics, and metamorphoses over time".into(),
+                description: "Track belief drift, value tectonics, and metamorphoses over time"
+                    .into(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {

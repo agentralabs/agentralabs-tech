@@ -8,23 +8,28 @@
 //! - JSON-RPC 2.0 version validation
 //! - Token-based auth gate (AGENTIC_AUTH_TOKEN)
 
+use clap::Parser;
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
-use clap::Parser;
 
+mod ghost_bridge;
+mod protocol;
 mod tools;
 mod types;
-mod protocol;
 
-use types::*;
 use protocol::ProtocolHandler;
+use types::*;
 
 /// Maximum content length for incoming JSON-RPC frames (8 MiB).
 /// Any frame exceeding this limit is rejected to prevent resource exhaustion.
 const MAX_CONTENT_LENGTH_BYTES: usize = 8 * 1024 * 1024;
 
 #[derive(Parser)]
-#[command(name = "acog-mcp", version = "0.1.0", about = "AgenticCognition MCP Server")]
+#[command(
+    name = "acog-mcp",
+    version = "0.1.0",
+    about = "AgenticCognition MCP Server"
+)]
 struct Args {
     /// Storage directory for .acog files
     #[arg(long, default_value = "~/.agentic/cognition")]
@@ -85,6 +90,9 @@ fn main() {
         }
     };
 
+    // Ghost bridge: sync cognition context to AI coding assistants
+    let mut ghost = ghost_bridge::GhostBridge::new();
+
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
     let mut stdout = stdout.lock();
@@ -109,13 +117,24 @@ fn main() {
 
         // Enforce frame size limit
         if line.len() > MAX_CONTENT_LENGTH_BYTES {
-            tracing::warn!("Frame exceeds MAX_CONTENT_LENGTH_BYTES ({}), rejecting", line.len());
+            tracing::warn!(
+                "Frame exceeds MAX_CONTENT_LENGTH_BYTES ({}), rejecting",
+                line.len()
+            );
             let error_response = JsonRpcResponse::error(
                 None,
                 PARSE_ERROR,
-                format!("Frame size {} exceeds maximum {}", line.len(), MAX_CONTENT_LENGTH_BYTES),
+                format!(
+                    "Frame size {} exceeds maximum {}",
+                    line.len(),
+                    MAX_CONTENT_LENGTH_BYTES
+                ),
             );
-            let _ = writeln!(stdout, "{}", serde_json::to_string(&error_response).unwrap_or_default());
+            let _ = writeln!(
+                stdout,
+                "{}",
+                serde_json::to_string(&error_response).unwrap_or_default()
+            );
             let _ = stdout.flush();
             continue;
         }
@@ -123,19 +142,29 @@ fn main() {
         let request: JsonRpcRequest = match serde_json::from_str(&line) {
             Ok(r) => r,
             Err(e) => {
-                let error_response = JsonRpcResponse::error(
-                    None,
-                    PARSE_ERROR,
-                    format!("Parse error: {e}"),
+                let error_response =
+                    JsonRpcResponse::error(None, PARSE_ERROR, format!("Parse error: {e}"));
+                let _ = writeln!(
+                    stdout,
+                    "{}",
+                    serde_json::to_string(&error_response).unwrap_or_default()
                 );
-                let _ = writeln!(stdout, "{}", serde_json::to_string(&error_response).unwrap_or_default());
                 let _ = stdout.flush();
                 continue;
             }
         };
 
         let response = handler.handle_request(&request);
-        let _ = writeln!(stdout, "{}", serde_json::to_string(&response).unwrap_or_default());
+        let _ = writeln!(
+            stdout,
+            "{}",
+            serde_json::to_string(&response).unwrap_or_default()
+        );
         let _ = stdout.flush();
+
+        // Sync cognition context after each request
+        if let Some(ref mut bridge) = ghost {
+            bridge.sync(handler.query_engine());
+        }
     }
 }

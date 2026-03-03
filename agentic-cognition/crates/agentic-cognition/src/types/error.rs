@@ -1,7 +1,7 @@
 //! Error types for AgenticCognition
 
-use thiserror::Error;
 use crate::types::ids::*;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CognitionError {
@@ -18,10 +18,7 @@ pub enum CognitionError {
     InvalidConfidence(f64),
 
     #[error("Invalid model state transition: {from:?} -> {to:?}")]
-    InvalidStateTransition {
-        from: String,
-        to: String,
-    },
+    InvalidStateTransition { from: String, to: String },
 
     #[error("Validation error: {0}")]
     ValidationError(String),
@@ -30,10 +27,7 @@ pub enum CognitionError {
     FormatError(String),
 
     #[error("Checksum mismatch: expected {expected}, got {actual}")]
-    ChecksumMismatch {
-        expected: String,
-        actual: String,
-    },
+    ChecksumMismatch { expected: String, actual: String },
 
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),

@@ -2,11 +2,11 @@
 //!
 //! 40+ commands for managing living user models.
 
+use agentic_cognition::engine::validation::Validator;
+use agentic_cognition::*;
+use chrono::Utc;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
-use agentic_cognition::*;
-use agentic_cognition::engine::validation::Validator;
-use chrono::Utc;
 
 /// Output format for CLI responses
 #[derive(Debug, Clone, ValueEnum)]
@@ -17,14 +17,24 @@ enum OutputFormat {
 }
 
 #[derive(Parser)]
-#[command(name = "acog", version = "0.1.0", about = "AgenticCognition — The Mirror")]
+#[command(
+    name = "acog",
+    version = "0.1.0",
+    about = "AgenticCognition — The Mirror"
+)]
 struct Cli {
     /// Storage directory
     #[arg(long, default_value = "~/.agentic/cognition")]
     storage: String,
 
     /// Output format (text, json, table)
-    #[arg(short = 'F', long = "format", value_enum, default_value = "text", global = true)]
+    #[arg(
+        short = 'F',
+        long = "format",
+        value_enum,
+        default_value = "text",
+        global = true
+    )]
     format: OutputFormat,
 
     /// Enable verbose output
@@ -355,7 +365,12 @@ fn main() {
     }
 }
 
-fn run(command: Commands, storage_dir: PathBuf, use_json: bool, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn run(
+    command: Commands,
+    storage_dir: PathBuf,
+    use_json: bool,
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     // Handle commands that don't need storage engines first
     match &command {
         Commands::Version => {
@@ -386,7 +401,9 @@ fn run(command: Commands, storage_dir: PathBuf, use_json: bool, verbose: bool) -
         Commands::Bias { action } => handle_bias(action, &query_engine),
         Commands::Drift { action } => handle_drift(action, &query_engine),
         Commands::Predict { action } => handle_predict(action, &query_engine),
-        Commands::Privacy { action } => handle_privacy(&action, &write_engine, &query_engine, use_json),
+        Commands::Privacy { action } => {
+            handle_privacy(&action, &write_engine, &query_engine, use_json)
+        }
         Commands::Serve { port: _ } => {
             println!("MCP server mode — use acog-mcp binary for stdio transport");
             Ok(())
@@ -412,32 +429,44 @@ fn handle_model(
     match action {
         ModelAction::Create => {
             let id = write.create_model()?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "model_id": id.to_string(),
-                "status": "created"
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "model_id": id.to_string(),
+                    "status": "created"
+                }))?
+            );
         }
         ModelAction::Show { model_id } => {
             let id = parse_model_id(&model_id)?;
             let model = query.get_model(&id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "id": model.id.to_string(),
-                "lifecycle_stage": format!("{:?}", model.lifecycle_stage),
-                "evidence_count": model.evidence_count,
-                "consent": format!("{:?}", model.consent)
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "id": model.id.to_string(),
+                    "lifecycle_stage": format!("{:?}", model.lifecycle_stage),
+                    "evidence_count": model.evidence_count,
+                    "consent": format!("{:?}", model.consent)
+                }))?
+            );
         }
         ModelAction::Vitals { model_id } => {
             let id = parse_model_id(&model_id)?;
             let vitals = query.get_vitals(&id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "health": vitals.health,
-                "confidence": vitals.confidence,
-                "evidence_count": vitals.evidence_count,
-                "in_crisis": vitals.in_crisis
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "health": vitals.health,
+                    "confidence": vitals.confidence,
+                    "evidence_count": vitals.evidence_count,
+                    "in_crisis": vitals.in_crisis
+                }))?
+            );
         }
-        ModelAction::Heartbeat { model_id, observations } => {
+        ModelAction::Heartbeat {
+            model_id,
+            observations,
+        } => {
             let id = parse_model_id(&model_id)?;
             write.heartbeat(&id, observations)?;
             println!("Heartbeat recorded");
@@ -445,35 +474,44 @@ fn handle_model(
         ModelAction::Portrait { model_id } => {
             let id = parse_model_id(&model_id)?;
             let portrait = query.get_portrait(&id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "model_id": portrait.model.id.to_string(),
-                "lifecycle": format!("{:?}", portrait.model.lifecycle_stage),
-                "beliefs": portrait.belief_count,
-                "shadows": portrait.shadow_count,
-                "biases": portrait.bias_count,
-                "drift_events": portrait.drift_event_count
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "model_id": portrait.model.id.to_string(),
+                    "lifecycle": format!("{:?}", portrait.model.lifecycle_stage),
+                    "beliefs": portrait.belief_count,
+                    "shadows": portrait.shadow_count,
+                    "biases": portrait.bias_count,
+                    "drift_events": portrait.drift_event_count
+                }))?
+            );
         }
         ModelAction::Soul { model_id } => {
             let id = parse_model_id(&model_id)?;
             let reflection = query.soul_reflection(&id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "confidence": reflection.confidence,
-                "core_traits": reflection.essence.core_traits.len(),
-                "drives": reflection.essence.drives.len(),
-                "optimization_target": reflection.essence.true_optimization_target
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "confidence": reflection.confidence,
+                    "core_traits": reflection.essence.core_traits.len(),
+                    "drives": reflection.essence.drives.len(),
+                    "optimization_target": reflection.essence.true_optimization_target
+                }))?
+            );
         }
         ModelAction::Consciousness { model_id } => {
             let id = parse_model_id(&model_id)?;
             let consciousness = query.get_consciousness(&id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "mood": format!("{:?}", consciousness.emotional_weather.current_mood),
-                "life_phase": format!("{:?}", consciousness.life_phase),
-                "cognitive_load": consciousness.cognitive_load,
-                "energy_level": consciousness.energy_level,
-                "tensions": consciousness.active_tensions.len()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "mood": format!("{:?}", consciousness.emotional_weather.current_mood),
+                    "life_phase": format!("{:?}", consciousness.life_phase),
+                    "cognitive_load": consciousness.cognitive_load,
+                    "energy_level": consciousness.energy_level,
+                    "tensions": consciousness.active_tensions.len()
+                }))?
+            );
         }
         ModelAction::List => {
             let models = query.list_models()?;
@@ -497,49 +535,80 @@ fn handle_belief(
     query: &QueryEngine,
 ) -> Result<(), Box<dyn std::error::Error>> {
     match action {
-        BeliefAction::Add { model_id, content, domain, confidence } => {
+        BeliefAction::Add {
+            model_id,
+            content,
+            domain,
+            confidence,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let dom = Validator::parse_domain(&domain)?;
             let bid = write.add_belief(&mid, content, dom, confidence)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "belief_id": bid.to_string(),
-                "status": "added"
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "belief_id": bid.to_string(),
+                    "status": "added"
+                }))?
+            );
         }
-        BeliefAction::Show { model_id, belief_id } => {
+        BeliefAction::Show {
+            model_id,
+            belief_id,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let bid = parse_belief_id(&belief_id)?;
             let belief = query.get_belief(&mid, &bid)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "id": belief.id.to_string(),
-                "content": belief.content,
-                "domain": format!("{}", belief.domain),
-                "confidence": belief.confidence,
-                "state": format!("{:?}", belief.state),
-                "crystallization": belief.crystallization
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "id": belief.id.to_string(),
+                    "content": belief.content,
+                    "domain": format!("{}", belief.domain),
+                    "confidence": belief.confidence,
+                    "state": format!("{:?}", belief.state),
+                    "crystallization": belief.crystallization
+                }))?
+            );
         }
         BeliefAction::List { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let beliefs = query.list_beliefs(&mid)?;
             for b in &beliefs {
-                println!("{} | {} | {:.2} | {:?}", b.id, b.content, b.confidence, b.state);
+                println!(
+                    "{} | {} | {:.2} | {:?}",
+                    b.id, b.content, b.confidence, b.state
+                );
             }
             println!("Total: {} beliefs", beliefs.len());
         }
-        BeliefAction::Strengthen { model_id, belief_id, amount } => {
+        BeliefAction::Strengthen {
+            model_id,
+            belief_id,
+            amount,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let bid = parse_belief_id(&belief_id)?;
             write.strengthen_belief(&mid, &bid, amount)?;
             println!("Belief strengthened by {amount}");
         }
-        BeliefAction::Weaken { model_id, belief_id, amount } => {
+        BeliefAction::Weaken {
+            model_id,
+            belief_id,
+            amount,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let bid = parse_belief_id(&belief_id)?;
             write.weaken_belief(&mid, &bid, amount)?;
             println!("Belief weakened by {amount}");
         }
-        BeliefAction::Connect { model_id, from, to, kind, strength } => {
+        BeliefAction::Connect {
+            model_id,
+            from,
+            to,
+            kind,
+            strength,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let fid = parse_belief_id(&from)?;
             let tid = parse_belief_id(&to)?;
@@ -558,36 +627,57 @@ fn handle_belief(
         BeliefAction::Graph { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let graph = query.get_belief_graph(&mid)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "beliefs": graph.beliefs.len(),
-                "connections": graph.connections.len(),
-                "entanglements": graph.entanglements.len()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "beliefs": graph.beliefs.len(),
+                    "connections": graph.connections.len(),
+                    "entanglements": graph.entanglements.len()
+                }))?
+            );
         }
         BeliefAction::Keystones { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let keystones = query.get_keystones(&mid)?;
             for k in &keystones {
-                println!("{} | dependents: {} | collapse_radius: {:.2}", k.belief_id, k.dependents.len(), k.collapse_radius);
+                println!(
+                    "{} | dependents: {} | collapse_radius: {:.2}",
+                    k.belief_id,
+                    k.dependents.len(),
+                    k.collapse_radius
+                );
             }
         }
         BeliefAction::Contradictions { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let contradictions = query.get_contradictions(&mid)?;
             for c in &contradictions {
-                println!("{} vs {} | severity: {:.2}", c.belief_a, c.belief_b, c.severity);
+                println!(
+                    "{} vs {} | severity: {:.2}",
+                    c.belief_a, c.belief_b, c.severity
+                );
             }
         }
-        BeliefAction::Crystallize { model_id, belief_id } => {
+        BeliefAction::Crystallize {
+            model_id,
+            belief_id,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let bid = parse_belief_id(&belief_id)?;
             write.crystallize_belief(&mid, &bid)?;
             println!("Belief crystallized");
         }
-        BeliefAction::Collapse { model_id, belief_id } => {
+        BeliefAction::Collapse {
+            model_id,
+            belief_id,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let bid = parse_belief_id(&belief_id)?;
-            write.collapse_belief(&mid, &bid, agentic_cognition::types::drift::CollapseTrigger::DeliberateInvestigation)?;
+            write.collapse_belief(
+                &mid,
+                &bid,
+                agentic_cognition::types::drift::CollapseTrigger::DeliberateInvestigation,
+            )?;
             println!("Belief collapsed");
         }
         BeliefAction::Search { model_id, query: q } => {
@@ -602,55 +692,70 @@ fn handle_belief(
     Ok(())
 }
 
-fn handle_self(
-    action: SelfAction,
-    query: &QueryEngine,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn handle_self(action: SelfAction, query: &QueryEngine) -> Result<(), Box<dyn std::error::Error>> {
     match action {
         SelfAction::Topology { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "peaks": topo.peaks.len(),
-                "valleys": topo.valleys.len(),
-                "blind_canyons": topo.blind_canyons.len(),
-                "defended": topo.defended_territories.len(),
-                "growing_edges": topo.growing_edges.len()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "peaks": topo.peaks.len(),
+                    "valleys": topo.valleys.len(),
+                    "blind_canyons": topo.blind_canyons.len(),
+                    "defended": topo.defended_territories.len(),
+                    "growing_edges": topo.growing_edges.len()
+                }))?
+            );
         }
         SelfAction::Peaks { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
             for p in &topo.peaks {
-                println!("{} | height: {:.2} | warranted: {}", p.domain, p.height, p.warranted);
+                println!(
+                    "{} | height: {:.2} | warranted: {}",
+                    p.domain, p.height, p.warranted
+                );
             }
         }
         SelfAction::Valleys { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
             for v in &topo.valleys {
-                println!("{} | depth: {:.2} | self_aware: {}", v.domain, v.depth, v.self_aware);
+                println!(
+                    "{} | depth: {:.2} | self_aware: {}",
+                    v.domain, v.depth, v.self_aware
+                );
             }
         }
         SelfAction::Blindspots { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
             for b in &topo.blind_canyons {
-                println!("{} | blindness: {:.2} | impact: {:?}", b.blind_area, b.blindness, b.impact);
+                println!(
+                    "{} | blindness: {:.2} | impact: {:?}",
+                    b.blind_area, b.blindness, b.impact
+                );
             }
         }
         SelfAction::Defended { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
             for d in &topo.defended_territories {
-                println!("{} | strength: {:.2} | vulnerability: {}", d.territory, d.defense_strength, d.underlying_vulnerability);
+                println!(
+                    "{} | strength: {:.2} | vulnerability: {}",
+                    d.territory, d.defense_strength, d.underlying_vulnerability
+                );
             }
         }
         SelfAction::Edges { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let topo = query.get_topology(&mid)?;
             for e in &topo.growing_edges {
-                println!("{} | rate: {:.2} | challenge: {:.2}", e.area, e.growth_rate, e.challenge_level);
+                println!(
+                    "{} | rate: {:.2} | challenge: {:.2}",
+                    e.area, e.growth_rate, e.challenge_level
+                );
             }
         }
     }
@@ -666,16 +771,19 @@ fn handle_pattern(
             let mid = parse_model_id(&model_id)?;
             match query.get_fingerprint(&mid)? {
                 Some(fp) => {
-                    println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                        "information_appetite": fp.traits.information_appetite,
-                        "risk_tolerance": fp.traits.risk_tolerance,
-                        "speed_accuracy": fp.traits.speed_accuracy_tradeoff,
-                        "intuition_analysis": fp.traits.intuition_analysis_balance,
-                        "social_influence": fp.traits.social_influence,
-                        "time_horizon": fp.traits.time_horizon,
-                        "emotional_regulation": fp.traits.emotional_regulation,
-                        "reversibility_seeking": fp.traits.reversibility_seeking
-                    }))?);
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&serde_json::json!({
+                            "information_appetite": fp.traits.information_appetite,
+                            "risk_tolerance": fp.traits.risk_tolerance,
+                            "speed_accuracy": fp.traits.speed_accuracy_tradeoff,
+                            "intuition_analysis": fp.traits.intuition_analysis_balance,
+                            "social_influence": fp.traits.social_influence,
+                            "time_horizon": fp.traits.time_horizon,
+                            "emotional_regulation": fp.traits.emotional_regulation,
+                            "reversibility_seeking": fp.traits.reversibility_seeking
+                        }))?
+                    );
                 }
                 None => println!("No fingerprint yet"),
             }
@@ -704,47 +812,59 @@ fn handle_shadow(
         ShadowAction::Map { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let shadow = query.get_shadow_map(&mid)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "shadow_beliefs": shadow.shadow_beliefs.len(),
-                "projections": shadow.projections.len(),
-                "blindspots": shadow.blindspots.len()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "shadow_beliefs": shadow.shadow_beliefs.len(),
+                    "projections": shadow.projections.len(),
+                    "blindspots": shadow.blindspots.len()
+                }))?
+            );
         }
         ShadowAction::Projections { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let shadow = query.get_shadow_map(&mid)?;
             for p in &shadow.projections {
-                println!("{} -> {} | strength: {:.2}", p.disowned_trait, p.projected_onto, p.strength);
+                println!(
+                    "{} -> {} | strength: {:.2}",
+                    p.disowned_trait, p.projected_onto, p.strength
+                );
             }
         }
         ShadowAction::Blindspots { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let shadow = query.get_shadow_map(&mid)?;
             for b in &shadow.blindspots {
-                println!("{} | level: {:.2} | impact: {}", b.area, b.blindness_level, b.impact);
+                println!(
+                    "{} | level: {:.2} | impact: {}",
+                    b.area, b.blindness_level, b.impact
+                );
             }
         }
     }
     Ok(())
 }
 
-fn handle_bias(
-    action: BiasAction,
-    query: &QueryEngine,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn handle_bias(action: BiasAction, query: &QueryEngine) -> Result<(), Box<dyn std::error::Error>> {
     match action {
         BiasAction::Field { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let bias = query.get_bias_field(&mid)?;
             for b in &bias.biases {
-                println!("{} ({:?}) | strength: {:.2}", b.name, b.bias_type, b.strength);
+                println!(
+                    "{} ({:?}) | strength: {:.2}",
+                    b.name, b.bias_type, b.strength
+                );
             }
         }
         BiasAction::Triggers { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let bias = query.get_bias_field(&mid)?;
             for t in &bias.triggers {
-                println!("{} -> {} | intensity: {:.2}", t.trigger, t.response_pattern, t.intensity);
+                println!(
+                    "{} -> {} | intensity: {:.2}",
+                    t.trigger, t.response_pattern, t.intensity
+                );
             }
         }
     }
@@ -759,18 +879,24 @@ fn handle_drift(
         DriftAction::Timeline { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let drift = query.get_drift_timeline(&mid)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "events": drift.events.len(),
-                "value_tectonics": drift.value_tectonics.len(),
-                "metamorphoses": drift.metamorphoses.len(),
-                "growth_rings": drift.growth_rings.len()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "events": drift.events.len(),
+                    "value_tectonics": drift.value_tectonics.len(),
+                    "metamorphoses": drift.metamorphoses.len(),
+                    "growth_rings": drift.growth_rings.len()
+                }))?
+            );
         }
         DriftAction::Tectonics { model_id } => {
             let mid = parse_model_id(&model_id)?;
             let drift = query.get_drift_timeline(&mid)?;
             for vt in &drift.value_tectonics {
-                println!("{} -> {} | magnitude: {:.2}", vt.value, vt.direction, vt.magnitude);
+                println!(
+                    "{} -> {} | magnitude: {:.2}",
+                    vt.value, vt.direction, vt.magnitude
+                );
             }
         }
     }
@@ -785,35 +911,48 @@ fn handle_predict(
         PredictAction::Preference { model_id, item } => {
             let mid = parse_model_id(&model_id)?;
             let pred = query.predict_preference(&mid, &item)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "item": pred.item,
-                "predicted_preference": pred.predicted_preference,
-                "confidence": pred.confidence,
-                "reasoning": pred.reasoning
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "item": pred.item,
+                    "predicted_preference": pred.predicted_preference,
+                    "confidence": pred.confidence,
+                    "reasoning": pred.reasoning
+                }))?
+            );
         }
-        PredictAction::Decision { model_id, scenario, options } => {
+        PredictAction::Decision {
+            model_id,
+            scenario,
+            options,
+        } => {
             let mid = parse_model_id(&model_id)?;
             let sim = query.simulate_decision(&mid, &scenario, &options)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "scenario": sim.scenario,
-                "predicted_choice": sim.predicted_choice,
-                "confidence": sim.confidence,
-                "options": sim.options.iter().map(|o| serde_json::json!({
-                    "description": o.description,
-                    "probability": o.predicted_probability
-                })).collect::<Vec<_>>()
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "scenario": sim.scenario,
+                    "predicted_choice": sim.predicted_choice,
+                    "confidence": sim.confidence,
+                    "options": sim.options.iter().map(|o| serde_json::json!({
+                        "description": o.description,
+                        "probability": o.predicted_probability
+                    })).collect::<Vec<_>>()
+                }))?
+            );
         }
         PredictAction::Future { model_id, days } => {
             let mid = parse_model_id(&model_id)?;
             let proj = query.project_future(&mid, days)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "time_horizon_days": proj.time_horizon_days,
-                "projected_beliefs": proj.projected_beliefs.len(),
-                "branch_points": proj.branch_points.len(),
-                "confidence": proj.confidence
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "time_horizon_days": proj.time_horizon_days,
+                    "projected_beliefs": proj.projected_beliefs.len(),
+                    "branch_points": proj.branch_points.len(),
+                    "confidence": proj.confidence
+                }))?
+            );
         }
     }
     Ok(())
@@ -821,38 +960,54 @@ fn handle_predict(
 
 fn handle_version(use_json: bool) -> Result<(), Box<dyn std::error::Error>> {
     if use_json {
-        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-            "name": "acog",
-            "version": env!("CARGO_PKG_VERSION"),
-            "description": "AgenticCognition — The Mirror"
-        }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "name": "acog",
+                "version": env!("CARGO_PKG_VERSION"),
+                "description": "AgenticCognition — The Mirror"
+            }))?
+        );
     } else {
-        println!("acog {} — AgenticCognition — The Mirror", env!("CARGO_PKG_VERSION"));
+        println!(
+            "acog {} — AgenticCognition — The Mirror",
+            env!("CARGO_PKG_VERSION")
+        );
     }
     Ok(())
 }
 
-fn handle_status(storage_dir: &std::path::Path, use_json: bool, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn handle_status(
+    storage_dir: &std::path::Path,
+    use_json: bool,
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let store = CognitionStore::with_storage(storage_dir.to_path_buf())?;
     let query = QueryEngine::new(store);
     let models = query.list_models()?;
     let storage_exists = storage_dir.exists();
 
     if use_json {
-        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-            "version": env!("CARGO_PKG_VERSION"),
-            "storage_dir": storage_dir.display().to_string(),
-            "storage_exists": storage_exists,
-            "model_count": models.len(),
-            "status": if models.is_empty() { "empty" } else { "active" }
-        }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "version": env!("CARGO_PKG_VERSION"),
+                "storage_dir": storage_dir.display().to_string(),
+                "storage_exists": storage_exists,
+                "model_count": models.len(),
+                "status": if models.is_empty() { "empty" } else { "active" }
+            }))?
+        );
     } else {
         println!("AgenticCognition Status");
         println!("  Version:     {}", env!("CARGO_PKG_VERSION"));
         println!("  Storage:     {}", storage_dir.display());
         println!("  Storage OK:  {}", storage_exists);
         println!("  Models:      {}", models.len());
-        println!("  Status:      {}", if models.is_empty() { "empty" } else { "active" });
+        println!(
+            "  Status:      {}",
+            if models.is_empty() { "empty" } else { "active" }
+        );
         if verbose {
             for id in &models {
                 println!("    - {}", id);
@@ -873,11 +1028,14 @@ fn handle_privacy(
             let mid = parse_model_id(model_id)?;
             let model = query.get_model(&mid)?;
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "model_id": model.id.to_string(),
-                    "consent": format!("{:?}", model.consent),
-                    "privacy_status": "compliant"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "model_id": model.id.to_string(),
+                        "consent": format!("{:?}", model.consent),
+                        "privacy_status": "compliant"
+                    }))?
+                );
             } else {
                 println!("Privacy Status for {}", model.id);
                 println!("  Consent:  {:?}", model.consent);
@@ -889,15 +1047,24 @@ fn handle_privacy(
             // Validate level
             match level.as_str() {
                 "full" | "limited" | "minimal" => {}
-                _ => return Err(format!("Invalid consent level '{}': must be full, limited, or minimal", level).into()),
+                _ => {
+                    return Err(format!(
+                        "Invalid consent level '{}': must be full, limited, or minimal",
+                        level
+                    )
+                    .into())
+                }
             }
             let _model = query.get_model(&mid)?;
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "model_id": mid.to_string(),
-                    "consent_level": level,
-                    "status": "updated"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "model_id": mid.to_string(),
+                        "consent_level": level,
+                        "status": "updated"
+                    }))?
+                );
             } else {
                 println!("Consent updated to '{}' for model {}", level, mid);
             }
@@ -927,17 +1094,23 @@ fn handle_privacy(
         PrivacyAction::Delete { model_id, confirm } => {
             let mid = parse_model_id(model_id)?;
             if !confirm {
-                eprintln!("Warning: This will permanently delete all data for model {}.", mid);
+                eprintln!(
+                    "Warning: This will permanently delete all data for model {}.",
+                    mid
+                );
                 eprintln!("Run with --confirm to proceed.");
                 return Ok(());
             }
             write.store().delete_model(&mid)?;
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "model_id": mid.to_string(),
-                    "status": "deleted",
-                    "gdpr_action": "right_to_erasure"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "model_id": mid.to_string(),
+                        "status": "deleted",
+                        "gdpr_action": "right_to_erasure"
+                    }))?
+                );
             } else {
                 println!("Model {} deleted (right to erasure)", mid);
             }
@@ -946,13 +1119,16 @@ fn handle_privacy(
             let mid = parse_model_id(model_id)?;
             let _model = query.get_model(&mid)?;
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "model_id": mid.to_string(),
-                    "audit_entries": [],
-                    "limit": limit,
-                    "total": 0,
-                    "message": "Audit log is empty — no privacy events recorded yet"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "model_id": mid.to_string(),
+                        "audit_entries": [],
+                        "limit": limit,
+                        "total": 0,
+                        "message": "Audit log is empty — no privacy events recorded yet"
+                    }))?
+                );
             } else {
                 println!("Privacy Audit Log for {}", mid);
                 println!("  Showing up to {} entries", limit);
@@ -981,14 +1157,20 @@ fn handle_workspace(
                 "description": description.as_deref().unwrap_or(""),
                 "created_at": Utc::now().to_rfc3339(),
             });
-            std::fs::write(ws_dir.join("workspace.json"), serde_json::to_string_pretty(&meta)?)?;
+            std::fs::write(
+                ws_dir.join("workspace.json"),
+                serde_json::to_string_pretty(&meta)?,
+            )?;
 
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "workspace": name,
-                    "path": ws_dir.display().to_string(),
-                    "status": "created"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "workspace": name,
+                        "path": ws_dir.display().to_string(),
+                        "status": "created"
+                    }))?
+                );
             } else {
                 println!("Workspace '{}' created at {}", name, ws_dir.display());
             }
@@ -999,11 +1181,14 @@ fn handle_workspace(
                 return Err(format!("Workspace '{}' not found", name).into());
             }
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "workspace": name,
-                    "path": ws_dir.display().to_string(),
-                    "status": "switched"
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "workspace": name,
+                        "path": ws_dir.display().to_string(),
+                        "status": "switched"
+                    }))?
+                );
             } else {
                 println!("Switched to workspace '{}'", name);
             }
@@ -1023,10 +1208,13 @@ fn handle_workspace(
             workspaces.sort();
 
             if use_json {
-                println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                    "workspaces": workspaces,
-                    "count": workspaces.len()
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&serde_json::json!({
+                        "workspaces": workspaces,
+                        "count": workspaces.len()
+                    }))?
+                );
             } else if workspaces.is_empty() {
                 println!("No workspaces found");
             } else {

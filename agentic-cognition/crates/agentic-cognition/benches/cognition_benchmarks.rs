@@ -1,7 +1,7 @@
 //! Performance benchmarks for AgenticCognition (SPEC-13)
 
-use criterion::{criterion_group, criterion_main, Criterion, black_box};
 use agentic_cognition::*;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use tempfile::TempDir;
 
 fn setup_store() -> (CognitionStore, TempDir) {
@@ -44,12 +44,14 @@ fn benchmark_belief_operations(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         b.iter(|| {
-            let _ = engine.add_belief(
-                &model_id,
-                black_box("Test belief content".to_string()),
-                BeliefDomain::Values,
-                0.8,
-            ).unwrap();
+            let _ = engine
+                .add_belief(
+                    &model_id,
+                    black_box("Test belief content".to_string()),
+                    BeliefDomain::Values,
+                    0.8,
+                )
+                .unwrap();
         });
     });
 
@@ -59,7 +61,9 @@ fn benchmark_belief_operations(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         for i in 0..100 {
-            engine.add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.5).unwrap();
+            engine
+                .add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.5)
+                .unwrap();
         }
 
         let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -76,7 +80,14 @@ fn benchmark_belief_operations(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         for i in 0..100 {
-            engine.add_belief(&model_id, format!("Belief about topic {i}"), BeliefDomain::Values, 0.5).unwrap();
+            engine
+                .add_belief(
+                    &model_id,
+                    format!("Belief about topic {i}"),
+                    BeliefDomain::Values,
+                    0.5,
+                )
+                .unwrap();
         }
 
         let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -99,7 +110,9 @@ fn benchmark_predictions(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         for i in 0..20 {
-            engine.add_belief(&model_id, format!("Value {i}"), BeliefDomain::Values, 0.7).unwrap();
+            engine
+                .add_belief(&model_id, format!("Value {i}"), BeliefDomain::Values, 0.7)
+                .unwrap();
         }
 
         let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -116,7 +129,9 @@ fn benchmark_predictions(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         for i in 0..20 {
-            engine.add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.7).unwrap();
+            engine
+                .add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.7)
+                .unwrap();
         }
 
         let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -124,7 +139,11 @@ fn benchmark_predictions(c: &mut Criterion) {
         let options = vec!["Option A".into(), "Option B".into(), "Option C".into()];
 
         b.iter(|| {
-            let _ = black_box(query.simulate_decision(&model_id, "scenario", &options).unwrap());
+            let _ = black_box(
+                query
+                    .simulate_decision(&model_id, "scenario", &options)
+                    .unwrap(),
+            );
         });
     });
 
@@ -134,7 +153,9 @@ fn benchmark_predictions(c: &mut Criterion) {
         let model_id = engine.create_model().unwrap();
 
         for i in 0..20 {
-            engine.add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.7).unwrap();
+            engine
+                .add_belief(&model_id, format!("Belief {i}"), BeliefDomain::Values, 0.7)
+                .unwrap();
         }
 
         let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();

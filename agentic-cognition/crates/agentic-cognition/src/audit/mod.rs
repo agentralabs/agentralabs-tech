@@ -1,10 +1,10 @@
 //! Audit logging for sensitive operations
 
+use crate::types::{CognitionResult, Timestamp};
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
-use crate::types::{CognitionResult, Timestamp};
 
 /// Audit log for recording sensitive operations
 pub struct AuditLog {
@@ -18,10 +18,7 @@ impl AuditLog {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        let file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)?;
+        let file = OpenOptions::new().create(true).append(true).open(path)?;
         Ok(Self {
             file: Some(file),
             enabled: true,
@@ -128,7 +125,12 @@ mod tests {
         let path = dir.path().join("audit.log");
         let mut log = AuditLog::new(&path).unwrap();
 
-        let entry = AuditEntry::new("create_model", EntityType::Model, "abc123", AuditAction::Create);
+        let entry = AuditEntry::new(
+            "create_model",
+            EntityType::Model,
+            "abc123",
+            AuditAction::Create,
+        );
         log.log(&entry).unwrap();
 
         let content = std::fs::read_to_string(&path).unwrap();

@@ -1,7 +1,7 @@
 //! Consciousness state types
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConsciousnessState {
@@ -61,9 +61,22 @@ pub enum Mood {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Emotion {
-    Joy, Sadness, Anger, Fear, Surprise, Disgust,
-    Trust, Anticipation, Love, Guilt, Shame, Pride,
-    Envy, Gratitude, Hope, Anxiety,
+    Joy,
+    Sadness,
+    Anger,
+    Fear,
+    Surprise,
+    Disgust,
+    Trust,
+    Anticipation,
+    Love,
+    Guilt,
+    Shame,
+    Pride,
+    Envy,
+    Gratitude,
+    Hope,
+    Anxiety,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

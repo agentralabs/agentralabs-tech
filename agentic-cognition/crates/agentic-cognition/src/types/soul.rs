@@ -1,7 +1,7 @@
 //! Soul types — the essence of a person
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// The model's soul — essence, drives, wounds
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,8 +1,8 @@
 //! Belief system types
 
+use crate::types::ids::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::types::ids::*;
 
 /// A single belief
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -240,7 +240,10 @@ impl BeliefGraph {
     }
 
     pub fn beliefs_in_domain(&self, domain: &BeliefDomain) -> Vec<&Belief> {
-        self.beliefs.values().filter(|b| &b.domain == domain).collect()
+        self.beliefs
+            .values()
+            .filter(|b| &b.domain == domain)
+            .collect()
     }
 
     pub fn find_contradictions(&self) -> Vec<BeliefContradiction> {
@@ -266,10 +269,7 @@ impl BeliefGraph {
         let mut dependency_count: HashMap<BeliefId, Vec<BeliefId>> = HashMap::new();
         for conn in &self.connections {
             if conn.connection_type == ConnectionType::Requires {
-                dependency_count
-                    .entry(conn.to)
-                    .or_default()
-                    .push(conn.from);
+                dependency_count.entry(conn.to).or_default().push(conn.from);
             }
         }
         dependency_count

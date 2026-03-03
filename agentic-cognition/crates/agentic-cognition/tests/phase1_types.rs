@@ -1,6 +1,5 @@
 //! Phase 1: Type system tests
 
-use agentic_cognition::*;
 use agentic_cognition::types::*;
 
 #[test]
@@ -164,7 +163,10 @@ fn test_belief_graph_connections() {
     assert_eq!(graph.connections.len(), 1);
     assert_eq!(graph.connections[0].from, id1);
     assert_eq!(graph.connections[0].to, id2);
-    assert_eq!(graph.connections[0].connection_type, ConnectionType::Supports);
+    assert_eq!(
+        graph.connections[0].connection_type,
+        ConnectionType::Supports
+    );
 }
 
 #[test]
@@ -215,7 +217,11 @@ fn test_belief_graph_no_contradictions_for_supports() {
 fn test_belief_graph_domain_filter() {
     let mut graph = BeliefGraph::new();
     graph.add_belief(Belief::new("Work belief".into(), BeliefDomain::Work, 0.8));
-    graph.add_belief(Belief::new("Value belief".into(), BeliefDomain::Values, 0.7));
+    graph.add_belief(Belief::new(
+        "Value belief".into(),
+        BeliefDomain::Values,
+        0.7,
+    ));
     graph.add_belief(Belief::new("Another work".into(), BeliefDomain::Work, 0.6));
 
     let work_beliefs = graph.beliefs_in_domain(&BeliefDomain::Work);
@@ -385,10 +391,22 @@ fn test_all_id_types() {
 
     // Verify they all have non-empty string representations
     for id_str in &[
-        m.to_string(), b.to_string(), p.to_string(), d.to_string(),
-        bs.to_string(), pr.to_string(), bi.to_string(), t.to_string(),
-        pred.to_string(), sim.to_string(), c.to_string(), e.to_string(),
-        f.to_string(), th.to_string(), r.to_string(), fo.to_string(),
+        m.to_string(),
+        b.to_string(),
+        p.to_string(),
+        d.to_string(),
+        bs.to_string(),
+        pr.to_string(),
+        bi.to_string(),
+        t.to_string(),
+        pred.to_string(),
+        sim.to_string(),
+        c.to_string(),
+        e.to_string(),
+        f.to_string(),
+        th.to_string(),
+        r.to_string(),
+        fo.to_string(),
         s.to_string(),
     ] {
         assert!(!id_str.is_empty());
@@ -434,7 +452,10 @@ fn test_consent_status_variants() {
     assert_eq!(pending, ConsentStatus::Pending);
     assert_eq!(granted, ConsentStatus::Granted);
     assert_eq!(revoked, ConsentStatus::Revoked);
-    assert!(matches!(limited, ConsentStatus::Limited { domains_allowed: 3 }));
+    assert!(matches!(
+        limited,
+        ConsentStatus::Limited { domains_allowed: 3 }
+    ));
 }
 
 #[test]
@@ -454,7 +475,9 @@ fn test_belief_entanglement_type() {
     let _anti = EntanglementType::AntiCorrelated;
     let _prot = EntanglementType::Protective;
     let _mut = EntanglementType::MutuallyDefining;
-    let _hidden = EntanglementType::Hidden { surface_distance: 0.5 };
+    let _hidden = EntanglementType::Hidden {
+        surface_distance: 0.5,
+    };
 }
 
 #[test]

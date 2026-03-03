@@ -82,10 +82,7 @@ impl BeliefPhysics {
     }
 
     /// Calculate conviction gravity — how a strong belief warps nearby beliefs
-    pub fn calculate_gravity(
-        conviction: &Belief,
-        graph: &BeliefGraph,
-    ) -> ConvictionGravity {
+    pub fn calculate_gravity(conviction: &Belief, graph: &BeliefGraph) -> ConvictionGravity {
         let mass = conviction.confidence * (1.0 + conviction.crystallization);
 
         // Find beliefs connected to this conviction
@@ -93,7 +90,13 @@ impl BeliefPhysics {
             .connections
             .iter()
             .filter(|c| c.from == conviction.id || c.to == conviction.id)
-            .map(|c| if c.from == conviction.id { c.to } else { c.from })
+            .map(|c| {
+                if c.from == conviction.id {
+                    c.to
+                } else {
+                    c.from
+                }
+            })
             .collect();
 
         let influence_radius = mass * 0.5;
@@ -132,7 +135,8 @@ impl BeliefPhysics {
                 .connections
                 .iter()
                 .filter(|c| {
-                    (c.from == *id || c.to == *id) && c.connection_type == ConnectionType::Contradicts
+                    (c.from == *id || c.to == *id)
+                        && c.connection_type == ConnectionType::Contradicts
                 })
                 .count();
             risk += contradictions as f64 * 0.1;

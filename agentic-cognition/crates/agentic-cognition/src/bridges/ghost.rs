@@ -9,7 +9,7 @@
 //! This trait defines the contract for how cognition data flows
 //! out to other systems while respecting privacy boundaries.
 
-use crate::types::{ModelId, BeliefDomain};
+use crate::types::{BeliefDomain, ModelId};
 
 // ============================================================
 // GHOST OUTPUT TYPES
@@ -242,9 +242,7 @@ mod tests {
 
         assert!(!ghost.allows_ghost_sharing(&model_id));
 
-        let profile = ghost
-            .ghost_profile(&model_id, GhostFilter::new())
-            .unwrap();
+        let profile = ghost.ghost_profile(&model_id, GhostFilter::new()).unwrap();
         assert!(profile.is_none());
 
         let hints = ghost.ghost_hints(&model_id, "test", 10).unwrap();

@@ -9,16 +9,16 @@
 //! - `ghost`  -- CognitionGhostWriter trait (SPEC-22: Cognition -> Ghost)
 //! - `hydra`  -- HydraAdapter trait (SPEC-11: Cognition <-> Hydra)
 
-pub mod noop;
 pub mod config;
 pub mod ghost;
 pub mod hydra;
+pub mod noop;
 
 // Re-export all bridge traits and types at module level
-pub use noop::*;
 pub use config::*;
 pub use ghost::*;
 pub use hydra::*;
+pub use noop::*;
 
 // ============================================================
 // BRIDGE TRAITS — one per sister

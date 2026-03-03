@@ -4,4 +4,4 @@ pub mod atomic;
 pub mod isolation;
 
 pub use atomic::AtomicWriter;
-pub use isolation::{ProjectIdentity, IsolationGuard};
+pub use isolation::{IsolationGuard, ProjectIdentity};

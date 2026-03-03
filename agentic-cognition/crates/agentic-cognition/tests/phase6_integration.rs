@@ -1,7 +1,7 @@
 //! Phase 6: Integration tests
 
-use agentic_cognition::*;
 use agentic_cognition::types::*;
+use agentic_cognition::*;
 use tempfile::TempDir;
 
 fn setup_full() -> (WriteEngine, TempDir) {
@@ -19,28 +19,65 @@ fn test_full_model_lifecycle() {
     let model_id = write.create_model().unwrap();
 
     // Add beliefs
-    let b1 = write.add_belief(&model_id, "Honesty matters".into(), BeliefDomain::Values, 0.9).unwrap();
-    let _b2 = write.add_belief(&model_id, "I am creative".into(), BeliefDomain::Self_, 0.8).unwrap();
-    let b3 = write.add_belief(&model_id, "Success requires effort".into(), BeliefDomain::WorldModel, 0.7).unwrap();
+    let b1 = write
+        .add_belief(
+            &model_id,
+            "Honesty matters".into(),
+            BeliefDomain::Values,
+            0.9,
+        )
+        .unwrap();
+    let _b2 = write
+        .add_belief(&model_id, "I am creative".into(), BeliefDomain::Self_, 0.8)
+        .unwrap();
+    let b3 = write
+        .add_belief(
+            &model_id,
+            "Success requires effort".into(),
+            BeliefDomain::WorldModel,
+            0.7,
+        )
+        .unwrap();
 
     // Connect beliefs
-    write.connect_beliefs(&model_id, b1, b3, ConnectionType::Supports, 0.8).unwrap();
+    write
+        .connect_beliefs(&model_id, b1, b3, ConnectionType::Supports, 0.8)
+        .unwrap();
 
     // Add self-concept
-    write.add_peak(&model_id, "programming".into(), 0.9, true).unwrap();
+    write
+        .add_peak(&model_id, "programming".into(), 0.9, true)
+        .unwrap();
     write.add_valley(&model_id, "sales".into(), 0.6).unwrap();
-    write.add_blindspot(&model_id, "emotional intelligence".into(), 0.7).unwrap();
+    write
+        .add_blindspot(&model_id, "emotional intelligence".into(), 0.7)
+        .unwrap();
 
     // Add shadow
-    write.add_shadow_belief(&model_id, "I fear failure".into(), 0.6, None).unwrap();
-    write.add_projection(&model_id, "laziness".into(), "colleague".into()).unwrap();
+    write
+        .add_shadow_belief(&model_id, "I fear failure".into(), 0.6, None)
+        .unwrap();
+    write
+        .add_projection(&model_id, "laziness".into(), "colleague".into())
+        .unwrap();
 
     // Add bias
-    write.add_bias(&model_id, "Confirmation bias".into(), BiasType::Confirmation, 0.5).unwrap();
-    write.add_trigger(&model_id, "criticism".into(), "defensive".into(), 0.7).unwrap();
+    write
+        .add_bias(
+            &model_id,
+            "Confirmation bias".into(),
+            BiasType::Confirmation,
+            0.5,
+        )
+        .unwrap();
+    write
+        .add_trigger(&model_id, "criticism".into(), "defensive".into(), 0.7)
+        .unwrap();
 
     // Heartbeat
-    write.heartbeat(&model_id, vec!["User discussed career goals".into()]).unwrap();
+    write
+        .heartbeat(&model_id, vec!["User discussed career goals".into()])
+        .unwrap();
 
     // Query everything
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -60,11 +97,13 @@ fn test_full_model_lifecycle() {
     assert!(pred.predicted_preference > 0.5);
 
     // Decision simulation
-    let sim = query.simulate_decision(
-        &model_id,
-        "Should I pursue a promotion?",
-        &["Yes, go for it".into(), "No, stay put".into()],
-    ).unwrap();
+    let sim = query
+        .simulate_decision(
+            &model_id,
+            "Should I pursue a promotion?",
+            &["Yes, go for it".into(), "No, stay put".into()],
+        )
+        .unwrap();
     assert!(sim.predicted_choice.is_some());
 
     // Future projection
@@ -107,9 +146,25 @@ fn test_model_persistence_across_reloads() {
         let store = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
         let write = WriteEngine::new(store);
         model_id = write.create_model().unwrap();
-        write.add_belief(&model_id, "Persisted belief".into(), BeliefDomain::Values, 0.9).unwrap();
-        write.add_shadow_belief(&model_id, "Shadow persists".into(), 0.5, None).unwrap();
-        write.add_bias(&model_id, "Bias persists".into(), BiasType::Confirmation, 0.4).unwrap();
+        write
+            .add_belief(
+                &model_id,
+                "Persisted belief".into(),
+                BeliefDomain::Values,
+                0.9,
+            )
+            .unwrap();
+        write
+            .add_shadow_belief(&model_id, "Shadow persists".into(), 0.5, None)
+            .unwrap();
+        write
+            .add_bias(
+                &model_id,
+                "Bias persists".into(),
+                BiasType::Confirmation,
+                0.4,
+            )
+            .unwrap();
     }
 
     // Session 2: Reload and verify
@@ -139,8 +194,12 @@ fn test_multiple_models_isolation() {
     let m1 = write.create_model().unwrap();
     let m2 = write.create_model().unwrap();
 
-    write.add_belief(&m1, "Model 1 belief".into(), BeliefDomain::Values, 0.8).unwrap();
-    write.add_belief(&m2, "Model 2 belief".into(), BeliefDomain::Work, 0.7).unwrap();
+    write
+        .add_belief(&m1, "Model 1 belief".into(), BeliefDomain::Values, 0.8)
+        .unwrap();
+    write
+        .add_belief(&m2, "Model 2 belief".into(), BeliefDomain::Work, 0.7)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query = QueryEngine::new(store2);
@@ -158,7 +217,9 @@ fn test_multiple_models_isolation() {
 fn test_belief_strengthen_and_crystallize_flow() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
-    let bid = write.add_belief(&model_id, "Strong belief".into(), BeliefDomain::Values, 0.6).unwrap();
+    let bid = write
+        .add_belief(&model_id, "Strong belief".into(), BeliefDomain::Values, 0.6)
+        .unwrap();
 
     // Strengthen multiple times
     for _ in 0..5 {
@@ -179,15 +240,16 @@ fn test_belief_strengthen_and_crystallize_flow() {
 fn test_entangle_beliefs() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
-    let b1 = write.add_belief(&model_id, "A".into(), BeliefDomain::Values, 0.8).unwrap();
-    let b2 = write.add_belief(&model_id, "B".into(), BeliefDomain::Values, 0.7).unwrap();
+    let b1 = write
+        .add_belief(&model_id, "A".into(), BeliefDomain::Values, 0.8)
+        .unwrap();
+    let b2 = write
+        .add_belief(&model_id, "B".into(), BeliefDomain::Values, 0.7)
+        .unwrap();
 
-    let ent_id = write.entangle_beliefs(
-        &model_id,
-        vec![b1, b2],
-        EntanglementType::Correlated,
-        0.9,
-    ).unwrap();
+    let ent_id = write
+        .entangle_beliefs(&model_id, vec![b1, b2], EntanglementType::Correlated, 0.9)
+        .unwrap();
 
     assert!(!ent_id.to_string().is_empty());
 
@@ -202,15 +264,19 @@ fn test_emotional_weather_update() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.update_emotional_weather(
-        &model_id,
-        Mood::Positive,
-        Some(Emotion::Hope),
-    ).unwrap();
+    write
+        .update_emotional_weather(&model_id, Mood::Positive, Some(Emotion::Hope))
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
-    assert_eq!(file.model.consciousness.emotional_weather.current_mood, Mood::Positive);
-    assert_eq!(file.model.consciousness.emotional_weather.dominant_emotion, Some(Emotion::Hope));
+    assert_eq!(
+        file.model.consciousness.emotional_weather.current_mood,
+        Mood::Positive
+    );
+    assert_eq!(
+        file.model.consciousness.emotional_weather.dominant_emotion,
+        Some(Emotion::Hope)
+    );
 }
 
 #[test]
@@ -218,15 +284,21 @@ fn test_emotional_weather_update_no_emotion() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.update_emotional_weather(
-        &model_id,
-        Mood::Subdued,
-        None,
-    ).unwrap();
+    write
+        .update_emotional_weather(&model_id, Mood::Subdued, None)
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
-    assert_eq!(file.model.consciousness.emotional_weather.current_mood, Mood::Subdued);
-    assert!(file.model.consciousness.emotional_weather.dominant_emotion.is_none());
+    assert_eq!(
+        file.model.consciousness.emotional_weather.current_mood,
+        Mood::Subdued
+    );
+    assert!(file
+        .model
+        .consciousness
+        .emotional_weather
+        .dominant_emotion
+        .is_none());
 }
 
 #[test]
@@ -234,10 +306,15 @@ fn test_life_phase_update() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.update_life_phase(&model_id, LifePhase::Transitioning).unwrap();
+    write
+        .update_life_phase(&model_id, LifePhase::Transitioning)
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
-    assert_eq!(file.model.consciousness.life_phase, LifePhase::Transitioning);
+    assert_eq!(
+        file.model.consciousness.life_phase,
+        LifePhase::Transitioning
+    );
 }
 
 #[test]
@@ -245,12 +322,14 @@ fn test_value_tectonic() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.add_value_tectonic(
-        &model_id,
-        "career ambition".into(),
-        "decreasing".into(),
-        0.3,
-    ).unwrap();
+    write
+        .add_value_tectonic(
+            &model_id,
+            "career ambition".into(),
+            "decreasing".into(),
+            0.3,
+        )
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
     assert_eq!(file.drift.value_tectonics.len(), 1);
@@ -264,17 +343,22 @@ fn test_metamorphosis() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.add_metamorphosis(
-        &model_id,
-        "Career transformation".into(),
-        "Burnout".into(),
-        "Corporate employee".into(),
-        "Freelancer".into(),
-    ).unwrap();
+    write
+        .add_metamorphosis(
+            &model_id,
+            "Career transformation".into(),
+            "Burnout".into(),
+            "Corporate employee".into(),
+            "Freelancer".into(),
+        )
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
     assert_eq!(file.drift.metamorphoses.len(), 1);
-    assert_eq!(file.drift.metamorphoses[0].description, "Career transformation");
+    assert_eq!(
+        file.drift.metamorphoses[0].description,
+        "Career transformation"
+    );
     // Metamorphosis triggers crisis lifecycle
     assert_eq!(file.model.lifecycle_stage, ModelLifecycleStage::Crisis);
 }
@@ -285,15 +369,26 @@ fn test_collapse_and_rebuild_cycle() {
     let model_id = write.create_model().unwrap();
 
     // Build a belief
-    let bid = write.add_belief(&model_id, "I am always right".into(), BeliefDomain::Self_, 0.9).unwrap();
+    let bid = write
+        .add_belief(
+            &model_id,
+            "I am always right".into(),
+            BeliefDomain::Self_,
+            0.9,
+        )
+        .unwrap();
     write.crystallize_belief(&model_id, &bid).unwrap();
 
     // Collapse it
-    write.collapse_belief(
-        &model_id,
-        &bid,
-        CollapseTrigger::UndeniableEvidence { evidence: "I was clearly wrong".into() },
-    ).unwrap();
+    write
+        .collapse_belief(
+            &model_id,
+            &bid,
+            CollapseTrigger::UndeniableEvidence {
+                evidence: "I was clearly wrong".into(),
+            },
+        )
+        .unwrap();
 
     // Verify collapsed
     let file = write.store().get_model(&model_id).unwrap();
@@ -302,12 +397,14 @@ fn test_collapse_and_rebuild_cycle() {
     assert_eq!(belief.confidence, 0.0);
 
     // Add a replacement belief
-    let new_bid = write.add_belief(
-        &model_id,
-        "I can be wrong and that is okay".into(),
-        BeliefDomain::Self_,
-        0.7,
-    ).unwrap();
+    let new_bid = write
+        .add_belief(
+            &model_id,
+            "I can be wrong and that is okay".into(),
+            BeliefDomain::Self_,
+            0.7,
+        )
+        .unwrap();
 
     // Verify the model has both beliefs
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
@@ -327,17 +424,46 @@ fn test_complex_belief_network() {
     let model_id = write.create_model().unwrap();
 
     // Create a network of beliefs
-    let core = write.add_belief(&model_id, "Hard work is important".into(), BeliefDomain::Values, 0.9).unwrap();
-    let b1 = write.add_belief(&model_id, "I should work overtime".into(), BeliefDomain::Work, 0.7).unwrap();
-    let b2 = write.add_belief(&model_id, "Rest is lazy".into(), BeliefDomain::Self_, 0.5).unwrap();
-    let b3 = write.add_belief(&model_id, "Work-life balance matters".into(), BeliefDomain::Values, 0.8).unwrap();
+    let core = write
+        .add_belief(
+            &model_id,
+            "Hard work is important".into(),
+            BeliefDomain::Values,
+            0.9,
+        )
+        .unwrap();
+    let b1 = write
+        .add_belief(
+            &model_id,
+            "I should work overtime".into(),
+            BeliefDomain::Work,
+            0.7,
+        )
+        .unwrap();
+    let b2 = write
+        .add_belief(&model_id, "Rest is lazy".into(), BeliefDomain::Self_, 0.5)
+        .unwrap();
+    let b3 = write
+        .add_belief(
+            &model_id,
+            "Work-life balance matters".into(),
+            BeliefDomain::Values,
+            0.8,
+        )
+        .unwrap();
 
     // b1 supports core, b2 implies b1
-    write.connect_beliefs(&model_id, b1, core, ConnectionType::Supports, 0.8).unwrap();
-    write.connect_beliefs(&model_id, b2, b1, ConnectionType::Implies, 0.6).unwrap();
+    write
+        .connect_beliefs(&model_id, b1, core, ConnectionType::Supports, 0.8)
+        .unwrap();
+    write
+        .connect_beliefs(&model_id, b2, b1, ConnectionType::Implies, 0.6)
+        .unwrap();
 
     // b3 contradicts b2
-    write.connect_beliefs(&model_id, b3, b2, ConnectionType::Contradicts, 0.7).unwrap();
+    write
+        .connect_beliefs(&model_id, b3, b2, ConnectionType::Contradicts, 0.7)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query = QueryEngine::new(store2);
@@ -357,9 +483,13 @@ fn test_multiple_heartbeats_update_evidence_count() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.heartbeat(&model_id, vec!["obs1".into(), "obs2".into()]).unwrap();
+    write
+        .heartbeat(&model_id, vec!["obs1".into(), "obs2".into()])
+        .unwrap();
     write.heartbeat(&model_id, vec!["obs3".into()]).unwrap();
-    write.heartbeat(&model_id, vec!["obs4".into(), "obs5".into(), "obs6".into()]).unwrap();
+    write
+        .heartbeat(&model_id, vec!["obs4".into(), "obs5".into(), "obs6".into()])
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
     assert_eq!(file.model.evidence_count, 6);
@@ -372,7 +502,9 @@ fn test_multiple_heartbeats_update_evidence_count() {
 fn test_weaken_crystallized_becomes_challenged() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
-    let bid = write.add_belief(&model_id, "Firm belief".into(), BeliefDomain::Values, 0.9).unwrap();
+    let bid = write
+        .add_belief(&model_id, "Firm belief".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
 
     write.crystallize_belief(&model_id, &bid).unwrap();
     write.weaken_belief(&model_id, &bid, 0.1).unwrap();
@@ -388,30 +520,34 @@ fn test_full_shadow_integration() {
     let model_id = write.create_model().unwrap();
 
     // Conscious belief
-    let conscious = write.add_belief(
-        &model_id,
-        "I am confident".into(),
-        BeliefDomain::Self_,
-        0.8,
-    ).unwrap();
+    let conscious = write
+        .add_belief(&model_id, "I am confident".into(), BeliefDomain::Self_, 0.8)
+        .unwrap();
 
     // Shadow belief that contradicts it
-    write.add_shadow_belief(
-        &model_id,
-        "I doubt myself deeply".into(),
-        0.7,
-        Some(conscious),
-    ).unwrap();
+    write
+        .add_shadow_belief(
+            &model_id,
+            "I doubt myself deeply".into(),
+            0.7,
+            Some(conscious),
+        )
+        .unwrap();
 
     // Projection
-    write.add_projection(&model_id, "insecurity".into(), "friend".into()).unwrap();
+    write
+        .add_projection(&model_id, "insecurity".into(), "friend".into())
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query = QueryEngine::new(store2);
     let shadow = query.get_shadow_map(&model_id).unwrap();
 
     assert_eq!(shadow.shadow_beliefs.len(), 1);
-    assert_eq!(shadow.shadow_beliefs[0].contradicts_conscious, Some(conscious));
+    assert_eq!(
+        shadow.shadow_beliefs[0].contradicts_conscious,
+        Some(conscious)
+    );
     assert_eq!(shadow.projections.len(), 1);
     assert_eq!(shadow.projections[0].disowned_trait, "insecurity");
 }
@@ -489,8 +625,17 @@ fn test_index_manager_rebuild() {
     let (write, _dir) = setup_full();
     let model_id = write.create_model().unwrap();
 
-    write.add_belief(&model_id, "High confidence".into(), BeliefDomain::Values, 0.9).unwrap();
-    write.add_belief(&model_id, "Low confidence".into(), BeliefDomain::Work, 0.3).unwrap();
+    write
+        .add_belief(
+            &model_id,
+            "High confidence".into(),
+            BeliefDomain::Values,
+            0.9,
+        )
+        .unwrap();
+    write
+        .add_belief(&model_id, "Low confidence".into(), BeliefDomain::Work, 0.3)
+        .unwrap();
 
     let idx = write.store().get_index(&model_id).unwrap();
     assert_eq!(idx.get_by_domain(&BeliefDomain::Values).len(), 1);

@@ -1,10 +1,10 @@
 //! Write engine — all mutation operations for cognition models
 
-use crate::types::*;
+use crate::bridges::BridgeSet;
 use crate::engine::store::CognitionStore;
 use crate::engine::validation::Validator;
 use crate::format::AcogFile;
-use crate::bridges::BridgeSet;
+use crate::types::*;
 
 /// Engine for all write operations
 pub struct WriteEngine {
@@ -208,7 +208,10 @@ impl WriteEngine {
             };
 
             // Check for cascade
-            let dependents: Vec<BeliefId> = file.belief_graph.connections.iter()
+            let dependents: Vec<BeliefId> = file
+                .belief_graph
+                .connections
+                .iter()
                 .filter(|c| c.to == *belief_id && c.connection_type == ConnectionType::Requires)
                 .map(|c| c.from)
                 .collect();
@@ -363,13 +366,16 @@ impl WriteEngine {
         Validator::validate_confidence(strength)?;
 
         self.store.update_model(model_id, |file| {
-            file.model.self_concept.defended_territories.push(DefendedTerritory {
-                territory,
-                defense_strength: strength,
-                triggers: Vec::new(),
-                mechanisms: Vec::new(),
-                underlying_vulnerability: vulnerability,
-            });
+            file.model
+                .self_concept
+                .defended_territories
+                .push(DefendedTerritory {
+                    territory,
+                    defense_strength: strength,
+                    triggers: Vec::new(),
+                    mechanisms: Vec::new(),
+                    underlying_vulnerability: vulnerability,
+                });
             file.model.updated_at = Timestamp::now();
         })
     }
@@ -404,9 +410,9 @@ impl WriteEngine {
         traits: DecisionTraits,
     ) -> CognitionResult<()> {
         self.store.update_model(model_id, |file| {
-            let fp = file.fingerprint.get_or_insert_with(|| {
-                DecisionFingerprint::new(file.model.id)
-            });
+            let fp = file
+                .fingerprint
+                .get_or_insert_with(|| DecisionFingerprint::new(file.model.id));
             fp.traits = traits;
             fp.updated_at = Timestamp::now();
             fp.confidence = (fp.confidence + 0.1).min(1.0);
@@ -622,11 +628,7 @@ impl WriteEngine {
     }
 
     /// Update life phase
-    pub fn update_life_phase(
-        &self,
-        model_id: &ModelId,
-        phase: LifePhase,
-    ) -> CognitionResult<()> {
+    pub fn update_life_phase(&self, model_id: &ModelId, phase: LifePhase) -> CognitionResult<()> {
         self.store.update_model(model_id, |file| {
             file.model.consciousness.life_phase = phase;
             file.model.consciousness.updated_at = Timestamp::now();

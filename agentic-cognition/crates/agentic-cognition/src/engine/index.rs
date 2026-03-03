@@ -1,7 +1,7 @@
 //! Index management — fast lookups by domain, confidence, state
 
-use std::collections::HashMap;
 use crate::types::*;
+use std::collections::HashMap;
 
 /// Manages indexes for fast belief/model lookups
 #[derive(Debug, Default)]
@@ -79,11 +79,17 @@ impl IndexManager {
     }
 
     pub fn get_by_domain(&self, domain: &BeliefDomain) -> &[BeliefId] {
-        self.beliefs_by_domain.get(domain).map(|v| v.as_slice()).unwrap_or(&[])
+        self.beliefs_by_domain
+            .get(domain)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
     }
 
     pub fn get_by_state(&self, state: &BeliefState) -> &[BeliefId] {
-        self.beliefs_by_state.get(state).map(|v| v.as_slice()).unwrap_or(&[])
+        self.beliefs_by_state
+            .get(state)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
     }
 
     pub fn get_high_confidence(&self) -> &[BeliefId] {

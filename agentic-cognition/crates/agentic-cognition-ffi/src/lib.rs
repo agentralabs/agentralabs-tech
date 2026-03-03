@@ -2,8 +2,8 @@
 //!
 //! Provides C-compatible interface for Python and WASM bindings.
 
-use agentic_cognition::{CognitionStore, WriteEngine, QueryEngine, ModelId};
-use std::ffi::{CStr, CString};
+use agentic_cognition::CognitionStore;
+use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::path::PathBuf;
 

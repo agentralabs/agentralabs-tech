@@ -7,36 +7,29 @@ pub struct DriftTracker;
 
 impl DriftTracker {
     /// Calculate belief drift over a time period
-    pub fn calculate_drift(
-        belief: &Belief,
-        events: &[DriftEvent],
-    ) -> f64 {
-        let relevant_events: Vec<&DriftEvent> = events
-            .iter()
-            .filter(|e| e.belief_id == belief.id)
-            .collect();
+    pub fn calculate_drift(belief: &Belief, events: &[DriftEvent]) -> f64 {
+        let relevant_events: Vec<&DriftEvent> =
+            events.iter().filter(|e| e.belief_id == belief.id).collect();
 
         if relevant_events.is_empty() {
             return 0.0;
         }
 
-        let total_drift: f64 = relevant_events.iter().map(|e| {
-            match e.direction {
+        let total_drift: f64 = relevant_events
+            .iter()
+            .map(|e| match e.direction {
                 DriftDirection::Strengthening => e.magnitude,
                 DriftDirection::Weakening => -e.magnitude,
                 DriftDirection::Shifting => e.magnitude * 0.5,
                 DriftDirection::Reversing => e.magnitude * 2.0,
-            }
-        }).sum();
+            })
+            .sum();
 
         total_drift.abs()
     }
 
     /// Detect value tectonic shifts — slow deep movements in values
-    pub fn detect_tectonics(
-        beliefs: &BeliefGraph,
-        drift: &DriftTimeline,
-    ) -> Vec<ValueTectonic> {
+    pub fn detect_tectonics(beliefs: &BeliefGraph, drift: &DriftTimeline) -> Vec<ValueTectonic> {
         let mut tectonics = Vec::new();
         let now = Timestamp::now();
 
@@ -57,8 +50,14 @@ impl DriftTracker {
             }
 
             // Check for consistent direction
-            let strengthening = events.iter().filter(|e| e.direction == DriftDirection::Strengthening).count();
-            let weakening = events.iter().filter(|e| e.direction == DriftDirection::Weakening).count();
+            let strengthening = events
+                .iter()
+                .filter(|e| e.direction == DriftDirection::Strengthening)
+                .count();
+            let weakening = events
+                .iter()
+                .filter(|e| e.direction == DriftDirection::Weakening)
+                .count();
 
             let total = events.len();
             if strengthening as f64 / total as f64 > 0.7 {
@@ -86,10 +85,7 @@ impl DriftTracker {
     }
 
     /// Detect identity metamorphosis — complete transformation events
-    pub fn detect_metamorphosis(
-        drift: &DriftTimeline,
-        threshold: f64,
-    ) -> Vec<&Metamorphosis> {
+    pub fn detect_metamorphosis(drift: &DriftTimeline, threshold: f64) -> Vec<&Metamorphosis> {
         drift
             .metamorphoses
             .iter()

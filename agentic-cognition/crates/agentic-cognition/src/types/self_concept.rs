@@ -1,7 +1,7 @@
 //! Self-concept topology types
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Self-concept topology map
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

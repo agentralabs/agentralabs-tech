@@ -1,18 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350">
-  <defs><marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#6b7280"/></marker></defs>
-  <text x="350" y="30" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="bold" fill="#1f2937">Model Lifecycle</text>
-  <ellipse cx="80" cy="150" rx="50" ry="30" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="80" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Birth</text>
-  <ellipse cx="200" cy="150" rx="50" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/><text x="200" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Infancy</text>
-  <ellipse cx="320" cy="150" rx="50" ry="30" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/><text x="320" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Growth</text>
-  <ellipse cx="440" cy="150" rx="55" ry="35" fill="#d1fae5" stroke="#059669" stroke-width="2"/><text x="440" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Maturity</text>
-  <ellipse cx="560" cy="100" rx="45" ry="25" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/><text x="560" y="105" text-anchor="middle" font-family="system-ui" font-size="11">Stale</text>
-  <ellipse cx="560" cy="200" rx="50" ry="30" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="560" y="205" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Crisis</text>
-  <ellipse cx="560" cy="300" rx="50" ry="30" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="560" y="305" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Rebirth</text>
-  <path d="M130 150 L145 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="137" y="140" font-family="system-ui" font-size="9" fill="#6b7280">5+ obs</text>
-  <path d="M250 150 L265 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="257" y="140" font-family="system-ui" font-size="9" fill="#6b7280">50+ obs</text>
-  <path d="M370 150 L380 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="375" y="140" font-family="system-ui" font-size="9" fill="#6b7280">200+ obs</text>
-  <path d="M495 135 L510 115" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M495 165 L510 185" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M560 230 L560 265" stroke="#d97706" stroke-width="1.5" marker-end="url(#ar)"/>
-  <path d="M510 300 L380 170" stroke="#059669" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ar)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300">
+  <defs>
+    <style>
+      .title { font: bold 18px sans-serif; fill: #1a1a2e; }
+      .stage { font: bold 14px sans-serif; fill: white; }
+      .desc { font: 11px sans-serif; fill: #555; }
+      .box { rx: 20; ry: 20; }
+      .arrow { stroke: #666; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+
+  <text x="400" y="30" text-anchor="middle" class="title">User Model Lifecycle Stages</text>
+
+  <!-- Birth -->
+  <rect x="30" y="60" width="120" height="50" class="box" fill="#7c3aed"/>
+  <text x="90" y="90" text-anchor="middle" class="stage">Birth</text>
+  <text x="90" y="130" text-anchor="middle" class="desc">Model created</text>
+  <text x="90" y="145" text-anchor="middle" class="desc">First evidence</text>
+
+  <!-- Growing -->
+  <rect x="190" y="60" width="120" height="50" class="box" fill="#2563eb"/>
+  <text x="250" y="90" text-anchor="middle" class="stage">Growing</text>
+  <text x="250" y="130" text-anchor="middle" class="desc">Beliefs forming</text>
+  <text x="250" y="145" text-anchor="middle" class="desc">Patterns emerging</text>
+  <line x1="150" y1="85" x2="188" y2="85" class="arrow"/>
+
+  <!-- Adolescent -->
+  <rect x="350" y="60" width="120" height="50" class="box" fill="#0891b2"/>
+  <text x="410" y="90" text-anchor="middle" class="stage">Adolescent</text>
+  <text x="410" y="130" text-anchor="middle" class="desc">Shadow emerges</text>
+  <text x="410" y="145" text-anchor="middle" class="desc">Contradictions</text>
+  <line x1="310" y1="85" x2="348" y2="85" class="arrow"/>
+
+  <!-- Mature -->
+  <rect x="510" y="60" width="120" height="50" class="box" fill="#059669"/>
+  <text x="570" y="90" text-anchor="middle" class="stage">Mature</text>
+  <text x="570" y="130" text-anchor="middle" class="desc">High confidence</text>
+  <text x="570" y="145" text-anchor="middle" class="desc">Stable predictions</text>
+  <line x1="470" y1="85" x2="508" y2="85" class="arrow"/>
+
+  <!-- Transcendent -->
+  <rect x="670" y="60" width="120" height="50" class="box" fill="#dc2626"/>
+  <text x="730" y="90" text-anchor="middle" class="stage">Transcendent</text>
+  <text x="730" y="130" text-anchor="middle" class="desc">Soul reflection</text>
+  <text x="730" y="145" text-anchor="middle" class="desc">Deep patterns</text>
+  <line x1="630" y1="85" x2="668" y2="85" class="arrow"/>
+
+  <!-- Crisis path -->
+  <rect x="350" y="200" width="120" height="50" class="box" fill="#f59e0b"/>
+  <text x="410" y="230" text-anchor="middle" class="stage">Crisis</text>
+  <text x="410" y="270" text-anchor="middle" class="desc">Belief collapse</text>
+  <text x="410" y="285" text-anchor="middle" class="desc">Metamorphosis</text>
+
+  <!-- Crisis arrows -->
+  <path d="M 410 110 L 410 198" class="arrow"/>
+  <path d="M 470 225 C 530 225 530 110 570 110" class="arrow" style="stroke-dasharray: 5,5"/>
 </svg>

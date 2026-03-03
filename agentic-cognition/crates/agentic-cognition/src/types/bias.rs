@@ -1,7 +1,7 @@
 //! Bias field types
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Bias field — systematic distortions
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

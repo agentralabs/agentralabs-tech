@@ -1,7 +1,7 @@
 //! Invention 1: Living User Model — lifecycle management and vitals
 
-use crate::types::*;
 use crate::format::AcogFile;
+use crate::types::*;
 
 /// Living model management — lifecycle transitions and vital signs
 pub struct LivingModelManager;
@@ -17,16 +17,24 @@ impl LivingModelManager {
         let completeness = [
             if belief_count > 0 { 0.3 } else { 0.0 },
             if file.fingerprint.is_some() { 0.2 } else { 0.0 },
-            if !file.model.soul.drives.is_empty() { 0.2 } else { 0.0 },
-            if !file.model.self_concept.peaks.is_empty() { 0.15 } else { 0.0 },
+            if !file.model.soul.drives.is_empty() {
+                0.2
+            } else {
+                0.0
+            },
+            if !file.model.self_concept.peaks.is_empty() {
+                0.15
+            } else {
+                0.0
+            },
             if shadow_count > 0 { 0.15 } else { 0.0 },
         ];
         file.model.vitals.health = completeness.iter().sum::<f64>().min(1.0);
 
         // Confidence grows with evidence
         let evidence = file.model.evidence_count as f64;
-        file.model.vitals.confidence = (evidence / 200.0).min(1.0) * 0.7
-            + file.model.vitals.health * 0.3;
+        file.model.vitals.confidence =
+            (evidence / 200.0).min(1.0) * 0.7 + file.model.vitals.health * 0.3;
 
         file.model.vitals.evidence_count = file.model.evidence_count;
 
@@ -51,15 +59,9 @@ impl LivingModelManager {
             ModelLifecycleStage::Growth if evidence > 200 && confidence > 0.6 => {
                 Some(ModelLifecycleStage::Maturity)
             }
-            ModelLifecycleStage::Maturity if health < 0.3 => {
-                Some(ModelLifecycleStage::Crisis)
-            }
-            ModelLifecycleStage::Crisis if health > 0.5 => {
-                Some(ModelLifecycleStage::Rebirth)
-            }
-            ModelLifecycleStage::Rebirth if evidence > 50 => {
-                Some(ModelLifecycleStage::Growth)
-            }
+            ModelLifecycleStage::Maturity if health < 0.3 => Some(ModelLifecycleStage::Crisis),
+            ModelLifecycleStage::Crisis if health > 0.5 => Some(ModelLifecycleStage::Rebirth),
+            ModelLifecycleStage::Rebirth if evidence > 50 => Some(ModelLifecycleStage::Growth),
             _ => None,
         };
 

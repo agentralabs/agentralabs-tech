@@ -59,10 +59,13 @@ impl JsonRpcResponse {
     }
 
     pub fn tool_error(id: Option<Value>, message: String) -> Self {
-        Self::success(id, serde_json::json!({
-            "content": [{ "type": "text", "text": message }],
-            "isError": true
-        }))
+        Self::success(
+            id,
+            serde_json::json!({
+                "content": [{ "type": "text", "text": message }],
+                "isError": true
+            }),
+        )
     }
 }
 

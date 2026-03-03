@@ -1,7 +1,7 @@
 //! Shadow types — unconscious beliefs, projections, blindspots
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Shadow map — the unconscious landscape
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

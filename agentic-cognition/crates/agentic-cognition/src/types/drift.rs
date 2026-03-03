@@ -1,7 +1,7 @@
 //! Drift and change types
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Drift timeline — how beliefs change over time
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

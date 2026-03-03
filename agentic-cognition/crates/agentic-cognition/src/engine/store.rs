@@ -1,11 +1,11 @@
 //! CognitionStore — persistence layer for user models
 
+use crate::engine::index::IndexManager;
+use crate::format::AcogFile;
+use crate::types::*;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-use crate::types::*;
-use crate::format::AcogFile;
-use crate::engine::index::IndexManager;
 
 /// In-memory store for cognition data with optional file persistence
 pub struct CognitionStore {
@@ -53,14 +53,16 @@ impl CognitionStore {
                         let mut idx = IndexManager::new();
                         idx.rebuild(&file.belief_graph);
 
-                        let mut models = self.models.write().map_err(|e| {
-                            CognitionError::LockError(e.to_string())
-                        })?;
+                        let mut models = self
+                            .models
+                            .write()
+                            .map_err(|e| CognitionError::LockError(e.to_string()))?;
                         models.insert(model_id, file);
 
-                        let mut indexes = self.indexes.write().map_err(|e| {
-                            CognitionError::LockError(e.to_string())
-                        })?;
+                        let mut indexes = self
+                            .indexes
+                            .write()
+                            .map_err(|e| CognitionError::LockError(e.to_string()))?;
                         indexes.insert(model_id, idx);
                     }
                     Err(e) => {
@@ -80,11 +82,14 @@ impl CognitionStore {
             None => return Ok(()),
         };
 
-        let models = self.models.read().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let models = self
+            .models
+            .read()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
 
-        let file = models.get(model_id).ok_or(CognitionError::ModelNotFound(*model_id))?;
+        let file = models
+            .get(model_id)
+            .ok_or(CognitionError::ModelNotFound(*model_id))?;
         let path = dir.join(format!("{}.acog", model_id));
         file.save(&path)
     }
@@ -93,9 +98,10 @@ impl CognitionStore {
     pub fn insert_model(&self, file: AcogFile) -> CognitionResult<ModelId> {
         let model_id = file.model.id;
 
-        let mut models = self.models.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let mut models = self
+            .models
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
 
         if models.contains_key(&model_id) {
             return Err(CognitionError::ModelAlreadyExists(model_id));
@@ -106,9 +112,10 @@ impl CognitionStore {
 
         models.insert(model_id, file);
 
-        let mut indexes = self.indexes.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let mut indexes = self
+            .indexes
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
         indexes.insert(model_id, idx);
 
         drop(models);
@@ -122,24 +129,36 @@ impl CognitionStore {
 
     /// Get a model reference (cloned to avoid holding lock)
     pub fn get_model(&self, model_id: &ModelId) -> CognitionResult<AcogFile> {
-        let models = self.models.read().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
-        models.get(model_id).cloned().ok_or(CognitionError::ModelNotFound(*model_id))
+        let models = self
+            .models
+            .read()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
+        models
+            .get(model_id)
+            .cloned()
+            .ok_or(CognitionError::ModelNotFound(*model_id))
     }
 
     /// Update a model in the store
-    pub fn update_model(&self, model_id: &ModelId, updater: impl FnOnce(&mut AcogFile)) -> CognitionResult<()> {
-        let mut models = self.models.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
-        let file = models.get_mut(model_id).ok_or(CognitionError::ModelNotFound(*model_id))?;
+    pub fn update_model(
+        &self,
+        model_id: &ModelId,
+        updater: impl FnOnce(&mut AcogFile),
+    ) -> CognitionResult<()> {
+        let mut models = self
+            .models
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
+        let file = models
+            .get_mut(model_id)
+            .ok_or(CognitionError::ModelNotFound(*model_id))?;
         updater(file);
 
         // Rebuild index
-        let mut indexes = self.indexes.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let mut indexes = self
+            .indexes
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
         let idx = indexes.entry(*model_id).or_insert_with(IndexManager::new);
         idx.rebuild(&file.belief_graph);
 
@@ -152,14 +171,18 @@ impl CognitionStore {
 
     /// Delete a model
     pub fn delete_model(&self, model_id: &ModelId) -> CognitionResult<()> {
-        let mut models = self.models.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
-        models.remove(model_id).ok_or(CognitionError::ModelNotFound(*model_id))?;
+        let mut models = self
+            .models
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
+        models
+            .remove(model_id)
+            .ok_or(CognitionError::ModelNotFound(*model_id))?;
 
-        let mut indexes = self.indexes.write().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let mut indexes = self
+            .indexes
+            .write()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
         indexes.remove(model_id);
 
         // Remove file if exists
@@ -175,18 +198,23 @@ impl CognitionStore {
 
     /// List all model IDs
     pub fn list_models(&self) -> CognitionResult<Vec<ModelId>> {
-        let models = self.models.read().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
+        let models = self
+            .models
+            .read()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
         Ok(models.keys().copied().collect())
     }
 
     /// Get index for a model
     pub fn get_index(&self, model_id: &ModelId) -> CognitionResult<IndexManager> {
-        let indexes = self.indexes.read().map_err(|e| {
-            CognitionError::LockError(e.to_string())
-        })?;
-        indexes.get(model_id).cloned().ok_or(CognitionError::ModelNotFound(*model_id))
+        let indexes = self
+            .indexes
+            .read()
+            .map_err(|e| CognitionError::LockError(e.to_string()))?;
+        indexes
+            .get(model_id)
+            .cloned()
+            .ok_or(CognitionError::ModelNotFound(*model_id))
     }
 }
 

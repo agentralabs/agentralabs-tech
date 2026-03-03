@@ -1,8 +1,8 @@
 //! Query engine — all read operations for cognition models
 
-use crate::types::*;
 use crate::engine::store::CognitionStore;
 use crate::inventions::*;
+use crate::types::*;
 
 /// Engine for all query/read operations
 pub struct QueryEngine {
@@ -55,7 +55,8 @@ impl QueryEngine {
     /// Get a specific belief
     pub fn get_belief(&self, model_id: &ModelId, belief_id: &BeliefId) -> CognitionResult<Belief> {
         let file = self.store.get_model(model_id)?;
-        file.belief_graph.get_belief(belief_id)
+        file.belief_graph
+            .get_belief(belief_id)
             .cloned()
             .ok_or(CognitionError::BeliefNotFound(*belief_id))
     }
@@ -73,7 +74,12 @@ impl QueryEngine {
         domain: &BeliefDomain,
     ) -> CognitionResult<Vec<Belief>> {
         let file = self.store.get_model(model_id)?;
-        Ok(file.belief_graph.beliefs_in_domain(domain).into_iter().cloned().collect())
+        Ok(file
+            .belief_graph
+            .beliefs_in_domain(domain)
+            .into_iter()
+            .cloned()
+            .collect())
     }
 
     /// Get the belief graph
@@ -89,7 +95,10 @@ impl QueryEngine {
     }
 
     /// Get contradictions
-    pub fn get_contradictions(&self, model_id: &ModelId) -> CognitionResult<Vec<BeliefContradiction>> {
+    pub fn get_contradictions(
+        &self,
+        model_id: &ModelId,
+    ) -> CognitionResult<Vec<BeliefContradiction>> {
         let file = self.store.get_model(model_id)?;
         Ok(file.belief_graph.find_contradictions())
     }
@@ -98,7 +107,10 @@ impl QueryEngine {
     pub fn search_beliefs(&self, model_id: &ModelId, query: &str) -> CognitionResult<Vec<Belief>> {
         let file = self.store.get_model(model_id)?;
         let query_lower = query.to_lowercase();
-        Ok(file.belief_graph.beliefs.values()
+        Ok(file
+            .belief_graph
+            .beliefs
+            .values()
             .filter(|b| b.content.to_lowercase().contains(&query_lower))
             .cloned()
             .collect())
@@ -115,7 +127,10 @@ impl QueryEngine {
     // --- Pattern Queries ---
 
     /// Get decision fingerprint
-    pub fn get_fingerprint(&self, model_id: &ModelId) -> CognitionResult<Option<DecisionFingerprint>> {
+    pub fn get_fingerprint(
+        &self,
+        model_id: &ModelId,
+    ) -> CognitionResult<Option<DecisionFingerprint>> {
         let file = self.store.get_model(model_id)?;
         Ok(file.fingerprint)
     }
@@ -159,7 +174,12 @@ impl QueryEngine {
         item: &str,
     ) -> CognitionResult<PreferencePrediction> {
         let file = self.store.get_model(model_id)?;
-        Ok(PreferenceOracle::predict(&file.model, &file.belief_graph, &file.fingerprint, item))
+        Ok(PreferenceOracle::predict(
+            &file.model,
+            &file.belief_graph,
+            &file.fingerprint,
+            item,
+        ))
     }
 
     /// Simulate decision
@@ -170,7 +190,13 @@ impl QueryEngine {
         options: &[String],
     ) -> CognitionResult<DecisionSimulation> {
         let file = self.store.get_model(model_id)?;
-        Ok(DecisionSimulator::simulate(&file.model, &file.belief_graph, &file.fingerprint, scenario, options))
+        Ok(DecisionSimulator::simulate(
+            &file.model,
+            &file.belief_graph,
+            &file.fingerprint,
+            scenario,
+            options,
+        ))
     }
 
     /// Project future self
@@ -180,7 +206,12 @@ impl QueryEngine {
         days: u32,
     ) -> CognitionResult<FutureProjection> {
         let file = self.store.get_model(model_id)?;
-        Ok(FutureProjector::project(&file.model, &file.belief_graph, &file.drift, days))
+        Ok(FutureProjector::project(
+            &file.model,
+            &file.belief_graph,
+            &file.drift,
+            days,
+        ))
     }
 
     /// Get consciousness state

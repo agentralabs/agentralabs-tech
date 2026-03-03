@@ -27,69 +27,51 @@ use crate::types::*;
 impl From<CognitionError> for SisterError {
     fn from(e: CognitionError) -> Self {
         match &e {
-            CognitionError::ModelNotFound(id) => {
-                SisterError::not_found(format!("model {}", id))
-            }
-            CognitionError::BeliefNotFound(id) => {
-                SisterError::not_found(format!("belief {}", id))
-            }
+            CognitionError::ModelNotFound(id) => SisterError::not_found(format!("model {}", id)),
+            CognitionError::BeliefNotFound(id) => SisterError::not_found(format!("belief {}", id)),
             CognitionError::PatternNotFound(id) => {
                 SisterError::not_found(format!("pattern {}", id))
             }
             CognitionError::InvalidConfidence(v) => {
                 SisterError::new(ErrorCode::InvalidInput, format!("Invalid confidence: {v}"))
             }
-            CognitionError::InvalidStateTransition { from, to } => {
-                SisterError::new(
-                    ErrorCode::InvalidState,
-                    format!("Invalid lifecycle transition: {from} -> {to}"),
-                )
-            }
+            CognitionError::InvalidStateTransition { from, to } => SisterError::new(
+                ErrorCode::InvalidState,
+                format!("Invalid lifecycle transition: {from} -> {to}"),
+            ),
             CognitionError::ValidationError(msg) => {
                 SisterError::new(ErrorCode::InvalidInput, msg.clone())
             }
             CognitionError::FormatError(msg) => {
                 SisterError::new(ErrorCode::VersionMismatch, msg.clone())
             }
-            CognitionError::ChecksumMismatch { expected, actual } => {
-                SisterError::new(
-                    ErrorCode::ChecksumMismatch,
-                    format!("Checksum mismatch: expected {expected}, got {actual}"),
-                )
-            }
-            CognitionError::IoError(e) => {
-                SisterError::new(ErrorCode::StorageError, e.to_string())
-            }
+            CognitionError::ChecksumMismatch { expected, actual } => SisterError::new(
+                ErrorCode::ChecksumMismatch,
+                format!("Checksum mismatch: expected {expected}, got {actual}"),
+            ),
+            CognitionError::IoError(e) => SisterError::new(ErrorCode::StorageError, e.to_string()),
             CognitionError::SerializationError(msg) => {
                 SisterError::new(ErrorCode::InvalidInput, msg.clone())
             }
             CognitionError::LockError(msg) => {
                 SisterError::new(ErrorCode::Internal, format!("Lock error: {msg}"))
             }
-            CognitionError::ModelAlreadyExists(id) => {
-                SisterError::new(
-                    ErrorCode::AlreadyExists,
-                    format!("Model {id} already exists"),
-                )
-            }
-            CognitionError::DuplicateBelief(id) => {
-                SisterError::new(
-                    ErrorCode::AlreadyExists,
-                    format!("Belief {id} already exists"),
-                )
-            }
-            CognitionError::SelfConnection(id) => {
-                SisterError::new(
-                    ErrorCode::InvalidInput,
-                    format!("Self-connection not allowed for belief {id}"),
-                )
-            }
-            CognitionError::DuplicateConnection(a, b) => {
-                SisterError::new(
-                    ErrorCode::AlreadyExists,
-                    format!("Connection between {a} and {b} already exists"),
-                )
-            }
+            CognitionError::ModelAlreadyExists(id) => SisterError::new(
+                ErrorCode::AlreadyExists,
+                format!("Model {id} already exists"),
+            ),
+            CognitionError::DuplicateBelief(id) => SisterError::new(
+                ErrorCode::AlreadyExists,
+                format!("Belief {id} already exists"),
+            ),
+            CognitionError::SelfConnection(id) => SisterError::new(
+                ErrorCode::InvalidInput,
+                format!("Self-connection not allowed for belief {id}"),
+            ),
+            CognitionError::DuplicateConnection(a, b) => SisterError::new(
+                ErrorCode::AlreadyExists,
+                format!("Connection between {a} and {b} already exists"),
+            ),
             CognitionError::BridgeError(msg) => {
                 SisterError::new(ErrorCode::Internal, format!("Bridge error: {msg}"))
             }
@@ -100,10 +82,7 @@ impl From<CognitionError> for SisterError {
                 SisterError::new(ErrorCode::Internal, format!("Simulation error: {msg}"))
             }
             CognitionError::AuthError(msg) => {
-                SisterError::new(
-                    ErrorCode::PermissionDenied,
-                    format!("Auth error: {msg}"),
-                )
+                SisterError::new(ErrorCode::PermissionDenied, format!("Auth error: {msg}"))
             }
         }
     }
@@ -279,15 +258,39 @@ impl Sister for CognitionSister {
 
     fn capabilities(&self) -> Vec<Capability> {
         vec![
-            Capability::new("belief_graph", "Belief graph with connections, entanglements, keystones"),
-            Capability::new("shadow_map", "Shadow beliefs, projections, defended territories"),
+            Capability::new(
+                "belief_graph",
+                "Belief graph with connections, entanglements, keystones",
+            ),
+            Capability::new(
+                "shadow_map",
+                "Shadow beliefs, projections, defended territories",
+            ),
             Capability::new("bias_field", "Active bias detection, emotional triggers"),
-            Capability::new("drift_timeline", "Value tectonics, metamorphoses, growth rings"),
-            Capability::new("soul_reflection", "Deep personality synthesis and soul portrait"),
-            Capability::new("preference_oracle", "Preference prediction from belief patterns"),
-            Capability::new("decision_simulation", "Simulate decisions through the user model"),
-            Capability::new("future_projection", "Project future self based on drift patterns"),
-            Capability::new("consciousness_state", "Emotional weather, life phase, cognitive load"),
+            Capability::new(
+                "drift_timeline",
+                "Value tectonics, metamorphoses, growth rings",
+            ),
+            Capability::new(
+                "soul_reflection",
+                "Deep personality synthesis and soul portrait",
+            ),
+            Capability::new(
+                "preference_oracle",
+                "Preference prediction from belief patterns",
+            ),
+            Capability::new(
+                "decision_simulation",
+                "Simulate decisions through the user model",
+            ),
+            Capability::new(
+                "future_projection",
+                "Project future self based on drift patterns",
+            ),
+            Capability::new(
+                "consciousness_state",
+                "Emotional weather, life phase, cognitive load",
+            ),
             Capability::new("grounding", "Claim verification against belief evidence"),
         ]
     }
@@ -334,9 +337,10 @@ impl SessionManagement for CognitionSister {
     }
 
     fn current_session_info(&self) -> SisterResult<ContextInfo> {
-        let session = self.current_session.as_ref().ok_or_else(|| {
-            SisterError::context_not_found("current")
-        })?;
+        let session = self
+            .current_session
+            .as_ref()
+            .ok_or_else(|| SisterError::context_not_found("current"))?;
 
         let now = chrono::Utc::now();
         Ok(ContextInfo {
@@ -387,11 +391,7 @@ impl SessionManagement for CognitionSister {
             .sessions
             .iter()
             .find(|s| s.id == id)
-            .or_else(|| {
-                self.current_session
-                    .as_ref()
-                    .filter(|s| s.id == id)
-            })
+            .or_else(|| self.current_session.as_ref().filter(|s| s.id == id))
             .ok_or_else(|| SisterError::context_not_found(id.to_string()))?;
 
         // Serialize current store state as snapshot data
@@ -448,9 +448,10 @@ impl Grounding for CognitionSister {
         let model_ids = self.store.list_models().map_err(SisterError::from)?;
 
         if model_ids.is_empty() {
-            return Ok(
-                GroundingResult::ungrounded(claim, "No models loaded -- no evidence available")
-            );
+            return Ok(GroundingResult::ungrounded(
+                claim,
+                "No models loaded -- no evidence available",
+            ));
         }
 
         let claim_lower = claim.to_lowercase();
@@ -462,28 +463,30 @@ impl Grounding for CognitionSister {
                     if belief.content.to_lowercase().contains(&claim_lower)
                         || claim_lower.contains(&belief.content.to_lowercase())
                     {
-                        evidence.push(GroundingEvidence::new(
-                            "belief",
-                            belief.id.to_string(),
-                            belief.confidence,
-                            belief.content.clone(),
-                        )
-                        .with_data("domain", belief.domain.to_string())
-                        .with_data("state", format!("{:?}", belief.state))
-                        .with_data("model_id", model_id.to_string()));
+                        evidence.push(
+                            GroundingEvidence::new(
+                                "belief",
+                                belief.id.to_string(),
+                                belief.confidence,
+                                belief.content.clone(),
+                            )
+                            .with_data("domain", belief.domain.to_string())
+                            .with_data("state", format!("{:?}", belief.state))
+                            .with_data("model_id", model_id.to_string()),
+                        );
                     }
                 }
             }
         }
 
         if evidence.is_empty() {
-            return Ok(
-                GroundingResult::ungrounded(claim, "No matching beliefs found")
-            );
+            return Ok(GroundingResult::ungrounded(
+                claim,
+                "No matching beliefs found",
+            ));
         }
 
-        let avg_confidence =
-            evidence.iter().map(|e| e.score).sum::<f64>() / evidence.len() as f64;
+        let avg_confidence = evidence.iter().map(|e| e.score).sum::<f64>() / evidence.len() as f64;
 
         let status = if evidence.iter().any(|e| e.score > 0.7) {
             GroundingStatus::Verified
@@ -496,12 +499,10 @@ impl Grounding for CognitionSister {
             _ => GroundingResult::partial(claim, avg_confidence),
         };
 
-        Ok(result
-            .with_evidence(evidence)
-            .with_reason(format!(
-                "Found matching beliefs with average confidence {:.2}",
-                avg_confidence
-            )))
+        Ok(result.with_evidence(evidence).with_reason(format!(
+            "Found matching beliefs with average confidence {:.2}",
+            avg_confidence
+        )))
     }
 
     fn evidence(&self, query: &str, max_results: usize) -> SisterResult<Vec<EvidenceDetail>> {
@@ -583,8 +584,7 @@ impl Grounding for CognitionSister {
                         .count();
 
                     if matching_words > 0 {
-                        let relevance =
-                            matching_words as f64 / query_words.len().max(1) as f64;
+                        let relevance = matching_words as f64 / query_words.len().max(1) as f64;
 
                         suggestions.push(GroundingSuggestion {
                             item_type: "belief".to_string(),
@@ -657,9 +657,7 @@ impl Queryable for CognitionSister {
             }
 
             "search" => {
-                let text = query
-                    .get_string("text")
-                    .unwrap_or_default();
+                let text = query.get_string("text").unwrap_or_default();
                 let text_lower = text.to_lowercase();
                 let limit = query.limit.unwrap_or(50);
 
@@ -700,9 +698,7 @@ impl Queryable for CognitionSister {
 
                 let mut models_with_time: Vec<(ModelId, AcogFile)> = model_ids
                     .iter()
-                    .filter_map(|id| {
-                        self.store.get_model(id).ok().map(|f| (*id, f))
-                    })
+                    .filter_map(|id| self.store.get_model(id).ok().map(|f| (*id, f)))
                     .collect();
 
                 // Sort by updated_at descending
@@ -734,14 +730,11 @@ impl Queryable for CognitionSister {
                     .get_string("id")
                     .ok_or_else(|| SisterError::invalid_input("Missing 'id' parameter"))?;
 
-                let model_id: ModelId = id_str
-                    .parse()
-                    .map_err(|_| SisterError::invalid_input(format!("Invalid model ID: {}", id_str)))?;
+                let model_id: ModelId = id_str.parse().map_err(|_| {
+                    SisterError::invalid_input(format!("Invalid model ID: {}", id_str))
+                })?;
 
-                let file = self
-                    .store
-                    .get_model(&model_id)
-                    .map_err(SisterError::from)?;
+                let file = self.store.get_model(&model_id).map_err(SisterError::from)?;
 
                 let result = serde_json::json!({
                     "model_id": model_id.to_string(),
@@ -770,15 +763,13 @@ impl Queryable for CognitionSister {
 
     fn query_types(&self) -> Vec<QueryTypeInfo> {
         vec![
-            QueryTypeInfo::new("list", "List all user models")
-                .optional(vec!["limit", "offset"]),
+            QueryTypeInfo::new("list", "List all user models").optional(vec!["limit", "offset"]),
             QueryTypeInfo::new("search", "Search beliefs by text content")
                 .required(vec!["text"])
                 .optional(vec!["limit"]),
             QueryTypeInfo::new("recent", "Get most recently updated models")
                 .optional(vec!["limit"]),
-            QueryTypeInfo::new("get", "Get a specific model by ID")
-                .required(vec!["id"]),
+            QueryTypeInfo::new("get", "Get a specific model by ID").required(vec!["id"]),
         ]
     }
 }

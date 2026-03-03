@@ -1,8 +1,8 @@
 //! Phase 3: Invention tests
 
-use agentic_cognition::*;
-use agentic_cognition::types::*;
 use agentic_cognition::inventions::*;
+use agentic_cognition::types::*;
+use agentic_cognition::*;
 use tempfile::TempDir;
 
 fn setup() -> (WriteEngine, QueryEngine, ModelId, TempDir) {
@@ -12,9 +12,30 @@ fn setup() -> (WriteEngine, QueryEngine, ModelId, TempDir) {
     let model_id = write.create_model().unwrap();
 
     // Add some beliefs
-    write.add_belief(&model_id, "I value honesty".into(), BeliefDomain::Values, 0.9).unwrap();
-    write.add_belief(&model_id, "I am a good programmer".into(), BeliefDomain::Capability, 0.8).unwrap();
-    write.add_belief(&model_id, "Hard work pays off".into(), BeliefDomain::WorldModel, 0.7).unwrap();
+    write
+        .add_belief(
+            &model_id,
+            "I value honesty".into(),
+            BeliefDomain::Values,
+            0.9,
+        )
+        .unwrap();
+    write
+        .add_belief(
+            &model_id,
+            "I am a good programmer".into(),
+            BeliefDomain::Capability,
+            0.8,
+        )
+        .unwrap();
+    write
+        .add_belief(
+            &model_id,
+            "Hard work pays off".into(),
+            BeliefDomain::WorldModel,
+            0.7,
+        )
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query = QueryEngine::new(store2);
@@ -69,7 +90,9 @@ fn test_preference_prediction() {
 #[test]
 fn test_preference_prediction_unknown_item() {
     let (_write, query, model_id, _dir) = setup();
-    let prediction = query.predict_preference(&model_id, "quantum_physics_xyz").unwrap();
+    let prediction = query
+        .predict_preference(&model_id, "quantum_physics_xyz")
+        .unwrap();
     // Unknown item should have low confidence
     assert!(prediction.confidence < 0.5);
 }
@@ -78,7 +101,11 @@ fn test_preference_prediction_unknown_item() {
 fn test_preference_prediction_direct() {
     let model = LivingUserModel::new();
     let mut graph = BeliefGraph::new();
-    graph.add_belief(Belief::new("I value honesty".into(), BeliefDomain::Values, 0.9));
+    graph.add_belief(Belief::new(
+        "I value honesty".into(),
+        BeliefDomain::Values,
+        0.9,
+    ));
 
     let prediction = PreferenceOracle::predict(&model, &graph, &None, "honesty");
     // Should find alignment with the honesty belief
@@ -102,11 +129,13 @@ fn test_preference_prediction_with_fingerprint() {
 #[test]
 fn test_decision_simulation() {
     let (_write, query, model_id, _dir) = setup();
-    let sim = query.simulate_decision(
-        &model_id,
-        "Should I change jobs?",
-        &["Stay at current job".into(), "Take the new offer".into()],
-    ).unwrap();
+    let sim = query
+        .simulate_decision(
+            &model_id,
+            "Should I change jobs?",
+            &["Stay at current job".into(), "Take the new offer".into()],
+        )
+        .unwrap();
     assert_eq!(sim.options.len(), 2);
     assert!(sim.predicted_choice.is_some());
     assert!(sim.confidence > 0.0);
@@ -121,11 +150,13 @@ fn test_decision_simulation() {
 #[test]
 fn test_decision_simulation_three_options() {
     let (_write, query, model_id, _dir) = setup();
-    let sim = query.simulate_decision(
-        &model_id,
-        "What to have for lunch?",
-        &["Pizza".into(), "Sushi".into(), "Salad".into()],
-    ).unwrap();
+    let sim = query
+        .simulate_decision(
+            &model_id,
+            "What to have for lunch?",
+            &["Pizza".into(), "Sushi".into(), "Salad".into()],
+        )
+        .unwrap();
     assert_eq!(sim.options.len(), 3);
     assert!(sim.predicted_choice.is_some());
 
@@ -237,15 +268,21 @@ fn test_search_beliefs_case_insensitive() {
 #[test]
 fn test_search_beliefs_no_match() {
     let (_write, query, model_id, _dir) = setup();
-    let results = query.search_beliefs(&model_id, "quantum_entanglement").unwrap();
+    let results = query
+        .search_beliefs(&model_id, "quantum_entanglement")
+        .unwrap();
     assert!(results.is_empty());
 }
 
 #[test]
 fn test_get_topology() {
     let (write, _query, model_id, dir) = setup();
-    write.add_peak(&model_id, "coding".into(), 0.9, true).unwrap();
-    write.add_valley(&model_id, "public speaking".into(), 0.7).unwrap();
+    write
+        .add_peak(&model_id, "coding".into(), 0.9, true)
+        .unwrap();
+    write
+        .add_valley(&model_id, "public speaking".into(), 0.7)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -272,7 +309,9 @@ fn test_get_soul() {
 #[test]
 fn test_get_shadow_map() {
     let (write, _query, model_id, dir) = setup();
-    write.add_shadow_belief(&model_id, "I fear failure".into(), 0.6, None).unwrap();
+    write
+        .add_shadow_belief(&model_id, "I fear failure".into(), 0.6, None)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -283,7 +322,14 @@ fn test_get_shadow_map() {
 #[test]
 fn test_get_bias_field() {
     let (write, _query, model_id, dir) = setup();
-    write.add_bias(&model_id, "Confirmation".into(), BiasType::Confirmation, 0.5).unwrap();
+    write
+        .add_bias(
+            &model_id,
+            "Confirmation".into(),
+            BiasType::Confirmation,
+            0.5,
+        )
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -294,13 +340,24 @@ fn test_get_bias_field() {
 #[test]
 fn test_belief_collapse_and_drift() {
     let (write, _query, model_id, dir) = setup();
-    let belief_id = write.add_belief(&model_id, "The earth is flat".into(), BeliefDomain::Science, 0.9).unwrap();
+    let belief_id = write
+        .add_belief(
+            &model_id,
+            "The earth is flat".into(),
+            BeliefDomain::Science,
+            0.9,
+        )
+        .unwrap();
 
-    write.collapse_belief(
-        &model_id,
-        &belief_id,
-        CollapseTrigger::UndeniableEvidence { evidence: "Photos from space".into() },
-    ).unwrap();
+    write
+        .collapse_belief(
+            &model_id,
+            &belief_id,
+            CollapseTrigger::UndeniableEvidence {
+                evidence: "Photos from space".into(),
+            },
+        )
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -311,28 +368,44 @@ fn test_belief_collapse_and_drift() {
     // Check drift event was recorded
     let drift = query2.get_drift_timeline(&model_id).unwrap();
     assert!(!drift.events.is_empty());
-    assert_eq!(drift.events.last().unwrap().direction, DriftDirection::Reversing);
+    assert_eq!(
+        drift.events.last().unwrap().direction,
+        DriftDirection::Reversing
+    );
 }
 
 #[test]
 fn test_collapse_cascades_to_dependents() {
     let (write, _query, model_id, _dir) = setup();
-    let foundation = write.add_belief(&model_id, "Foundation".into(), BeliefDomain::Values, 0.9).unwrap();
-    let dependent = write.add_belief(&model_id, "Depends on foundation".into(), BeliefDomain::Values, 0.8).unwrap();
+    let foundation = write
+        .add_belief(&model_id, "Foundation".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
+    let dependent = write
+        .add_belief(
+            &model_id,
+            "Depends on foundation".into(),
+            BeliefDomain::Values,
+            0.8,
+        )
+        .unwrap();
 
-    write.connect_beliefs(
-        &model_id,
-        dependent,
-        foundation,
-        ConnectionType::Requires,
-        0.9,
-    ).unwrap();
+    write
+        .connect_beliefs(
+            &model_id,
+            dependent,
+            foundation,
+            ConnectionType::Requires,
+            0.9,
+        )
+        .unwrap();
 
-    write.collapse_belief(
-        &model_id,
-        &foundation,
-        CollapseTrigger::DeliberateInvestigation,
-    ).unwrap();
+    write
+        .collapse_belief(
+            &model_id,
+            &foundation,
+            CollapseTrigger::DeliberateInvestigation,
+        )
+        .unwrap();
 
     let file = write.store().get_model(&model_id).unwrap();
     let dep_belief = file.belief_graph.get_belief(&dependent).unwrap();
@@ -344,8 +417,12 @@ fn test_collapse_cascades_to_dependents() {
 #[test]
 fn test_get_portrait() {
     let (write, _query, model_id, dir) = setup();
-    write.add_shadow_belief(&model_id, "shadow".into(), 0.5, None).unwrap();
-    write.add_bias(&model_id, "bias".into(), BiasType::Confirmation, 0.5).unwrap();
+    write
+        .add_shadow_belief(&model_id, "shadow".into(), 0.5, None)
+        .unwrap();
+    write
+        .add_bias(&model_id, "bias".into(), BiasType::Confirmation, 0.5)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -359,9 +436,15 @@ fn test_get_portrait() {
 #[test]
 fn test_get_contradictions() {
     let (write, _query, model_id, dir) = setup();
-    let b1 = write.add_belief(&model_id, "X is true".into(), BeliefDomain::Values, 0.8).unwrap();
-    let b2 = write.add_belief(&model_id, "X is false".into(), BeliefDomain::Values, 0.7).unwrap();
-    write.connect_beliefs(&model_id, b1, b2, ConnectionType::Contradicts, 0.9).unwrap();
+    let b1 = write
+        .add_belief(&model_id, "X is true".into(), BeliefDomain::Values, 0.8)
+        .unwrap();
+    let b2 = write
+        .add_belief(&model_id, "X is false".into(), BeliefDomain::Values, 0.7)
+        .unwrap();
+    write
+        .connect_beliefs(&model_id, b1, b2, ConnectionType::Contradicts, 0.9)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);
@@ -372,12 +455,22 @@ fn test_get_contradictions() {
 #[test]
 fn test_get_keystones() {
     let (write, _query, model_id, dir) = setup();
-    let foundation = write.add_belief(&model_id, "Foundation".into(), BeliefDomain::Values, 0.9).unwrap();
-    let dep1 = write.add_belief(&model_id, "Dep1".into(), BeliefDomain::Values, 0.7).unwrap();
-    let dep2 = write.add_belief(&model_id, "Dep2".into(), BeliefDomain::Values, 0.6).unwrap();
+    let foundation = write
+        .add_belief(&model_id, "Foundation".into(), BeliefDomain::Values, 0.9)
+        .unwrap();
+    let dep1 = write
+        .add_belief(&model_id, "Dep1".into(), BeliefDomain::Values, 0.7)
+        .unwrap();
+    let dep2 = write
+        .add_belief(&model_id, "Dep2".into(), BeliefDomain::Values, 0.6)
+        .unwrap();
 
-    write.connect_beliefs(&model_id, dep1, foundation, ConnectionType::Requires, 0.8).unwrap();
-    write.connect_beliefs(&model_id, dep2, foundation, ConnectionType::Requires, 0.7).unwrap();
+    write
+        .connect_beliefs(&model_id, dep1, foundation, ConnectionType::Requires, 0.8)
+        .unwrap();
+    write
+        .connect_beliefs(&model_id, dep2, foundation, ConnectionType::Requires, 0.7)
+        .unwrap();
 
     let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let query2 = QueryEngine::new(store2);

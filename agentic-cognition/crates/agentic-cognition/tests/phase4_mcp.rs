@@ -4,9 +4,9 @@
 //! The actual MCP server lives in a separate crate; these tests
 //! confirm that the core library exposes the right building blocks.
 
-use agentic_cognition::*;
-use agentic_cognition::types::*;
 use agentic_cognition::engine::validation::Validator;
+use agentic_cognition::types::*;
+use agentic_cognition::*;
 
 /// Verify that all 14 MCP tool capabilities are supported by the core library.
 /// Each tool maps to a combination of WriteEngine/QueryEngine methods.
@@ -21,7 +21,9 @@ fn test_mcp_tool_capabilities_exist() {
     write.heartbeat(&model_id, vec!["obs".into()]).unwrap();
 
     // Tool 3: add_belief
-    let bid = write.add_belief(&model_id, "test".into(), BeliefDomain::Values, 0.8).unwrap();
+    let bid = write
+        .add_belief(&model_id, "test".into(), BeliefDomain::Values, 0.8)
+        .unwrap();
 
     // Tool 4: strengthen_belief
     write.strengthen_belief(&model_id, &bid, 0.1).unwrap();
@@ -30,14 +32,22 @@ fn test_mcp_tool_capabilities_exist() {
     write.weaken_belief(&model_id, &bid, 0.05).unwrap();
 
     // Tool 6: connect_beliefs
-    let bid2 = write.add_belief(&model_id, "test2".into(), BeliefDomain::Work, 0.7).unwrap();
-    write.connect_beliefs(&model_id, bid, bid2, ConnectionType::Supports, 0.8).unwrap();
+    let bid2 = write
+        .add_belief(&model_id, "test2".into(), BeliefDomain::Work, 0.7)
+        .unwrap();
+    write
+        .connect_beliefs(&model_id, bid, bid2, ConnectionType::Supports, 0.8)
+        .unwrap();
 
     // Tool 7: add_shadow_belief
-    write.add_shadow_belief(&model_id, "shadow".into(), 0.5, None).unwrap();
+    write
+        .add_shadow_belief(&model_id, "shadow".into(), 0.5, None)
+        .unwrap();
 
     // Tool 8: add_bias
-    write.add_bias(&model_id, "bias".into(), BiasType::Confirmation, 0.5).unwrap();
+    write
+        .add_bias(&model_id, "bias".into(), BiasType::Confirmation, 0.5)
+        .unwrap();
 
     // Tool 9: get_model / get_portrait
     let store2 = CognitionStore::new();

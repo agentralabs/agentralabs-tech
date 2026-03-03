@@ -12,7 +12,7 @@
 //! a Cognition-specific adapter that maps between Cognition's internal
 //! types and the SDK's generic Hydra types.
 
-use crate::types::{ModelId, BeliefDomain, CognitionError};
+use crate::types::{BeliefDomain, CognitionError, ModelId};
 use serde::{Deserialize, Serialize};
 
 // ============================================================
@@ -75,10 +75,7 @@ pub enum CognitionCommand {
     },
 
     /// Get preference prediction for a choice
-    PredictPreference {
-        model_id: String,
-        item: String,
-    },
+    PredictPreference { model_id: String, item: String },
 
     /// Simulate a decision through the user model
     SimulateDecision {
@@ -95,26 +92,16 @@ pub enum CognitionCommand {
     },
 
     /// Check if a claim is grounded in the user's beliefs
-    GroundClaim {
-        model_id: String,
-        claim: String,
-    },
+    GroundClaim { model_id: String, claim: String },
 
     /// Get the model's soul reflection
-    Reflect {
-        model_id: String,
-    },
+    Reflect { model_id: String },
 
     /// Project the user's future trajectory
-    ProjectFuture {
-        model_id: String,
-        days: u32,
-    },
+    ProjectFuture { model_id: String, days: u32 },
 
     /// Get current consciousness state
-    ConsciousnessState {
-        model_id: String,
-    },
+    ConsciousnessState { model_id: String },
 
     /// Heartbeat -- feed observations into the model
     Heartbeat {
@@ -311,10 +298,7 @@ mod tests {
                 ("model_1".into(), "Growth".into()),
                 ("model_2".into(), "Maturity".into()),
             ],
-            top_domains: vec![
-                ("work".into(), 15),
-                ("values".into(), 10),
-            ],
+            top_domains: vec![("work".into(), 15), ("values".into(), 10)],
             bias_count: 5,
             shadow_count: 3,
             has_active_session: true,

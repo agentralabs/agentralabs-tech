@@ -1,7 +1,7 @@
 //! Per-project isolation — prevents cross-project contamination
 
-use std::path::{Path, PathBuf};
 use crate::types::{CognitionError, CognitionResult};
+use std::path::{Path, PathBuf};
 
 /// Unique identity for a project based on canonical path
 pub struct ProjectIdentity {

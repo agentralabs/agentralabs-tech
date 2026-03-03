@@ -1,13 +1,13 @@
 //! Cognition engines — write and query operations
 
-pub mod write;
+pub mod index;
 pub mod query;
 pub mod store;
 pub mod validation;
-pub mod index;
+pub mod write;
 
-pub use write::WriteEngine;
+pub use index::IndexManager;
 pub use query::QueryEngine;
 pub use store::CognitionStore;
 pub use validation::Validator;
-pub use index::IndexManager;
+pub use write::WriteEngine;

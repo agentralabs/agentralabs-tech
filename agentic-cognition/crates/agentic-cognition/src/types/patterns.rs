@@ -1,7 +1,7 @@
 //! Pattern archaeology types — decision fingerprints, fossils, strata
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Decision fingerprint — unique decision-making signature
 #[derive(Debug, Clone, Serialize, Deserialize)]

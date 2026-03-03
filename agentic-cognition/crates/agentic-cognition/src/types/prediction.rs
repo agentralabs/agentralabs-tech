@@ -1,7 +1,7 @@
 //! Prediction and simulation types
 
-use serde::{Deserialize, Serialize};
 use crate::types::ids::*;
+use serde::{Deserialize, Serialize};
 
 /// Preference prediction
 #[derive(Debug, Clone, Serialize, Deserialize)]

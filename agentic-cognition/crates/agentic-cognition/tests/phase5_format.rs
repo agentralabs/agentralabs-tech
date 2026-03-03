@@ -1,6 +1,5 @@
 //! Phase 5: File format tests
 
-use agentic_cognition::*;
 use agentic_cognition::format::AcogFile;
 use agentic_cognition::types::*;
 use tempfile::TempDir;
@@ -31,8 +30,13 @@ fn test_acog_with_beliefs() {
     let mut file = AcogFile::new(model);
 
     // Add beliefs
-    file.belief_graph.add_belief(Belief::new("Test belief 1".into(), BeliefDomain::Values, 0.8));
-    file.belief_graph.add_belief(Belief::new("Test belief 2".into(), BeliefDomain::Work, 0.7));
+    file.belief_graph.add_belief(Belief::new(
+        "Test belief 1".into(),
+        BeliefDomain::Values,
+        0.8,
+    ));
+    file.belief_graph
+        .add_belief(Belief::new("Test belief 2".into(), BeliefDomain::Work, 0.7));
 
     file.save(&path).unwrap();
     let loaded = AcogFile::load(&path).unwrap();
@@ -343,7 +347,9 @@ fn test_acog_roundtrip_preserves_all_fields() {
 
 #[test]
 fn test_nonexistent_file_returns_error() {
-    let result = AcogFile::load(std::path::Path::new("/tmp/does_not_exist_cognition_test.acog"));
+    let result = AcogFile::load(std::path::Path::new(
+        "/tmp/does_not_exist_cognition_test.acog",
+    ));
     assert!(result.is_err());
 }
 
