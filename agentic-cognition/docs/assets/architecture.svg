@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560">
+  <defs>
+    <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient>
+    <linearGradient id="eg" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#f0f9ff"/><stop offset="100%" style="stop-color:#e0f2fe"/></linearGradient>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#6b7280"/></marker>
+  </defs>
+  <rect x="200" y="10" width="400" height="40" rx="8" fill="url(#hg)"/><text x="400" y="37" text-anchor="middle" fill="white" font-family="system-ui" font-size="18" font-weight="bold">AgenticCognition Architecture</text>
+  <rect x="50" y="70" width="700" height="55" rx="8" fill="#ddd6fe" stroke="#8b5cf6" stroke-width="2"/><text x="400" y="93" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="bold">MCP Server (14 Tools)</text><text x="400" y="113" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">model | soul | self | belief | drift | pattern | shadow | bias | predict | simulate | ground | thread | workspace | privacy</text>
+  <rect x="50" y="145" width="700" height="190" rx="8" fill="url(#eg)" stroke="#0284c7" stroke-width="2"/><text x="400" y="168" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="bold">Cognition Engine</text>
+  <rect x="70" y="180" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="130" y="207" text-anchor="middle" font-family="system-ui" font-size="10">Model Manager</text>
+  <rect x="200" y="180" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="260" y="207" text-anchor="middle" font-family="system-ui" font-size="10">Belief Physics</text>
+  <rect x="330" y="180" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="390" y="207" text-anchor="middle" font-family="system-ui" font-size="10">Pattern Archaeology</text>
+  <rect x="460" y="180" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="520" y="207" text-anchor="middle" font-family="system-ui" font-size="10">Shadow Mapper</text>
+  <rect x="590" y="180" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="650" y="207" text-anchor="middle" font-family="system-ui" font-size="10">Privacy Guard</text>
+  <rect x="70" y="240" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="130" y="267" text-anchor="middle" font-family="system-ui" font-size="10">Drift Tracker</text>
+  <rect x="200" y="240" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="260" y="267" text-anchor="middle" font-family="system-ui" font-size="10">Bias Detector</text>
+  <rect x="330" y="240" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="390" y="267" text-anchor="middle" font-family="system-ui" font-size="10">Prediction Engine</text>
+  <rect x="460" y="240" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="520" y="267" text-anchor="middle" font-family="system-ui" font-size="10">Simulation Engine</text>
+  <rect x="590" y="240" width="120" height="45" rx="6" fill="#fff" stroke="#0284c7"/><text x="650" y="267" text-anchor="middle" font-family="system-ui" font-size="10">Soul Reflector</text>
+  <rect x="50" y="355" width="700" height="55" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="400" y="378" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="bold">Storage Layer (.acog)</text><text x="400" y="398" text-anchor="middle" font-family="system-ui" font-size="10" fill="#6b7280">Atomic Writes | blake3 Checksums | Per-Project Isolation | Indexes</text>
+  <rect x="50" y="430" width="700" height="50" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/><text x="400" y="460" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Sister Bridges: Memory | Planning | Time | Identity | Vision | Codebase | Comm</text>
+  <rect x="50" y="500" width="700" height="40" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/><text x="400" y="525" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Hydra Orchestrator (Future)</text>
+  <path d="M400 125 L400 145" stroke="#6b7280" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M400 335 L400 355" stroke="#6b7280" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M400 410 L400 430" stroke="#6b7280" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M400 480 L400 500" stroke="#6b7280" stroke-width="2" marker-end="url(#ah)"/>
+</svg>

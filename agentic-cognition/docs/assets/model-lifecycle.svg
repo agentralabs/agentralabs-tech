@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350">
+  <defs><marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#6b7280"/></marker></defs>
+  <text x="350" y="30" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="bold" fill="#1f2937">Model Lifecycle</text>
+  <ellipse cx="80" cy="150" rx="50" ry="30" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="80" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Birth</text>
+  <ellipse cx="200" cy="150" rx="50" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/><text x="200" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Infancy</text>
+  <ellipse cx="320" cy="150" rx="50" ry="30" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/><text x="320" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Growth</text>
+  <ellipse cx="440" cy="150" rx="55" ry="35" fill="#d1fae5" stroke="#059669" stroke-width="2"/><text x="440" y="155" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Maturity</text>
+  <ellipse cx="560" cy="100" rx="45" ry="25" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/><text x="560" y="105" text-anchor="middle" font-family="system-ui" font-size="11">Stale</text>
+  <ellipse cx="560" cy="200" rx="50" ry="30" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="560" y="205" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Crisis</text>
+  <ellipse cx="560" cy="300" rx="50" ry="30" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="560" y="305" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="bold">Rebirth</text>
+  <path d="M130 150 L145 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="137" y="140" font-family="system-ui" font-size="9" fill="#6b7280">5+ obs</text>
+  <path d="M250 150 L265 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="257" y="140" font-family="system-ui" font-size="9" fill="#6b7280">50+ obs</text>
+  <path d="M370 150 L380 150" stroke="#6b7280" stroke-width="2" marker-end="url(#ar)"/><text x="375" y="140" font-family="system-ui" font-size="9" fill="#6b7280">200+ obs</text>
+  <path d="M495 135 L510 115" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M495 165 L510 185" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M560 230 L560 265" stroke="#d97706" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M510 300 L380 170" stroke="#059669" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ar)"/>
+</svg>

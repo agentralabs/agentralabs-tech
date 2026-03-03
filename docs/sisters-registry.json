@@ -263,6 +263,39 @@
         "landingSlug": "planning-docs",
         "includeLanding": true
       }
+    },
+    {
+      "key": "cognition",
+      "name": "AgenticCognition",
+      "repo": "agentic-cognition",
+      "shortName": "COGNITION",
+      "description": "Longitudinal user modeling — living models of human consciousness for AI agents",
+      "topic": "Cognition",
+      "enabled": true,
+      "order": 90,
+      "fileExtension": ".acog",
+      "cliBinary": "acog",
+      "packages": {
+        "npm": "@agenticamem/cognition",
+        "pypi": "agentic-cognition",
+        "coreCrate": "agentic-cognition",
+        "ffiCrate": "agentic-cognition-ffi",
+        "mcpCrate": "agentic-cognition-mcp",
+        "cliCrate": "agentic-cognition-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-cognition-mcp/src/tools/registry.rs",
+        "edgeCaseInventionsTest": "crates/agentic-cognition/tests/phase3_inventions.rs"
+      },
+      "mcp": {
+        "binary": "acog-mcp",
+        "args": ["--storage", "~/.agentic/cognition"],
+        "cratePath": "crates/agentic-cognition-mcp"
+      },
+      "docs": {
+        "landingSlug": "cognition-docs",
+        "includeLanding": true
+      }
     }
   ]
 }

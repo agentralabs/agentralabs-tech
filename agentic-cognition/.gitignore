@@ -1,0 +1,7 @@
+/target
+**/*.rs.bk
+*.pdb
+.DS_Store
+*.acog.tmp
+*.acog.lock
+.env
