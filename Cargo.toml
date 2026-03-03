@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
 members = ["agentra-cli"]
-exclude = ["agentic-codebase", "agentic-memory", "agentic-vision", "agentic-identity", "agentic-time", "agentic-contract", "agentic-sdk"]
+exclude = ["agentic-codebase", "agentic-memory", "agentic-vision", "agentic-identity", "agentic-time", "agentic-contract", "agentic-comm", "agentic-planning", "agentic-cognition", "agentic-reality", "agentic-sdk"]
 default-members = ["agentra-cli"]

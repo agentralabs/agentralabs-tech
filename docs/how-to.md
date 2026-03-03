@@ -18,6 +18,13 @@ Dry run only:
 ./install_all.sh --test-mode
 ```
 
+Install individual sisters via cargo:
+
+```bash
+cargo install agentic-cognition-cli
+cargo install agentic-reality-cli
+```
+
 ## 2. Verify detection and MCP wiring
 
 ```bash
@@ -42,6 +49,13 @@ Disable individual sisters:
 cargo run --bin agentra -- toggle codebase off
 cargo run --bin agentra -- toggle memory off
 cargo run --bin agentra -- toggle vision off
+cargo run --bin agentra -- toggle identity off
+cargo run --bin agentra -- toggle time off
+cargo run --bin agentra -- toggle contract off
+cargo run --bin agentra -- toggle comm off
+cargo run --bin agentra -- toggle planning off
+cargo run --bin agentra -- toggle cognition off
+cargo run --bin agentra -- toggle reality off
 ```
 
 Re-enable:
@@ -50,6 +64,13 @@ Re-enable:
 cargo run --bin agentra -- toggle codebase on
 cargo run --bin agentra -- toggle memory on
 cargo run --bin agentra -- toggle vision on
+cargo run --bin agentra -- toggle identity on
+cargo run --bin agentra -- toggle time on
+cargo run --bin agentra -- toggle contract on
+cargo run --bin agentra -- toggle comm on
+cargo run --bin agentra -- toggle planning on
+cargo run --bin agentra -- toggle cognition on
+cargo run --bin agentra -- toggle reality on
 ```
 
 Release/re-enable full control:
@@ -141,6 +162,8 @@ Start MCP runtimes on the server host:
 agentic-memory-mcp serve
 agentic-vision-mcp serve
 acb-mcp serve
+acog-mcp serve
+agentic-reality-mcp serve
 ```
 
 Client-side validation (any MCP client):
@@ -149,6 +172,8 @@ Client-side validation (any MCP client):
 which agentic-memory-mcp
 which agentic-vision-mcp
 which acb-mcp
+which acog-mcp
+which agentic-reality-mcp
 ```
 
 Protocol parity:
@@ -160,13 +185,15 @@ Protocol parity:
 
 | Symptom | Likely cause | Check | Fix |
 |:--|:--|:--|:--|
-| Sister shows `MISSING` in status | Binary not installed or not in `PATH` | `which acb-mcp`, `which agentic-memory-mcp`, `which agentic-vision-mcp` | Reinstall sister, reopen shell, rerun `agentra doctor --fix` |
+| Sister shows `MISSING` in status | Binary not installed or not in `PATH` | `which acb-mcp`, `which agentic-memory-mcp`, `which agentic-vision-mcp`, `which acog-mcp`, `which agentic-reality-mcp` | Reinstall sister, reopen shell, rerun `agentra doctor --fix` |
 | MCP client does not show sister tools | Client config not reloaded | Inspect MCP config and process state | Restart MCP client after install/repair |
 | Server preflight fails token check | Missing `AGENTIC_TOKEN` or token file | `echo $AGENTIC_TOKEN`, inspect token file path | Set token env or `AGENTIC_TOKEN_FILE`, rerun preflight |
 | Server preflight fails artifact check | Artifacts not synced to server dirs | Inspect `AGENTRA_ARTIFACT_DIRS` and target directory contents | Run `./sync_artifacts.sh --target=...`, rerun preflight |
 | Takeover does not activate | Sisters disabled or control off | `agentra status`, check toggle state | `agentra toggle <sister> on`, `agentra control on`, then `agentra doctor` |
 | Backup verify fails | Snapshot corruption or partial copy | `agentra backup verify` output | Restore previous valid snapshot, rerun backup |
 | Doc command mismatch suspected | Old docs cache | Compare against `--help` output of current binaries | Use the command surface pages and regenerate docs sync |
+| Cognition `.acog` artifact not found | AgenticCognition not installed or artifact path misconfigured | `which acog-mcp`, `ls *.acog` | `cargo install agentic-cognition-cli`, rerun `agentra doctor --fix` |
+| Reality `.areal` artifact not found | AgenticReality not installed or artifact path misconfigured | `which agentic-reality-mcp`, `ls *.areal` | `cargo install agentic-reality-cli`, rerun `agentra doctor --fix` |
 
 ## 7. OpenClaw TUI command namespace
 

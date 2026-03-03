@@ -24,7 +24,7 @@ use sha2::{Digest, Sha256};
 
 #[derive(Parser)]
 #[command(name = "agentra")]
-#[command(about = "Unified UX for agentic-codebase, agentic-memory, and agentic-vision")]
+#[command(about = "Unified UX for the Agentra sisters")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -151,6 +151,13 @@ enum Sister {
     Codebase,
     Memory,
     Vision,
+    Identity,
+    Time,
+    Contract,
+    Comm,
+    Planning,
+    Cognition,
+    Reality,
 }
 
 impl Sister {
@@ -159,6 +166,13 @@ impl Sister {
             Sister::Codebase => "codebase",
             Sister::Memory => "memory",
             Sister::Vision => "vision",
+            Sister::Identity => "identity",
+            Sister::Time => "time",
+            Sister::Contract => "contract",
+            Sister::Comm => "comm",
+            Sister::Planning => "planning",
+            Sister::Cognition => "cognition",
+            Sister::Reality => "reality",
         }
     }
 }
@@ -188,6 +202,13 @@ struct AgentraConfig {
     use_codebase: bool,
     use_memory: bool,
     use_vision: bool,
+    use_identity: bool,
+    use_time: bool,
+    use_contract: bool,
+    use_comm: bool,
+    use_planning: bool,
+    use_cognition: bool,
+    use_reality: bool,
     agentra_full_control: bool,
 }
 
@@ -197,6 +218,13 @@ impl Default for AgentraConfig {
             use_codebase: true,
             use_memory: true,
             use_vision: true,
+            use_identity: true,
+            use_time: true,
+            use_contract: true,
+            use_comm: true,
+            use_planning: true,
+            use_cognition: true,
+            use_reality: true,
             agentra_full_control: true,
         }
     }
@@ -208,6 +236,13 @@ impl AgentraConfig {
             Sister::Codebase => self.use_codebase,
             Sister::Memory => self.use_memory,
             Sister::Vision => self.use_vision,
+            Sister::Identity => self.use_identity,
+            Sister::Time => self.use_time,
+            Sister::Contract => self.use_contract,
+            Sister::Comm => self.use_comm,
+            Sister::Planning => self.use_planning,
+            Sister::Cognition => self.use_cognition,
+            Sister::Reality => self.use_reality,
         }
     }
 
@@ -216,15 +251,29 @@ impl AgentraConfig {
             Sister::Codebase => self.use_codebase = enabled,
             Sister::Memory => self.use_memory = enabled,
             Sister::Vision => self.use_vision = enabled,
+            Sister::Identity => self.use_identity = enabled,
+            Sister::Time => self.use_time = enabled,
+            Sister::Contract => self.use_contract = enabled,
+            Sister::Comm => self.use_comm = enabled,
+            Sister::Planning => self.use_planning = enabled,
+            Sister::Cognition => self.use_cognition = enabled,
+            Sister::Reality => self.use_reality = enabled,
         }
     }
 
     fn summary(&self) -> String {
         format!(
-            "codebase={} memory={} vision={} full_control={}",
+            "codebase={} memory={} vision={} identity={} time={} contract={} comm={} planning={} cognition={} reality={} full_control={}",
             bool_label(self.use_codebase),
             bool_label(self.use_memory),
             bool_label(self.use_vision),
+            bool_label(self.use_identity),
+            bool_label(self.use_time),
+            bool_label(self.use_contract),
+            bool_label(self.use_comm),
+            bool_label(self.use_planning),
+            bool_label(self.use_cognition),
+            bool_label(self.use_reality),
             bool_label(self.agentra_full_control)
         )
     }
@@ -275,7 +324,7 @@ struct App {
 
 const AUTO_REFRESH_INTERVAL: Duration = Duration::from_secs(5);
 
-const TOOL_SPECS: [ToolSpec; 6] = [
+const TOOL_SPECS: [ToolSpec; 20] = [
     ToolSpec {
         label: "Codebase CLI",
         command: "acb",
@@ -312,6 +361,104 @@ const TOOL_SPECS: [ToolSpec; 6] = [
         sister: Some(Sister::Vision),
     },
     ToolSpec {
+        label: "Identity CLI",
+        command: "aid",
+        local_rel: "agentic-identity/target/release/aid",
+        start_hint: "aid --help",
+        sister: Some(Sister::Identity),
+    },
+    ToolSpec {
+        label: "Identity MCP",
+        command: "agentic-identity-mcp",
+        local_rel: "agentic-identity/target/release/agentic-identity-mcp",
+        start_hint: "agentic-identity-mcp --help",
+        sister: Some(Sister::Identity),
+    },
+    ToolSpec {
+        label: "Time CLI",
+        command: "atime",
+        local_rel: "agentic-time/target/release/atime",
+        start_hint: "atime --help",
+        sister: Some(Sister::Time),
+    },
+    ToolSpec {
+        label: "Time MCP",
+        command: "agentic-time-mcp",
+        local_rel: "agentic-time/target/release/agentic-time-mcp",
+        start_hint: "agentic-time-mcp --help",
+        sister: Some(Sister::Time),
+    },
+    ToolSpec {
+        label: "Contract CLI",
+        command: "acon",
+        local_rel: "agentic-contract/target/release/acon",
+        start_hint: "acon --help",
+        sister: Some(Sister::Contract),
+    },
+    ToolSpec {
+        label: "Contract MCP",
+        command: "agentic-contract-mcp",
+        local_rel: "agentic-contract/target/release/agentic-contract-mcp",
+        start_hint: "agentic-contract-mcp --help",
+        sister: Some(Sister::Contract),
+    },
+    ToolSpec {
+        label: "Comm CLI",
+        command: "acomm",
+        local_rel: "agentic-comm/target/release/acomm",
+        start_hint: "acomm --help",
+        sister: Some(Sister::Comm),
+    },
+    ToolSpec {
+        label: "Comm MCP",
+        command: "agentic-comm-mcp",
+        local_rel: "agentic-comm/target/release/agentic-comm-mcp",
+        start_hint: "agentic-comm-mcp --help",
+        sister: Some(Sister::Comm),
+    },
+    ToolSpec {
+        label: "Planning CLI",
+        command: "aplan",
+        local_rel: "agentic-planning/target/release/aplan",
+        start_hint: "aplan --help",
+        sister: Some(Sister::Planning),
+    },
+    ToolSpec {
+        label: "Planning MCP",
+        command: "agentic-planning-mcp",
+        local_rel: "agentic-planning/target/release/agentic-planning-mcp",
+        start_hint: "agentic-planning-mcp --help",
+        sister: Some(Sister::Planning),
+    },
+    ToolSpec {
+        label: "Cognition CLI",
+        command: "acog",
+        local_rel: "agentic-cognition/target/release/acog",
+        start_hint: "acog --help",
+        sister: Some(Sister::Cognition),
+    },
+    ToolSpec {
+        label: "Cognition MCP",
+        command: "acog-mcp",
+        local_rel: "agentic-cognition/target/release/acog-mcp",
+        start_hint: "acog-mcp --help",
+        sister: Some(Sister::Cognition),
+    },
+    ToolSpec {
+        label: "Reality CLI",
+        command: "areal",
+        local_rel: "agentic-reality/target/release/areal",
+        start_hint: "areal --help",
+        sister: Some(Sister::Reality),
+    },
+    ToolSpec {
+        label: "Reality MCP",
+        command: "agentic-reality-mcp",
+        local_rel: "agentic-reality/target/release/agentic-reality-mcp",
+        start_hint: "agentic-reality-mcp --help",
+        sister: Some(Sister::Reality),
+    },
+    ToolSpec {
         label: "Ollama",
         command: "ollama",
         local_rel: "",
@@ -329,7 +476,7 @@ struct SisterMcpSpec {
     args: &'static [&'static str],
 }
 
-const MCP_SISTERS: [SisterMcpSpec; 3] = [
+const MCP_SISTERS: [SisterMcpSpec; 10] = [
     SisterMcpSpec {
         key: "agentic-codebase",
         binary: "acb-mcp",
@@ -350,6 +497,55 @@ const MCP_SISTERS: [SisterMcpSpec; 3] = [
         launcher: "agentic-vision-mcp-agentra",
         local_rel: "agentic-vision/target/release/agentic-vision-mcp",
         args: &["--log-level", "error", "serve"],
+    },
+    SisterMcpSpec {
+        key: "agentic-identity",
+        binary: "agentic-identity-mcp",
+        launcher: "agentic-identity-mcp-agentra",
+        local_rel: "agentic-identity/target/release/agentic-identity-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-time",
+        binary: "agentic-time-mcp",
+        launcher: "agentic-time-mcp-agentra",
+        local_rel: "agentic-time/target/release/agentic-time-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-contract",
+        binary: "agentic-contract-mcp",
+        launcher: "agentic-contract-mcp-agentra",
+        local_rel: "agentic-contract/target/release/agentic-contract-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-comm",
+        binary: "agentic-comm-mcp",
+        launcher: "agentic-comm-mcp-agentra",
+        local_rel: "agentic-comm/target/release/agentic-comm-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-planning",
+        binary: "agentic-planning-mcp",
+        launcher: "agentic-planning-mcp-agentra",
+        local_rel: "agentic-planning/target/release/agentic-planning-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-cognition",
+        binary: "acog-mcp",
+        launcher: "acog-mcp-agentra",
+        local_rel: "agentic-cognition/target/release/acog-mcp",
+        args: &[],
+    },
+    SisterMcpSpec {
+        key: "agentic-reality",
+        binary: "agentic-reality-mcp",
+        launcher: "agentic-reality-mcp-agentra",
+        local_rel: "agentic-reality/target/release/agentic-reality-mcp",
+        args: &[],
     },
 ];
 
@@ -396,6 +592,13 @@ struct ArtifactPresence {
     codebase: usize,
     memory: usize,
     vision: usize,
+    identity: usize,
+    time: usize,
+    contract: usize,
+    comm: usize,
+    planning: usize,
+    cognition: usize,
+    reality: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -577,7 +780,7 @@ fn is_runtime_artifact(path: &Path) -> bool {
         path.extension()
             .and_then(|v| v.to_str())
             .map(|v| v.to_ascii_lowercase()),
-        Some(ext) if ext == "acb" || ext == "amem" || ext == "avis"
+        Some(ext) if ext == "acb" || ext == "amem" || ext == "avis" || ext == "aid" || ext == "atime" || ext == "acon" || ext == "acomm" || ext == "aplan" || ext == "acog" || ext == "areal"
     )
 }
 
@@ -1585,6 +1788,13 @@ fn scan_artifacts_recursive(root: &Path, depth: usize, presence: &mut ArtifactPr
             "acb" => presence.codebase += 1,
             "amem" => presence.memory += 1,
             "avis" => presence.vision += 1,
+            "aid" => presence.identity += 1,
+            "atime" => presence.time += 1,
+            "acon" => presence.contract += 1,
+            "acomm" => presence.comm += 1,
+            "aplan" => presence.planning += 1,
+            "acog" => presence.cognition += 1,
+            "areal" => presence.reality += 1,
             _ => {}
         }
     }
@@ -1619,26 +1829,25 @@ fn auto_resync_from_artifacts() -> io::Result<Vec<String>> {
     let presence = detect_artifact_presence();
     let mut changed = Vec::new();
 
-    if presence.codebase > 0 && !config.use_codebase {
-        config.use_codebase = true;
-        changed.push(format!(
-            "Enabled codebase from detected .acb artifacts ({})",
-            presence.codebase
-        ));
-    }
-    if presence.memory > 0 && !config.use_memory {
-        config.use_memory = true;
-        changed.push(format!(
-            "Enabled memory from detected .amem artifacts ({})",
-            presence.memory
-        ));
-    }
-    if presence.vision > 0 && !config.use_vision {
-        config.use_vision = true;
-        changed.push(format!(
-            "Enabled vision from detected .avis artifacts ({})",
-            presence.vision
-        ));
+    let checks: &[(bool, &str, &str, usize, fn(&mut AgentraConfig))] = &[
+        (config.use_codebase, "codebase", ".acb", presence.codebase, |c| c.use_codebase = true),
+        (config.use_memory, "memory", ".amem", presence.memory, |c| c.use_memory = true),
+        (config.use_vision, "vision", ".avis", presence.vision, |c| c.use_vision = true),
+        (config.use_identity, "identity", ".aid", presence.identity, |c| c.use_identity = true),
+        (config.use_time, "time", ".atime", presence.time, |c| c.use_time = true),
+        (config.use_contract, "contract", ".acon", presence.contract, |c| c.use_contract = true),
+        (config.use_comm, "comm", ".acomm", presence.comm, |c| c.use_comm = true),
+        (config.use_planning, "planning", ".aplan", presence.planning, |c| c.use_planning = true),
+        (config.use_cognition, "cognition", ".acog", presence.cognition, |c| c.use_cognition = true),
+        (config.use_reality, "reality", ".areal", presence.reality, |c| c.use_reality = true),
+    ];
+    for &(enabled, name, ext, count, enable_fn) in checks {
+        if count > 0 && !enabled {
+            enable_fn(&mut config);
+            changed.push(format!(
+                "Enabled {name} from detected {ext} artifacts ({count})"
+            ));
+        }
     }
 
     if !changed.is_empty() {
@@ -1819,14 +2028,20 @@ fn run_server_preflight(strict: bool, artifact_dirs: Vec<PathBuf>) -> io::Result
 
         if !existing_roots.is_empty() {
             let presence = detect_artifact_presence_in_roots(&existing_roots);
-            let total = presence.codebase + presence.memory + presence.vision;
+            let total = presence.codebase + presence.memory + presence.vision
+                + presence.identity + presence.time + presence.contract
+                + presence.comm + presence.planning + presence.cognition
+                + presence.reality;
             if total > 0 {
                 emit(
                     "PASS",
                     "Artifacts discovered",
                     format!(
-                        ".acb={} .amem={} .avis={}",
-                        presence.codebase, presence.memory, presence.vision
+                        ".acb={} .amem={} .avis={} .aid={} .atime={} .acon={} .acomm={} .aplan={} .acog={} .areal={}",
+                        presence.codebase, presence.memory, presence.vision,
+                        presence.identity, presence.time, presence.contract,
+                        presence.comm, presence.planning, presence.cognition,
+                        presence.reality
                     ),
                 );
             } else {
@@ -2552,7 +2767,12 @@ fn run_status_session() {
     let config = load_config();
     let tools = detect_tools(&config);
 
-    let enabled_count = [config.use_codebase, config.use_memory, config.use_vision]
+    let enabled_count = [
+        config.use_codebase, config.use_memory, config.use_vision,
+        config.use_identity, config.use_time, config.use_contract,
+        config.use_comm, config.use_planning, config.use_cognition,
+        config.use_reality,
+    ]
         .iter()
         .filter(|v| **v)
         .count();
@@ -2566,8 +2786,34 @@ fn run_status_session() {
     let vision_active = tools
         .iter()
         .any(|t| t.label.starts_with("Vision ") && matches!(t.status, ToolStatus::Ok));
+    let identity_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Identity ") && matches!(t.status, ToolStatus::Ok));
+    let time_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Time ") && matches!(t.status, ToolStatus::Ok));
+    let contract_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Contract ") && matches!(t.status, ToolStatus::Ok));
+    let comm_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Comm ") && matches!(t.status, ToolStatus::Ok));
+    let planning_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Planning ") && matches!(t.status, ToolStatus::Ok));
+    let cognition_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Cognition ") && matches!(t.status, ToolStatus::Ok));
+    let reality_active = tools
+        .iter()
+        .any(|t| t.label.starts_with("Reality ") && matches!(t.status, ToolStatus::Ok));
 
-    let active_count = [codebase_active, memory_active, vision_active]
+    let active_count = [
+        codebase_active, memory_active, vision_active,
+        identity_active, time_active, contract_active,
+        comm_active, planning_active, cognition_active,
+        reality_active,
+    ]
         .iter()
         .filter(|v| **v)
         .count();
@@ -2581,10 +2827,24 @@ fn run_status_session() {
     let codebase_icon = if config.use_codebase { "✅" } else { "❌" };
     let memory_icon = if config.use_memory { "✅" } else { "❌" };
     let vision_icon = if config.use_vision { "✅" } else { "❌" };
+    let identity_icon = if config.use_identity { "✅" } else { "❌" };
+    let time_icon = if config.use_time { "✅" } else { "❌" };
+    let contract_icon = if config.use_contract { "✅" } else { "❌" };
+    let comm_icon = if config.use_comm { "✅" } else { "❌" };
+    let planning_icon = if config.use_planning { "✅" } else { "❌" };
+    let cognition_icon = if config.use_cognition { "✅" } else { "❌" };
+    let reality_icon = if config.use_reality { "✅" } else { "❌" };
 
     let codebase_state = if config.use_codebase { "On" } else { "Off" };
     let memory_state = if config.use_memory { "On" } else { "Off" };
     let vision_state = if config.use_vision { "On" } else { "Off" };
+    let identity_state = if config.use_identity { "On" } else { "Off" };
+    let time_state = if config.use_time { "On" } else { "Off" };
+    let contract_state = if config.use_contract { "On" } else { "Off" };
+    let comm_state = if config.use_comm { "On" } else { "Off" };
+    let planning_state = if config.use_planning { "On" } else { "Off" };
+    let cognition_state = if config.use_cognition { "On" } else { "Off" };
+    let reality_state = if config.use_reality { "On" } else { "Off" };
 
     let full_control = if config.agentra_full_control && active_count > 0 {
         "Yes"
@@ -2598,7 +2858,13 @@ fn run_status_session() {
         "Sisters: Codebase {codebase_icon} ({codebase_state}) | Memory {memory_icon} ({memory_state}) | Vision {vision_icon} ({vision_state})"
     );
     println!(
-        "Full Control: {full_control} ({active_count}/3 active, {enabled_count}/3 enabled) | Toggle with `agentra ui` or command"
+        "         Identity {identity_icon} ({identity_state}) | Time {time_icon} ({time_state}) | Contract {contract_icon} ({contract_state})"
+    );
+    println!(
+        "         Comm {comm_icon} ({comm_state}) | Planning {planning_icon} ({planning_state}) | Cognition {cognition_icon} ({cognition_state}) | Reality {reality_icon} ({reality_state})"
+    );
+    println!(
+        "Full Control: {full_control} ({active_count}/10 active, {enabled_count}/10 enabled) | Toggle with `agentra ui` or command"
     );
     println!("Runtime mode: {}", runtime_mode_label());
     println!("Artifact roots: {}", artifact_roots_display());

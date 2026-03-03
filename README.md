@@ -11,11 +11,13 @@
   <a href="https://github.com/agentralabs/agentic-contract"><img src="https://img.shields.io/badge/Contract-0.1.0-ea580c?style=for-the-badge" alt="Contract"></a>
   <a href="https://github.com/agentralabs/agentic-comm"><img src="https://img.shields.io/badge/Comm-0.1.0-ea580c?style=for-the-badge" alt="Comm"></a>
   <a href="https://github.com/agentralabs/agentic-planning"><img src="https://img.shields.io/badge/Planning-0.1.0-ea580c?style=for-the-badge" alt="Planning"></a>
+  <a href="https://github.com/agentralabs/agentic-cognition"><img src="https://img.shields.io/badge/Cognition-0.1.0-ea580c?style=for-the-badge" alt="Cognition"></a>
+  <a href="https://github.com/agentralabs/agentic-reality"><img src="https://img.shields.io/badge/Reality-0.1.0-ea580c?style=for-the-badge" alt="Reality"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <strong>Workspace orchestrator for the eight Agentra sisters.</strong>
+  <strong>Workspace orchestrator for the ten Agentra sisters.</strong>
 </p>
 
 <p align="center">
@@ -38,6 +40,8 @@
 | [**AgenticContract**](https://github.com/agentralabs/agentic-contract) | `.acon` | Policy engine — governance rules, risk limits, approvals, obligations, violations |
 | [**AgenticComm**](https://github.com/agentralabs/agentic-comm) | `.acomm` | Structured agent communication — channels, pub/sub, message routing, encryption |
 | [**AgenticPlanning**](https://github.com/agentralabs/agentic-planning) | `.aplan` | Persistent goals, decisions, commitments, strategic reasoning |
+| [**AgenticCognition**](https://github.com/agentralabs/agentic-cognition) | `.acog` | Longitudinal user modeling — living models of human consciousness |
+| [**AgenticReality**](https://github.com/agentralabs/agentic-reality) | `.areal` | Existential grounding — deployment consciousness and reality physics |
 
 Each sister is an independent MCP server. Install one or all. Any model. Any client.
 
@@ -54,6 +58,8 @@ cargo install agentic-time-cli      # atime
 cargo install agentic-contract-cli  # acon
 cargo install agentic-comm-cli      # acomm
 cargo install agentic-planning-cli  # aplan
+cargo install agentic-cognition-cli # acog
+cargo install agentic-reality-cli  # areal
 ```
 
 Or use the orchestrator:
@@ -89,6 +95,8 @@ agentralabs-tech/
 ├── agentic-contract/  policy engine + governance
 ├── agentic-comm/      structured agent communication
 ├── agentic-planning/  strategic planning + decisions
+├── agentic-cognition/ longitudinal user modeling
+├── agentic-reality/  existential grounding
 ├── install_all.sh     install sisters from local paths
 ├── sync_artifacts.sh  sync artifacts to server paths
 └── scripts/           guardrail + consistency checks

@@ -160,6 +160,51 @@
         "planning_workspace",
         "planning_context_log"
       ]
+    },
+    {
+      "repo": "agentic-cognition",
+      "prefix": "cognition_",
+      "maxFacadeTools": 15,
+      "compactEnvVars": ["ACOG_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "cognition_model_create",
+        "cognition_model_heartbeat",
+        "cognition_model_vitals",
+        "cognition_model_portrait",
+        "cognition_belief_add",
+        "cognition_belief_query",
+        "cognition_belief_graph",
+        "cognition_soul_reflect",
+        "cognition_self_topology",
+        "cognition_pattern_fingerprint",
+        "cognition_shadow_map",
+        "cognition_drift_track",
+        "cognition_predict",
+        "cognition_simulate"
+      ]
+    },
+    {
+      "repo": "agentic-reality",
+      "prefix": "reality_",
+      "maxFacadeTools": 15,
+      "compactEnvVars": ["AREAL_MCP_TOOL_SURFACE", "MCP_TOOL_SURFACE"],
+      "compactTools": [
+        "reality_deployment",
+        "reality_memory",
+        "reality_environment",
+        "reality_resource",
+        "reality_capability",
+        "reality_layer",
+        "reality_anchor",
+        "reality_hallucination",
+        "reality_topology",
+        "reality_temporal",
+        "reality_stakes",
+        "reality_coherence",
+        "reality_context",
+        "reality_ground",
+        "reality_workspace"
+      ]
     }
   ]
 }

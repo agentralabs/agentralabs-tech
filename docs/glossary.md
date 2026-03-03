@@ -12,9 +12,9 @@ Key terms used across Agentra Labs projects.
 
 **MCP (Model Context Protocol)** — An open standard that lets AI applications discover and call tools exposed by external servers. All Agentra sisters expose their capabilities as MCP tools.
 
-**Sister** — One of the eight Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, AgenticIdentity, AgenticTime, AgenticContract, AgenticComm, and AgenticPlanning. Each sister runs as an independent MCP server and produces its own artifact.
+**Sister** — One of the ten Agentra runtime components: AgenticMemory, AgenticVision, AgenticCodebase, AgenticIdentity, AgenticTime, AgenticContract, AgenticComm, AgenticPlanning, AgenticCognition, and AgenticReality. Each sister runs as an independent MCP server and produces its own artifact.
 
-**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity), `.atime` (time), `.acon` (contract), `.acomm` (communication), `.aplan` (planning).
+**Artifact** — A portable binary file produced by a sister. Artifacts store all state and can be moved between machines. Formats: `.amem` (memory), `.avis` (vision), `.acb` (codebase), `.aid` (identity), `.atime` (time), `.acon` (contract), `.acomm` (communication), `.aplan` (planning), `.acog` (cognition), `.areal` (reality).
 
 **Workspace** — The parent directory containing the web repo and all sister repos. The docs sync script reads from this workspace to build the documentation site.
 
@@ -143,3 +143,51 @@ Key terms used across Agentra Labs projects.
 **Commitment** — A time-bound promise to deliver a specific outcome. Commitments track deadlines, progress, and risk status.
 
 **.aplan** — The AgenticPlanning artifact file. Stores goals, decisions, commitments, progress records, and strategic reasoning chains.
+
+## AgenticCognition
+
+**.acog** — Binary file format for living user models. Stores user models, beliefs, reflections, drift history, and prediction records.
+
+**acog** — CLI binary for AgenticCognition. Provides command-line access to user modeling, belief management, and cognitive analysis.
+
+**acog-mcp** — MCP server binary for AgenticCognition. Exposes user modeling and belief graph tools to MCP clients.
+
+**User model** — A living representation of a human user built from longitudinal observations. User models track beliefs, preferences, patterns, and cognitive fingerprints over time.
+
+**Belief** — An inferred fact about a user with confidence, source attribution, and decay. Beliefs are continuously updated as new evidence arrives and can be queried for decision support.
+
+**Belief Graph** — An interconnected web of beliefs with physics properties. Beliefs link to each other through causal, supporting, and contradicting edges, forming a navigable knowledge structure.
+
+**Living User Model** — A breathing model with soul, consciousness, and vitals. Unlike static profiles, a living user model evolves continuously as new observations arrive and old beliefs decay.
+
+**Soul Reflection** — Discovery of the user's essential nature. A synthesized portrait of the user's cognitive patterns, values, and behavioral tendencies derived from accumulated observations.
+
+**Decision Fingerprint** — A unique decision-making signature derived from observed choices. Captures recurring patterns in how a user weighs options, tolerates risk, and prioritizes criteria.
+
+**Shadow Map** — A record of unconscious beliefs, projections, and blindspots in a user model. Highlights contradictions, tensions, and unresolved ambiguities where the model's confidence is low or beliefs conflict.
+
+**Belief Physics** — The dynamics governing belief behavior: crystallization (beliefs hardening with evidence), entanglement (correlated beliefs changing together), gravity (strong beliefs attracting related evidence), and collapse (belief resolution under contradictory pressure).
+
+**Drift Timeline** — Tracking how beliefs change over time. Drift detection identifies when a user's preferences or behaviors shift significantly, enabling proactive adaptation.
+
+**Cognitive drift** — The measured change in a user model's belief landscape over time. Drift tracking detects when a user's preferences or behaviors shift significantly.
+
+## AgenticReality
+
+**.areal** — Binary file format for reality context. Stores deployment state, resource inventories, reality anchors, and hallucination detection records.
+
+**areal** — CLI binary for AgenticReality. Provides command-line access to reality verification, resource discovery, and deployment management.
+
+**areal-mcp** — MCP server binary for AgenticReality. Exposes reality anchoring and hallucination detection tools to MCP clients.
+
+**Deployment Soul** — The persistent identity of an agent deployment. Captures the unique configuration, history, and operational context that define a running agent instance across restarts and migrations.
+
+**Resource Body** — A complete picture of available resources. Inventories compute, storage, network, API quotas, and other operational assets accessible to an agent deployment.
+
+**Reality Anchor** — A ground truth reference for fact verification. Reality anchors provide authoritative data points against which agent-generated statements can be validated.
+
+**Hallucination Detection** — Identifying fabricated vs verified information. Compares agent outputs against reality anchors and known facts to flag ungrounded claims and unsupported assertions.
+
+**Context Fingerprint** — A unique hash of the operational environment. Captures the specific combination of tools, data sources, permissions, and runtime conditions that define an agent's operating context.
+
+**Stakes Perception** — Awareness of consequences and blast radius. Evaluates the potential impact of actions based on affected systems, data sensitivity, reversibility, and downstream dependencies.
