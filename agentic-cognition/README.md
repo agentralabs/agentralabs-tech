@@ -6,6 +6,8 @@
   <a href="https://crates.io/crates/agentic-cognition"><img src="https://img.shields.io/crates/v/agentic-cognition.svg" alt="crates.io"></a>
   <img src="https://img.shields.io/badge/tests-152%20passing-brightgreen.svg" alt="Tests">
   <img src="https://img.shields.io/badge/clients-Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Cody-orange.svg" alt="Multi-client">
+  <img src="https://img.shields.io/badge/pip_install-agentic--cognition-ea580c" alt="PyPI">
+  <img src="https://img.shields.io/badge/Research--Paper_I-User_Modeling-ea580c" alt="Research Paper">
 </p>
 
 <p align="center">
@@ -13,6 +15,7 @@
   <a href="#mcp-server"><img src="https://img.shields.io/badge/MCP_Server-agentic--cognition--mcp-10B981?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPjxwYXRoIGQ9Ik0xMiAydjIwTTIgMTJoMjAiLz48L3N2Zz4=&logoColor=white" alt="MCP Server"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
   <a href="docs/INVENTIONS.md"><img src="https://img.shields.io/badge/Inventions-24-8B5CF6?style=for-the-badge" alt="24 Inventions"></a>
+  <a href="paper/paper-i-format/agentic-cognition-paper.pdf"><img src="https://img.shields.io/badge/Research-Paper_I-8B5CF6?style=for-the-badge" alt="Research Paper I"></a>
   <a href="docs/API.md"><img src="https://img.shields.io/badge/format-.acog-3B82F6?style=for-the-badge" alt=".acog format"></a>
 </p>
 
@@ -25,7 +28,7 @@
 </p>
 
 <p align="center">
-  <a href="#quickstart">Quickstart</a> · <a href="#problems-solved">Problems Solved</a> · <a href="#how-it-works">How It Works</a> · <a href="#belief-physics">Belief Physics</a> · <a href="#shadow-psychology">Shadow Psychology</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#install">Install</a> · <a href="docs/API.md">API</a> · <a href="docs/INVENTIONS.md">Inventions</a>
+  <a href="#quickstart">Quickstart</a> · <a href="#problems-solved">Problems Solved</a> · <a href="#how-it-works">How It Works</a> · <a href="#belief-physics">Belief Physics</a> · <a href="#shadow-psychology">Shadow Psychology</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#install">Install</a> · <a href="docs/API.md">API</a> · <a href="docs/INVENTIONS.md">Inventions</a> · <a href="docs/papers/">Papers</a>
 </p>
 
 ---
@@ -38,7 +41,7 @@
 
 <a name="the-problem"></a>
 
-## AI has no theory of YOU.
+## Why AgenticCognition
 
 Every conversation starts fresh. The AI doesn't know that you always overthink decisions. Doesn't notice that your confidence exceeds your competence in finance. Can't see that you've been slowly drifting away from the values you proclaimed two years ago.
 
@@ -415,6 +418,47 @@ acog pattern fingerprint $MODEL_ID       # Decision patterns extracted
 
 ---
 
+
+---
+
+<a name="common-workflows"></a>
+
+## Common Workflows
+
+The following examples show the most common patterns for using AgenticCognition via the CLI and MCP server.
+
+```bash
+# Record a heartbeat — capture a belief or observation about the user
+acog heartbeat --belief "User prefers Rust for performance-critical code"
+
+# Query the living model — retrieve beliefs matching a pattern
+acog query --filter "language preferences" --top 10
+
+# Detect shadow patterns — find projections, blindspots, defended regions
+acog shadow --detect projections blindspots defended-regions
+
+# Check belief drift — see which beliefs have shifted over time
+acog drift --since "30 days" --threshold 0.15
+
+# Run a decision simulation — predict how the user will approach a problem
+acog predict --scenario "choosing between two job offers" --depth 3
+
+# Export the living model to a portable .acog file
+acog export --output ~/my-model.acog
+
+# Load a .acog model file into the engine
+acog import --input ~/my-model.acog
+
+# Start the MCP server for Claude/Cursor integration
+agentic-cognition-mcp --storage ~/.cognition serve
+
+# Inspect growth rings — see strata of belief evolution over time
+acog rings --year 2025 --strata all
+
+# Get current coherence score and model health
+acog status
+```
+
 <a name="mcp-server"></a>
 
 ## MCP Server
@@ -786,7 +830,7 @@ AgenticCognition integrates with 7 Agentra sisters through typed bridge traits. 
 
 ---
 
-## Crate Structure
+## Repository Structure
 
 This is a Cargo workspace monorepo containing the core library, MCP server, CLI, and FFI bindings.
 
@@ -813,7 +857,7 @@ agentic-cognition/
 
 ---
 
-## Privacy and Ethics
+## Privacy and Security
 
 AgenticCognition models the most sensitive data that exists: a living representation of how a human mind works. This demands the highest ethical standards.
 

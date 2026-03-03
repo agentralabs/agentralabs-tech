@@ -1,23 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="400" viewBox="0 0 980 400">
-  <rect width="980" height="400" fill="#0d1117" rx="12"/>
-  <rect width="980" height="36" fill="#161b22" rx="12 12 0 0"/>
-  <circle cx="24" cy="18" r="6" fill="#ff5f57"/>
-  <circle cx="44" cy="18" r="6" fill="#febc2e"/>
-  <circle cx="64" cy="18" r="6" fill="#28c840"/>
-  <text x="490" y="23" font-family="monospace" font-size="13" fill="#8b949e" text-anchor="middle">acog -- AgenticCognition</text>
-  <text x="24" y="72" font-family="monospace" font-size="14" fill="#7ee787">$</text>
-  <text x="40" y="72" font-family="monospace" font-size="14" fill="#c9d1d9"> acog model create</text>
-  <text x="24" y="96" font-family="monospace" font-size="14" fill="#8b949e">{ "model_id": "550e8400-...", "status": "created", "stage": "birth" }</text>
-  <text x="24" y="132" font-family="monospace" font-size="14" fill="#7ee787">$</text>
-  <text x="40" y="132" font-family="monospace" font-size="14" fill="#c9d1d9"> acog belief add $MODEL_ID "I value honesty" --domain values --confidence 0.9</text>
-  <text x="24" y="156" font-family="monospace" font-size="14" fill="#8b949e">{ "belief_id": "b-001", "status": "added" }</text>
-  <text x="24" y="192" font-family="monospace" font-size="14" fill="#7ee787">$</text>
-  <text x="40" y="192" font-family="monospace" font-size="14" fill="#c9d1d9"> acog model soul $MODEL_ID</text>
-  <text x="24" y="216" font-family="monospace" font-size="14" fill="#8b949e">Soul Reflection:</text>
-  <text x="24" y="240" font-family="monospace" font-size="14" fill="#8b949e">"An emerging model of someone who places honesty at the center</text>
-  <text x="24" y="264" font-family="monospace" font-size="14" fill="#8b949e"> of their value system..."</text>
-  <text x="24" y="300" font-family="monospace" font-size="14" fill="#7ee787">$</text>
-  <text x="40" y="300" font-family="monospace" font-size="14" fill="#c9d1d9"> acog shadow map $MODEL_ID</text>
-  <text x="24" y="324" font-family="monospace" font-size="14" fill="#8b949e">Shadow Map: 0 shadow beliefs, 0 projections, 0 blindspots</text>
-  <text x="24" y="348" font-family="monospace" font-size="14" fill="#8b949e">(insufficient data for shadow detection)</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-label="AgenticCognition terminal pane">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#b8b6ae"/>
+    </pattern>
+  </defs>
+  <rect width="1400" height="420" fill="#f2f1ea"/>
+  <rect width="1400" height="420" fill="url(#grid)"/>
+  <rect x="20" y="20" width="1360" height="380" fill="none" stroke="#111111" stroke-width="2"/>
+  <line x1="20" y1="62" x2="1380" y2="62" stroke="#111111" stroke-width="2"/>
+  <text x="40" y="48" font-family="'JetBrains Mono', monospace" font-size="14" fill="#5f5c53" letter-spacing="2"> // TERMINAL: QUICKSTART_PANE</text>
+  <rect x="1318" y="36" width="8" height="8" fill="#ea580c"/>
+  <text x="1336" y="48" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" letter-spacing="2">002</text>
+
+  <rect x="46" y="92" width="1308" height="280" fill="none" stroke="#111111" stroke-width="2"/>
+  <rect x="46" y="92" width="1308" height="40" fill="#111111"/>
+  <circle cx="68" cy="112" r="6" fill="#ef4444"/>
+  <circle cx="90" cy="112" r="6" fill="#f59e0b"/>
+  <circle cx="112" cy="112" r="6" fill="#22c55e"/>
+  <text x="1196" y="117" font-family="'JetBrains Mono', monospace" font-size="11" fill="#f2f1ea" letter-spacing="2">AGENTICCOGNITION / .ACOG</text>
+
+  <rect x="46" y="132" width="1308" height="240" fill="#080808"/>
+  <text x="72" y="168" font-family="'JetBrains Mono', monospace" font-size="18" fill="#e5e5e5">&gt; curl -fsSL https://agentralabs.tech/install/cognition | bash</text>
+  <text x="72" y="202" font-family="'JetBrains Mono', monospace" font-size="18" fill="#e5e5e5">&gt; agentic-cognition-mcp --storage ~/.cognition serve</text>
+  <text x="72" y="236" font-family="'JetBrains Mono', monospace" font-size="18" fill="#e5e5e5">&gt; acog heartbeat --belief &quot;User prefers Rust for systems code&quot;</text>
+  <text x="72" y="270" font-family="'JetBrains Mono', monospace" font-size="18" fill="#e5e5e5">&gt; acog shadow --detect projections blindspots defended-regions</text>
+  <text x="72" y="304" font-family="'JetBrains Mono', monospace" font-size="18" fill="#ea580c">&gt; cognition.status = READY  coherence: 0.94</text>
+  <text x="72" y="338" font-family="'JetBrains Mono', monospace" font-size="18" fill="#ea580c">_</text>
 </svg>
