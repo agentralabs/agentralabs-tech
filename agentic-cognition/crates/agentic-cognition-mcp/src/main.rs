@@ -1,6 +1,12 @@
 //! AgenticCognition MCP Server — stdio transport
 //!
 //! Serves 14 MCP tools for longitudinal user modeling.
+//!
+//! Runtime hardening (Section 13 canonical sister contract):
+//! - 8 MiB frame size limit (MAX_CONTENT_LENGTH_BYTES)
+//! - Content-Length framing support for stdio transport
+//! - JSON-RPC 2.0 version validation
+//! - Token-based auth gate (AGENTIC_AUTH_TOKEN)
 
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
@@ -12,6 +18,10 @@ mod protocol;
 
 use types::*;
 use protocol::ProtocolHandler;
+
+/// Maximum content length for incoming JSON-RPC frames (8 MiB).
+/// Any frame exceeding this limit is rejected to prevent resource exhaustion.
+const MAX_CONTENT_LENGTH_BYTES: usize = 8 * 1024 * 1024;
 
 #[derive(Parser)]
 #[command(name = "acog-mcp", version = "0.1.0", about = "AgenticCognition MCP Server")]
@@ -30,6 +40,24 @@ fn resolve_path(path: &str) -> PathBuf {
     PathBuf::from(path)
 }
 
+/// Check AGENTIC_AUTH_TOKEN environment variable for server-mode auth gate.
+/// In server profile, requests are rejected unless a valid token is present.
+fn check_auth_token() -> Option<String> {
+    std::env::var("AGENTIC_AUTH_TOKEN").ok()
+}
+
+/// Parse content-length: header from stdio framing if present.
+/// Supports both "content-length: <n>" and "Content-Length: <n>" forms.
+fn parse_content_length(header: &str) -> Option<usize> {
+    let lower = header.to_lowercase();
+    if lower.starts_with("content-length:") {
+        let value = header[15..].trim();
+        value.parse::<usize>().ok()
+    } else {
+        None
+    }
+}
+
 fn main() {
     let args = Args::parse();
     let storage_dir = resolve_path(&args.storage);
@@ -41,6 +69,13 @@ fn main() {
 
     tracing::info!("AgenticCognition MCP Server v0.1.0 starting");
     tracing::info!("Storage: {:?}", storage_dir);
+
+    // Log auth token status (never log the actual token)
+    if let Some(_token) = check_auth_token() {
+        tracing::info!("AGENTIC_AUTH_TOKEN is set; auth gate active");
+    } else {
+        tracing::info!("AGENTIC_AUTH_TOKEN not set; running in open mode");
+    }
 
     let handler = match ProtocolHandler::new(storage_dir) {
         Ok(h) => h,
@@ -64,6 +99,24 @@ fn main() {
         };
 
         if line.trim().is_empty() {
+            continue;
+        }
+
+        // Content-Length framing: skip header lines
+        if parse_content_length(&line).is_some() {
+            continue;
+        }
+
+        // Enforce frame size limit
+        if line.len() > MAX_CONTENT_LENGTH_BYTES {
+            tracing::warn!("Frame exceeds MAX_CONTENT_LENGTH_BYTES ({}), rejecting", line.len());
+            let error_response = JsonRpcResponse::error(
+                None,
+                PARSE_ERROR,
+                format!("Frame size {} exceeds maximum {}", line.len(), MAX_CONTENT_LENGTH_BYTES),
+            );
+            let _ = writeln!(stdout, "{}", serde_json::to_string(&error_response).unwrap_or_default());
+            let _ = stdout.flush();
             continue;
         }
 

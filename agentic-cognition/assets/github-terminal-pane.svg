@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="400" viewBox="0 0 980 400">
+  <rect width="980" height="400" fill="#0d1117" rx="12"/>
+  <rect width="980" height="36" fill="#161b22" rx="12 12 0 0"/>
+  <circle cx="24" cy="18" r="6" fill="#ff5f57"/>
+  <circle cx="44" cy="18" r="6" fill="#febc2e"/>
+  <circle cx="64" cy="18" r="6" fill="#28c840"/>
+  <text x="490" y="23" font-family="monospace" font-size="13" fill="#8b949e" text-anchor="middle">acog -- AgenticCognition</text>
+  <text x="24" y="72" font-family="monospace" font-size="14" fill="#7ee787">$</text>
+  <text x="40" y="72" font-family="monospace" font-size="14" fill="#c9d1d9"> acog model create</text>
+  <text x="24" y="96" font-family="monospace" font-size="14" fill="#8b949e">{ "model_id": "550e8400-...", "status": "created", "stage": "birth" }</text>
+  <text x="24" y="132" font-family="monospace" font-size="14" fill="#7ee787">$</text>
+  <text x="40" y="132" font-family="monospace" font-size="14" fill="#c9d1d9"> acog belief add $MODEL_ID "I value honesty" --domain values --confidence 0.9</text>
+  <text x="24" y="156" font-family="monospace" font-size="14" fill="#8b949e">{ "belief_id": "b-001", "status": "added" }</text>
+  <text x="24" y="192" font-family="monospace" font-size="14" fill="#7ee787">$</text>
+  <text x="40" y="192" font-family="monospace" font-size="14" fill="#c9d1d9"> acog model soul $MODEL_ID</text>
+  <text x="24" y="216" font-family="monospace" font-size="14" fill="#8b949e">Soul Reflection:</text>
+  <text x="24" y="240" font-family="monospace" font-size="14" fill="#8b949e">"An emerging model of someone who places honesty at the center</text>
+  <text x="24" y="264" font-family="monospace" font-size="14" fill="#8b949e"> of their value system..."</text>
+  <text x="24" y="300" font-family="monospace" font-size="14" fill="#7ee787">$</text>
+  <text x="40" y="300" font-family="monospace" font-size="14" fill="#c9d1d9"> acog shadow map $MODEL_ID</text>
+  <text x="24" y="324" font-family="monospace" font-size="14" fill="#8b949e">Shadow Map: 0 shadow beliefs, 0 projections, 0 blindspots</text>
+  <text x="24" y="348" font-family="monospace" font-size="14" fill="#8b949e">(insufficient data for shadow detection)</text>
+</svg>

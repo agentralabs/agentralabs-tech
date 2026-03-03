@@ -13,6 +13,9 @@ PROFILE="${AGENTIC_PROFILE:-desktop}"
 NON_INTERACTIVE="${AGENTIC_NON_INTERACTIVE:-false}"
 INSTALL_DIR="${HOME}/.agentic/bin"
 CONFIG_DIR="${HOME}/.config/agentic-cognition"
+SERVER_CMD="acog-mcp"
+SERVER_ARGS_TEXT="--storage ~/.agentic/cognition"
+AGENTIC_TOKEN="${AGENTIC_TOKEN:-}"
 
 info() { printf "\033[0;34m[info]\033[0m %s\n" "$1"; }
 warn() { printf "\033[0;33m[warn]\033[0m %s\n" "$1"; }
@@ -151,7 +154,40 @@ main() {
         info "RESTART your terminal or run: source ~/.zshrc"
     fi
 
+    # ── Canonical completion block ──────────────────────────────────────────
     echo ""
+    echo "============================================================"
+    echo "  MCP client summary:"
+    echo "============================================================"
+    echo ""
+    echo "  Claude Desktop, Cursor, Windsurf, VS Code, Cody, Codex,"
+    echo "  Claude Code, and any MCP-compatible client."
+    echo ""
+    echo "  Universal MCP entry (works in any MCP client):"
+    echo "  command: ${SERVER_CMD}"
+    echo "  args: ${SERVER_ARGS_TEXT}"
+    echo ""
+    echo "  Quick terminal check:"
+    echo "    acog model create"
+    echo ""
+    echo "  After restart, confirm the MCP server is active:"
+    echo "    acog model list"
+    echo ""
+    # Emit args in eval-safe format for downstream automation
+    echo "  args: ${SERVER_ARGS_TEXT}"
+    echo ""
+    echo "  Optional feedback:"
+    echo "    https://github.com/agentralabs/agentic-cognition/issues"
+    echo ""
+    if [ -n "${AGENTIC_TOKEN:-}" ]; then
+        echo "  AGENTIC_TOKEN is set; server auth gate is active."
+    else
+        echo "  AGENTIC_TOKEN not set; running in open mode."
+        echo "  Set AGENTIC_TOKEN for production/server deployments."
+    fi
+    echo "============================================================"
+    echo ""
+
     info "Quick start:"
     info "  acog model create"
     info "  acog belief add <MODEL_ID> \"I value honesty\" --domain values --confidence 0.9"

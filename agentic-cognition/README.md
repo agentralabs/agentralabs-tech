@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/architecture.svg" alt="AgenticCognition hero" width="980">
+  <img src="assets/github-hero-pane.svg" alt="AgenticCognition hero" width="980">
 </p>
 
 <p align="center">
@@ -25,12 +25,16 @@
 </p>
 
 <p align="center">
-  <a href="#architecture">Architecture</a> · <a href="#quickstart">Quickstart</a> · <a href="#the-problem">The Problem</a> · <a href="#belief-physics">Belief Physics</a> · <a href="#shadow-psychology">Shadow Psychology</a> · <a href="#mcp-server">MCP Server</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#install">Install</a> · <a href="docs/API.md">API</a> · <a href="docs/INVENTIONS.md">Inventions</a>
+  <a href="#quickstart">Quickstart</a> · <a href="#problems-solved">Problems Solved</a> · <a href="#how-it-works">How It Works</a> · <a href="#belief-physics">Belief Physics</a> · <a href="#shadow-psychology">Shadow Psychology</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#install">Install</a> · <a href="docs/API.md">API</a> · <a href="docs/INVENTIONS.md">Inventions</a>
 </p>
 
 ---
 
 > Sister #9 of 25 in the Agentra ecosystem | `.acog` format | 24 Inventions | 14 MCP Tools | 40+ CLI Commands
+
+<p align="center">
+  <img src="assets/github-terminal-pane.svg" alt="AgenticCognition terminal demo" width="980">
+</p>
 
 <a name="the-problem"></a>
 
@@ -74,11 +78,19 @@ Four commands. A living mirror of a human mind. One `.acog` file holds everythin
 
 ---
 
+<a name="how-it-works"></a>
+
+## How It Works
+
 <a name="architecture"></a>
 
-## Architecture
+### Architecture
 
 > **v0.1.0** -- Longitudinal user modeling infrastructure.
+
+<p align="center">
+  <img src="assets/architecture-agentra.svg" alt="AgenticCognition architecture" width="980">
+</p>
 
 AgenticCognition is a Rust-native cognition engine that treats human understanding as first-class data. Beliefs are living entities with physics. Shadows reveal what the conscious mind conceals. Drift tracks how a person changes over time.
 
@@ -607,6 +619,10 @@ The model is commodity. Your `.acog` is value.
 
 ## Benchmarks
 
+<p align="center">
+  <img src="assets/benchmark-chart.svg" alt="AgenticCognition benchmarks" width="980">
+</p>
+
 Rust core. BLAKE3 integrity. Zero external dependencies. Real numbers from Criterion statistical benchmarks:
 
 | Operation | Time | Scale |
@@ -672,11 +688,15 @@ curl -fsSL https://agentralabs.tech/install/cognition/server | bash
 |:---|:---|:---|
 | GitHub installer (official) | `curl -fsSL https://agentralabs.tech/install/cognition \| bash` | Installs release binaries; merges MCP config |
 | crates.io paired crates (official) | `cargo install agentic-cognition-cli agentic-cognition-mcp` | Installs `acog` and `acog-mcp` |
+| npm (official) | `npm install @agenticamem/cognition` | WASM bindings for Node.js |
+| PyPI (official) | `pip install agentic-cognition` | Python bindings via maturin |
 
 | Goal | Command |
 |:---|:---|
 | **Just give me cognition** | Run the one-liner above |
 | **Rust developer** | `cargo install agentic-cognition-cli agentic-cognition-mcp` |
+| **Node.js developer** | `npm install @agenticamem/cognition` |
+| **Python developer** | `pip install agentic-cognition` |
 | **From source** | `git clone ... && cargo build --release` |
 
 <details>

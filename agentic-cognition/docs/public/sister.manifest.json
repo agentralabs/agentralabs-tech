@@ -1,0 +1,21 @@
+{
+  "key": "cognition",
+  "name": "AgenticCognition",
+  "version": "0.1.0",
+  "page_ids": [
+    "experience-with-vs-without",
+    "quickstart",
+    "installation",
+    "command-surface",
+    "runtime-install-sync",
+    "concepts",
+    "integration-guide",
+    "faq",
+    "benchmarks",
+    "api-reference",
+    "file-format",
+    "primary-problem-coverage",
+    "initial-problem-coverage",
+    "playbooks-agent-integration"
+  ]
+}
