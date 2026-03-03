@@ -9,6 +9,10 @@ description = "Longitudinal user modeling — living models of human consciousne
 keywords = ["ai", "agent", "cognition", "llm", "psychology"]
 categories = ["data-structures", "command-line-utilities"]
 
+[[bin]]
+name = "acog"
+path = "src/bin/acog.rs"
+
 [lib]
 name = "agentic_cognition"
 path = "src/lib.rs"
