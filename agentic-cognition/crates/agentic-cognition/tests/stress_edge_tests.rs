@@ -7,20 +7,23 @@ use agentic_cognition::*;
 use agentic_cognition::types::*;
 use tempfile::TempDir;
 
-fn setup() -> (WriteEngine, QueryEngine, TempDir) {
+fn setup() -> (WriteEngine, TempDir) {
     let dir = TempDir::new().unwrap();
     let store = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
     let write = WriteEngine::new(store);
-    let store2 = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
-    let query = QueryEngine::new(store2);
-    (write, query, dir)
+    (write, dir)
+}
+
+fn query_for(dir: &TempDir) -> QueryEngine {
+    let store = CognitionStore::with_storage(dir.path().to_path_buf()).unwrap();
+    QueryEngine::new(store)
 }
 
 // ── Stress tests: heavy load scenarios ─────────────────────────────────────
 
 #[test]
 fn stress_create_many_models() {
-    let (write, _query, _dir) = setup();
+    let (write, _dir) = setup();
     for _ in 0..100 {
         let id = write.create_model().unwrap();
         assert!(!id.to_string().is_empty());
@@ -29,7 +32,7 @@ fn stress_create_many_models() {
 
 #[test]
 fn stress_add_1000_beliefs_single_model() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     for i in 0..1000 {
         write.add_belief(
@@ -39,13 +42,14 @@ fn stress_add_1000_beliefs_single_model() {
             (i as f64 % 100.0) / 100.0,
         ).unwrap();
     }
+    let query = query_for(&dir);
     let beliefs = query.list_beliefs(&model_id).unwrap();
     assert_eq!(beliefs.len(), 1000);
 }
 
 #[test]
 fn stress_rapid_heartbeats() {
-    let (write, _query, _dir) = setup();
+    let (write, _dir) = setup();
     let model_id = write.create_model().unwrap();
     for i in 0..500 {
         write.heartbeat(
@@ -57,7 +61,7 @@ fn stress_rapid_heartbeats() {
 
 #[test]
 fn stress_belief_graph_dense_connections() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     let mut ids = Vec::new();
     for i in 0..50 {
@@ -81,6 +85,7 @@ fn stress_belief_graph_dense_connections() {
             );
         }
     }
+    let query = query_for(&dir);
     let graph = query.get_belief_graph(&model_id).unwrap();
     assert!(graph.beliefs.len() >= 50);
 }
@@ -89,24 +94,26 @@ fn stress_belief_graph_dense_connections() {
 
 #[test]
 fn edge_empty_model_soul_reflection() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     // Soul reflection on empty model should not panic
+    let query = query_for(&dir);
     let result = query.soul_reflection(&model_id);
     assert!(result.is_ok());
 }
 
 #[test]
 fn edge_empty_model_shadow_map() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
+    let query = query_for(&dir);
     let shadow = query.get_shadow_map(&model_id).unwrap();
     assert_eq!(shadow.shadow_beliefs.len(), 0);
 }
 
 #[test]
 fn edge_zero_confidence_belief() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     let id = write.add_belief(
         &model_id,
@@ -114,6 +121,7 @@ fn edge_zero_confidence_belief() {
         BeliefDomain::Values,
         0.0,
     ).unwrap();
+    let query = query_for(&dir);
     let beliefs = query.list_beliefs(&model_id).unwrap();
     let found = beliefs.iter().find(|b| b.id == id).unwrap();
     assert_eq!(found.confidence, 0.0);
@@ -121,7 +129,7 @@ fn edge_zero_confidence_belief() {
 
 #[test]
 fn edge_max_confidence_belief() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     let id = write.add_belief(
         &model_id,
@@ -129,6 +137,7 @@ fn edge_max_confidence_belief() {
         BeliefDomain::Values,
         1.0,
     ).unwrap();
+    let query = query_for(&dir);
     let beliefs = query.list_beliefs(&model_id).unwrap();
     let found = beliefs.iter().find(|b| b.id == id).unwrap();
     assert_eq!(found.confidence, 1.0);
@@ -136,7 +145,7 @@ fn edge_max_confidence_belief() {
 
 #[test]
 fn edge_empty_belief_content() {
-    let (write, _query, _dir) = setup();
+    let (write, _dir) = setup();
     let model_id = write.create_model().unwrap();
     // Empty string belief should be handled gracefully
     let result = write.add_belief(
@@ -151,7 +160,7 @@ fn edge_empty_belief_content() {
 
 #[test]
 fn edge_very_long_belief_content() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     let long_content = "A".repeat(10_000);
     let result = write.add_belief(
@@ -162,7 +171,8 @@ fn edge_very_long_belief_content() {
     );
     // Should handle long content without panicking
     if let Ok(id) = result {
-        let beliefs = query.list_beliefs(&model_id).unwrap();
+        let query = query_for(&dir);
+    let beliefs = query.list_beliefs(&model_id).unwrap();
         let found = beliefs.iter().find(|b| b.id == id);
         assert!(found.is_some());
     }
@@ -201,8 +211,9 @@ fn boundary_save_and_reload_large_model() {
 
 #[test]
 fn boundary_predict_with_no_beliefs() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
+    let query = query_for(&dir);
     let result = query.predict_preference(&model_id, "test item");
     // Must not panic on empty model
     assert!(result.is_ok());
@@ -210,9 +221,10 @@ fn boundary_predict_with_no_beliefs() {
 
 #[test]
 fn boundary_simulate_with_empty_options() {
-    let (write, query, _dir) = setup();
+    let (write, dir) = setup();
     let model_id = write.create_model().unwrap();
     write.add_belief(&model_id, "Test belief".into(), BeliefDomain::Values, 0.5).unwrap();
+    let query = query_for(&dir);
     let options: Vec<String> = vec![];
     let result = query.simulate_decision(&model_id, "scenario", &options);
     // Should handle gracefully
