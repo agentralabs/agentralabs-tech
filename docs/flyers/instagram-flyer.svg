@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" role="img" aria-label="Agentra Labs Instagram flyer">
+  <defs>
+    <pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="#d4d2c9"/>
+    </pattern>
+    <style><![CDATA[
+      .m{font-family:'IBM Plex Mono','JetBrains Mono',monospace}
+      .s{font-family:'Sora','Space Grotesk','Inter',sans-serif}
+    ]]></style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#f2f1ea"/>
+  <rect width="1080" height="1350" fill="url(#g)" opacity="0.5"/>
+
+  <!-- Logo mark centered -->
+  <g transform="translate(492 320) scale(4)" stroke="#121212" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/>
+    <path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/>
+    <path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/>
+    <path d="M7 20v2"/><path d="M7 2v2"/>
+    <rect x="4" y="4" width="16" height="16" rx="2"/>
+    <rect x="8" y="8" width="8" height="8" rx="1" stroke="#ea580c"/>
+  </g>
+
+  <!-- Brand -->
+  <text x="540" y="460" class="m" font-size="15" fill="#ea580c" text-anchor="middle" letter-spacing="5">AGENTRA LABS</text>
+
+  <!-- Headline -->
+  <text x="540" y="590" class="s" font-size="64" font-weight="700" fill="#121212" text-anchor="middle">Seven sisters.</text>
+  <text x="540" y="670" class="s" font-size="64" font-weight="700" fill="#121212" text-anchor="middle">One <tspan fill="#ea580c">workspace.</tspan></text>
+  <text x="540" y="750" class="s" font-size="64" font-weight="700" fill="#121212" text-anchor="middle">Any agent.</text>
+
+  <!-- One-liner -->
+  <text x="540" y="850" class="m" font-size="16" fill="#6d6a63" text-anchor="middle">Open-source MCP servers for AI agents.</text>
+
+  <!-- CTA -->
+  <text x="540" y="1160" class="m" font-size="14" fill="#6d6a63" text-anchor="middle" letter-spacing="1">github.com/agentralabs</text>
+</svg>

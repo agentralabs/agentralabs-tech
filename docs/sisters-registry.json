@@ -296,6 +296,39 @@
         "landingSlug": "cognition-docs",
         "includeLanding": true
       }
+    },
+    {
+      "key": "reality",
+      "name": "AgenticReality",
+      "repo": "agentic-reality",
+      "shortName": "REALITY",
+      "description": "Existential grounding for AI agents — deployment awareness, resource proprioception, reality physics, stakes perception",
+      "topic": "Reality",
+      "enabled": true,
+      "order": 100,
+      "fileExtension": ".areal",
+      "cliBinary": "areal",
+      "packages": {
+        "npm": "@agenticamem/reality",
+        "pypi": "agentic-reality",
+        "coreCrate": "agentic-reality",
+        "ffiCrate": "agentic-reality-ffi",
+        "mcpCrate": "agentic-reality-mcp",
+        "cliCrate": "agentic-reality-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-reality-mcp/src/tools/registry.rs",
+        "edgeCaseInventionsTest": "crates/agentic-reality/tests/phase05_inventions.rs"
+      },
+      "mcp": {
+        "binary": "agentic-reality-mcp",
+        "args": ["serve"],
+        "cratePath": "crates/agentic-reality-mcp"
+      },
+      "docs": {
+        "landingSlug": "reality-docs",
+        "includeLanding": true
+      }
     }
   ]
 }
