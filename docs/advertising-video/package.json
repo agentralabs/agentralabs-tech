@@ -1,0 +1,25 @@
+{
+  "name": "agentra-labs-ad",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "npm run build:linkedin && npm run build:instagram-feed && npm run build:instagram-reels && npm run build:x",
+    "build:linkedin": "remotion render LinkedIn out/agentra-labs-linkedin-1920x1080.mp4",
+    "build:instagram-feed": "remotion render InstagramFeed out/agentra-labs-instagram-feed-1080x1080.mp4",
+    "build:instagram-reels": "remotion render InstagramReels out/agentra-labs-instagram-reels-1080x1920.mp4",
+    "build:x": "remotion render X-Twitter out/agentra-labs-x-1280x720.mp4",
+    "build:all": "npm run build"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.301",
+    "@remotion/player": "4.0.301",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.301"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.0"
+  }
+}

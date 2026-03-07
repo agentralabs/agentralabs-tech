@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" role="img" aria-label="ACP NegotiationContract JSON schema">
+  <defs>
+    <style><![CDATA[
+      .code{font-family:'Fira Code','JetBrains Mono','IBM Plex Mono','SF Mono','Cascadia Code',monospace;font-size:15px}
+      .key{fill:#c792ea}
+      .str{fill:#c3e88d}
+      .num{fill:#f78c6c}
+      .bool{fill:#ff5370}
+      .null{fill:#ff5370}
+      .brace{fill:#89ddff}
+      .comment{fill:#546e7a;font-style:italic}
+      .type{fill:#ffcb6b}
+      .ln{fill:#4a5568;font-family:'Fira Code','JetBrains Mono','IBM Plex Mono',monospace;font-size:13px;text-anchor:end}
+    ]]></style>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b2d3a"/>
+      <stop offset="100%" stop-color="#1e1f2b"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Outer background (carbon style gradient) -->
+  <rect width="1200" height="820" fill="#171923" rx="0"/>
+
+  <!-- Code window -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="40" width="1080" height="740" rx="12" fill="url(#bg)"/>
+  </g>
+
+  <!-- Window title bar -->
+  <rect x="60" y="40" width="1080" height="44" rx="12" fill="#1a1b26"/>
+  <rect x="60" y="72" width="1080" height="12" fill="#1a1b26"/>
+  <!-- Traffic light dots -->
+  <circle cx="92" cy="62" r="7" fill="#ff5f57"/>
+  <circle cx="116" cy="62" r="7" fill="#febc2e"/>
+  <circle cx="140" cy="62" r="7" fill="#28c840"/>
+  <!-- Filename tab -->
+  <text x="600" y="67" class="code" font-size="13" fill="#6a6e7a" text-anchor="middle">negotiation_contract.json</text>
+
+  <!-- Line numbers + Code -->
+  <g transform="translate(60 100)">
+    <!-- Line 1 -->
+    <text x="40" y="24" class="ln">1</text>
+    <text x="60" y="24" class="code brace">{</text>
+
+    <!-- Line 2 -->
+    <text x="40" y="48" class="ln">2</text>
+    <text x="60" y="48" class="code comment">  // ACP NegotiationContract — agent-to-agent terms</text>
+
+    <!-- Line 3 -->
+    <text x="40" y="72" class="ln">3</text>
+    <text x="60" y="72" class="code"><tspan class="key">  "protocol"</tspan><tspan class="brace">:</tspan> <tspan class="str">"acp/v0.1"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 4 -->
+    <text x="40" y="96" class="ln">4</text>
+    <text x="60" y="96" class="code"><tspan class="key">  "type"</tspan><tspan class="brace">:</tspan> <tspan class="str">"NegotiationContract"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 5 -->
+    <text x="40" y="120" class="ln">5</text>
+    <text x="60" y="120" class="code"><tspan class="key">  "contract_id"</tspan><tspan class="brace">:</tspan> <tspan class="str">"nc_8f3a...b2e1"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 6 -->
+    <text x="40" y="144" class="ln">6</text>
+    <text x="60" y="144" class="code"><tspan class="key">  "state"</tspan><tspan class="brace">:</tspan> <tspan class="str">"OFFER"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 7 (blank) -->
+    <text x="40" y="168" class="ln">7</text>
+
+    <!-- Line 8 -->
+    <text x="40" y="192" class="ln">8</text>
+    <text x="60" y="192" class="code"><tspan class="key">  "buyer"</tspan><tspan class="brace">:</tspan> <tspan class="brace">{</tspan></text>
+
+    <!-- Line 9 -->
+    <text x="40" y="216" class="ln">9</text>
+    <text x="60" y="216" class="code"><tspan class="key">    "agent_id"</tspan><tspan class="brace">:</tspan> <tspan class="str">"aid_agent-alpha"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 10 -->
+    <text x="40" y="240" class="ln">10</text>
+    <text x="60" y="240" class="code"><tspan class="key">    "public_key"</tspan><tspan class="brace">:</tspan> <tspan class="str">"ed25519:7Hq9..."</tspan></text>
+
+    <!-- Line 11 -->
+    <text x="40" y="264" class="ln">11</text>
+    <text x="60" y="264" class="code">  <tspan class="brace">},</tspan></text>
+
+    <!-- Line 12 -->
+    <text x="40" y="288" class="ln">12</text>
+    <text x="60" y="288" class="code"><tspan class="key">  "seller"</tspan><tspan class="brace">:</tspan> <tspan class="brace">{</tspan></text>
+
+    <!-- Line 13 -->
+    <text x="40" y="312" class="ln">13</text>
+    <text x="60" y="312" class="code"><tspan class="key">    "agent_id"</tspan><tspan class="brace">:</tspan> <tspan class="str">"aid_agent-bravo"</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 14 -->
+    <text x="40" y="336" class="ln">14</text>
+    <text x="60" y="336" class="code"><tspan class="key">    "capability"</tspan><tspan class="brace">:</tspan> <tspan class="str">"code_review"</tspan></text>
+
+    <!-- Line 15 -->
+    <text x="40" y="360" class="ln">15</text>
+    <text x="60" y="360" class="code">  <tspan class="brace">},</tspan></text>
+
+    <!-- Line 16 (blank) -->
+    <text x="40" y="384" class="ln">16</text>
+
+    <!-- Line 17 -->
+    <text x="40" y="408" class="ln">17</text>
+    <text x="60" y="408" class="code"><tspan class="key">  "terms"</tspan><tspan class="brace">:</tspan> <tspan class="brace">{</tspan></text>
+
+    <!-- Line 18 -->
+    <text x="40" y="432" class="ln">18</text>
+    <text x="60" y="432" class="code"><tspan class="key">    "price_usd"</tspan><tspan class="brace">:</tspan> <tspan class="num">0.0025</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 19 -->
+    <text x="40" y="456" class="ln">19</text>
+    <text x="60" y="456" class="code"><tspan class="key">    "escrow"</tspan><tspan class="brace">:</tspan> <tspan class="bool">true</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 20 -->
+    <text x="40" y="480" class="ln">20</text>
+    <text x="60" y="480" class="code"><tspan class="key">    "max_latency_ms"</tspan><tspan class="brace">:</tspan> <tspan class="num">5000</tspan><tspan class="brace">,</tspan></text>
+
+    <!-- Line 21 -->
+    <text x="40" y="504" class="ln">21</text>
+    <text x="60" y="504" class="code"><tspan class="key">    "expires_at"</tspan><tspan class="brace">:</tspan> <tspan class="str">"2026-03-05T12:00:00Z"</tspan></text>
+
+    <!-- Line 22 -->
+    <text x="40" y="528" class="ln">22</text>
+    <text x="60" y="528" class="code">  <tspan class="brace">},</tspan></text>
+
+    <!-- Line 23 (blank) -->
+    <text x="40" y="552" class="ln">23</text>
+
+    <!-- Line 24 -->
+    <text x="40" y="576" class="ln">24</text>
+    <text x="60" y="576" class="code"><tspan class="key">  "failure_modes"</tspan><tspan class="brace">:</tspan> <tspan class="brace">[</tspan><tspan class="str">"timeout"</tspan><tspan class="brace">,</tspan> <tspan class="str">"quality_reject"</tspan><tspan class="brace">],</tspan></text>
+
+    <!-- Line 25 -->
+    <text x="40" y="600" class="ln">25</text>
+    <text x="60" y="600" class="code"><tspan class="key">  "signature"</tspan><tspan class="brace">:</tspan> <tspan class="str">"sig_ed25519:9Kp4...mN7w"</tspan></text>
+
+    <!-- Line 26 -->
+    <text x="40" y="624" class="ln">26</text>
+    <text x="60" y="624" class="code brace">}</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="60" y="740" width="1080" height="40" rx="0" fill="#1a1b26" opacity="0.6"/>
+  <rect x="60" y="768" width="1080" height="12" rx="12" fill="#1a1b26" opacity="0.6"/>
+  <text x="600" y="762" class="code" font-size="11" fill="#4a5568" text-anchor="middle">ACP v0.1  ·  Agent Commerce Protocol  ·  github.com/agentralabs/acp-protocol</text>
+</svg>

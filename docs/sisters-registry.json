@@ -329,6 +329,126 @@
         "landingSlug": "reality-docs",
         "includeLanding": true
       }
+    },
+    {
+      "key": "forge",
+      "name": "AgenticForge",
+      "repo": "agentic-forge",
+      "shortName": "FORGE",
+      "description": "Blueprint engine — complete project architecture before code generation. Designs entities, operations, dependencies, file layout, code skeletons, and tests.",
+      "topic": "Blueprint",
+      "enabled": true,
+      "order": 110,
+      "fileExtension": ".forge",
+      "cliBinary": "aforge",
+      "packages": {
+        "coreCrate": "agentic-forge-core",
+        "ffiCrate": "agentic-forge-ffi",
+        "mcpCrate": "agentic-forge-mcp",
+        "cliCrate": "agentic-forge-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-forge-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-forge-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-forge-mcp"
+      },
+      "docs": {
+        "landingSlug": "forge-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "aegis",
+      "name": "AgenticAegis",
+      "repo": "agentic-aegis",
+      "shortName": "AEGIS",
+      "description": "Streaming shield — real-time validation during code generation with continuous quality gates and rollback triggers",
+      "topic": "Validation",
+      "enabled": true,
+      "order": 111,
+      "fileExtension": ".aegis",
+      "cliBinary": "aegis",
+      "packages": {
+        "coreCrate": "agentic-aegis-core",
+        "ffiCrate": "agentic-aegis-ffi",
+        "mcpCrate": "agentic-aegis-mcp",
+        "cliCrate": "agentic-aegis-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-aegis-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-aegis-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-aegis-mcp"
+      },
+      "docs": {
+        "landingSlug": "aegis-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "veritas",
+      "name": "AgenticVeritas",
+      "repo": "agentic-veritas",
+      "shortName": "VERITAS",
+      "description": "Truth engine — intent compilation and uncertainty detection for verifiable agent reasoning",
+      "topic": "Truth",
+      "enabled": true,
+      "order": 112,
+      "fileExtension": ".veritas",
+      "cliBinary": "veritas",
+      "packages": {
+        "coreCrate": "agentic-veritas-core",
+        "ffiCrate": "agentic-veritas-ffi",
+        "mcpCrate": "agentic-veritas-mcp",
+        "cliCrate": "agentic-veritas-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-veritas-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-veritas-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-veritas-mcp"
+      },
+      "docs": {
+        "landingSlug": "veritas-docs",
+        "includeLanding": true
+      }
+    },
+    {
+      "key": "evolve",
+      "name": "AgenticEvolve",
+      "repo": "agentic-evolve",
+      "shortName": "EVOLVE",
+      "description": "Pattern library — crystallizing successful patterns for instant rebuilds and cross-project learning",
+      "topic": "Patterns",
+      "enabled": true,
+      "order": 113,
+      "fileExtension": ".evolve",
+      "cliBinary": "evolve",
+      "packages": {
+        "coreCrate": "agentic-evolve-core",
+        "ffiCrate": "agentic-evolve-ffi",
+        "mcpCrate": "agentic-evolve-mcp",
+        "cliCrate": "agentic-evolve-cli"
+      },
+      "paths": {
+        "mcpToolSource": "crates/agentic-evolve-mcp/src/tools/registry.rs"
+      },
+      "mcp": {
+        "binary": "agentic-evolve-mcp",
+        "args": [],
+        "cratePath": "crates/agentic-evolve-mcp"
+      },
+      "docs": {
+        "landingSlug": "evolve-docs",
+        "includeLanding": true
+      }
     }
   ]
 }

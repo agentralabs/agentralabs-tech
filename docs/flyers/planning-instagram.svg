@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" role="img" aria-label="Agentic Planning Instagram flyer">
+  <defs>
+    <pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="#d4d2c9"/>
+    </pattern>
+    <style><![CDATA[
+      .m{font-family:'IBM Plex Mono','JetBrains Mono',monospace}
+      .s{font-family:'Sora','Space Grotesk','Inter',sans-serif}
+    ]]></style>
+  </defs>
+  <rect width="1080" height="1350" fill="#f2f1ea"/>
+  <rect width="1080" height="1350" fill="url(#g)" opacity="0.5"/>
+
+  <!-- NOW LIVE badge -->
+  <rect x="468" y="200" width="144" height="36" rx="0" fill="#ea580c"/>
+  <text x="540" y="224" class="m" font-size="14" fill="#f2f1ea" text-anchor="middle" font-weight="700" letter-spacing="3">NOW LIVE</text>
+
+  <!-- Logo mark centered -->
+  <g transform="translate(492 280) scale(4)" stroke="#121212" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/>
+    <path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/>
+    <path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/>
+    <path d="M7 20v2"/><path d="M7 2v2"/>
+    <rect x="4" y="4" width="16" height="16" rx="2"/>
+    <rect x="8" y="8" width="8" height="8" rx="1" stroke="#ea580c"/>
+  </g>
+
+  <text x="540" y="420" class="m" font-size="14" fill="#ea580c" text-anchor="middle" letter-spacing="5">AGENTIC PLANNING</text>
+
+  <!-- Headline -->
+  <text x="540" y="540" class="s" font-size="56" font-weight="700" fill="#121212" text-anchor="middle">Goals with</text>
+  <text x="540" y="610" class="s" font-size="56" font-weight="700" fill="#ea580c" text-anchor="middle">physics.</text>
+  <text x="540" y="700" class="s" font-size="56" font-weight="700" fill="#121212" text-anchor="middle">Decisions with</text>
+  <text x="540" y="770" class="s" font-size="56" font-weight="700" fill="#ea580c" text-anchor="middle">memory.</text>
+
+  <!-- Capabilities list -->
+  <text x="540" y="880" class="m" font-size="15" fill="#6d6a63" text-anchor="middle">Living goals  ·  Shadow paths</text>
+  <text x="540" y="910" class="m" font-size="15" fill="#6d6a63" text-anchor="middle">Progress physics  ·  Decision archaeology</text>
+  <text x="540" y="940" class="m" font-size="15" fill="#6d6a63" text-anchor="middle">Commitment tracking  ·  Multi-agent federation</text>
+
+  <!-- One file -->
+  <text x="540" y="1020" class="m" font-size="14" fill="#121212" text-anchor="middle">One portable .aplan file. Any model. Any client.</text>
+
+  <!-- CTA -->
+  <text x="540" y="1200" class="m" font-size="13" fill="#6d6a63" text-anchor="middle" letter-spacing="1">github.com/agentralabs</text>
+</svg>
