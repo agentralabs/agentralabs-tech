@@ -158,6 +158,10 @@ enum Sister {
     Planning,
     Cognition,
     Reality,
+    Forge,
+    Aegis,
+    Veritas,
+    Evolve,
 }
 
 impl Sister {
@@ -173,6 +177,10 @@ impl Sister {
             Sister::Planning => "planning",
             Sister::Cognition => "cognition",
             Sister::Reality => "reality",
+            Sister::Forge => "forge",
+            Sister::Aegis => "aegis",
+            Sister::Veritas => "veritas",
+            Sister::Evolve => "evolve",
         }
     }
 }
