@@ -217,6 +217,10 @@ struct AgentraConfig {
     use_planning: bool,
     use_cognition: bool,
     use_reality: bool,
+    use_forge: bool,
+    use_aegis: bool,
+    use_veritas: bool,
+    use_evolve: bool,
     agentra_full_control: bool,
 }
 
@@ -233,6 +237,10 @@ impl Default for AgentraConfig {
             use_planning: true,
             use_cognition: true,
             use_reality: true,
+            use_forge: true,
+            use_aegis: true,
+            use_veritas: true,
+            use_evolve: true,
             agentra_full_control: true,
         }
     }
@@ -251,6 +259,10 @@ impl AgentraConfig {
             Sister::Planning => self.use_planning,
             Sister::Cognition => self.use_cognition,
             Sister::Reality => self.use_reality,
+            Sister::Forge => self.use_forge,
+            Sister::Aegis => self.use_aegis,
+            Sister::Veritas => self.use_veritas,
+            Sister::Evolve => self.use_evolve,
         }
     }
 
@@ -266,12 +278,16 @@ impl AgentraConfig {
             Sister::Planning => self.use_planning = enabled,
             Sister::Cognition => self.use_cognition = enabled,
             Sister::Reality => self.use_reality = enabled,
+            Sister::Forge => self.use_forge = enabled,
+            Sister::Aegis => self.use_aegis = enabled,
+            Sister::Veritas => self.use_veritas = enabled,
+            Sister::Evolve => self.use_evolve = enabled,
         }
     }
 
     fn summary(&self) -> String {
         format!(
-            "codebase={} memory={} vision={} identity={} time={} contract={} comm={} planning={} cognition={} reality={} full_control={}",
+            "codebase={} memory={} vision={} identity={} time={} contract={} comm={} planning={} cognition={} reality={} forge={} aegis={} veritas={} evolve={} full_control={}",
             bool_label(self.use_codebase),
             bool_label(self.use_memory),
             bool_label(self.use_vision),
@@ -282,6 +298,10 @@ impl AgentraConfig {
             bool_label(self.use_planning),
             bool_label(self.use_cognition),
             bool_label(self.use_reality),
+            bool_label(self.use_forge),
+            bool_label(self.use_aegis),
+            bool_label(self.use_veritas),
+            bool_label(self.use_evolve),
             bool_label(self.agentra_full_control)
         )
     }
@@ -607,6 +627,10 @@ struct ArtifactPresence {
     planning: usize,
     cognition: usize,
     reality: usize,
+    forge: usize,
+    aegis: usize,
+    veritas: usize,
+    evolve: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1803,6 +1827,10 @@ fn scan_artifacts_recursive(root: &Path, depth: usize, presence: &mut ArtifactPr
             "aplan" => presence.planning += 1,
             "acog" => presence.cognition += 1,
             "areal" => presence.reality += 1,
+            "forge" => presence.forge += 1,
+            "aegis" => presence.aegis += 1,
+            "veritas" => presence.veritas += 1,
+            "evolve" => presence.evolve += 1,
             _ => {}
         }
     }
