@@ -13,11 +13,15 @@
   <a href="https://github.com/agentralabs/agentic-planning"><img src="https://img.shields.io/badge/Planning-0.1.0-ea580c?style=for-the-badge" alt="Planning"></a>
   <a href="https://github.com/agentralabs/agentic-cognition"><img src="https://img.shields.io/badge/Cognition-0.1.0-ea580c?style=for-the-badge" alt="Cognition"></a>
   <a href="https://github.com/agentralabs/agentic-reality"><img src="https://img.shields.io/badge/Reality-0.1.0-ea580c?style=for-the-badge" alt="Reality"></a>
+  <a href="https://github.com/agentralabs/agentic-forge"><img src="https://img.shields.io/badge/Forge-0.1.0-ea580c?style=for-the-badge" alt="Forge"></a>
+  <a href="https://github.com/agentralabs/agentic-aegis"><img src="https://img.shields.io/badge/Aegis-0.1.0-ea580c?style=for-the-badge" alt="Aegis"></a>
+  <a href="https://github.com/agentralabs/agentic-veritas"><img src="https://img.shields.io/badge/Veritas-0.1.0-ea580c?style=for-the-badge" alt="Veritas"></a>
+  <a href="https://github.com/agentralabs/agentic-evolve"><img src="https://img.shields.io/badge/Evolve-0.1.0-ea580c?style=for-the-badge" alt="Evolve"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <strong>Workspace orchestrator for the ten Agentra sisters.</strong>
+  <strong>Workspace orchestrator for the fourteen Agentra sisters.</strong>
 </p>
 
 <p align="center">
@@ -42,6 +46,10 @@
 | [**AgenticPlanning**](https://github.com/agentralabs/agentic-planning) | `.aplan` | Persistent goals, decisions, commitments, strategic reasoning |
 | [**AgenticCognition**](https://github.com/agentralabs/agentic-cognition) | `.acog` | Longitudinal user modeling — living models of human consciousness |
 | [**AgenticReality**](https://github.com/agentralabs/agentic-reality) | `.areal` | Existential grounding — deployment consciousness and reality physics |
+| [**AgenticForge**](https://github.com/agentralabs/agentic-forge) | `.forge` | Blueprint engine — complete project architecture before code generation |
+| [**AgenticAegis**](https://github.com/agentralabs/agentic-aegis) | `.aegis` | Streaming shield — real-time validation during code generation |
+| [**AgenticVeritas**](https://github.com/agentralabs/agentic-veritas) | `.veritas` | Truth engine — intent compilation and uncertainty detection |
+| [**AgenticEvolve**](https://github.com/agentralabs/agentic-evolve) | `.evolve` | Pattern library — crystallizing patterns for instant rebuilds |
 
 Each sister is an independent MCP server. Install one or all. Any model. Any client.
 
@@ -60,6 +68,10 @@ cargo install agentic-comm-cli      # acomm
 cargo install agentic-planning-cli  # aplan
 cargo install agentic-cognition-cli # acog
 cargo install agentic-reality-cli  # areal
+cargo install agentic-forge-cli   # aforge
+cargo install agentic-aegis-cli   # aegis
+cargo install agentic-veritas-cli # veritas
+cargo install agentic-evolve-cli  # evolve
 ```
 
 Or use the orchestrator:
@@ -97,6 +109,10 @@ agentralabs-tech/
 ├── agentic-planning/  strategic planning + decisions
 ├── agentic-cognition/ longitudinal user modeling
 ├── agentic-reality/  existential grounding
+├── agentic-forge/    blueprint engine
+├── agentic-aegis/    streaming shield
+├── agentic-veritas/  truth engine
+├── agentic-evolve/   pattern library
 ├── install_all.sh     install sisters from local paths
 ├── sync_artifacts.sh  sync artifacts to server paths
 └── scripts/           guardrail + consistency checks
